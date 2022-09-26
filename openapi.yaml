@@ -1,0 +1,3571 @@
+openapi: 3.0.0
+
+servers:
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/AlexMubarakshin/ApiSchema/1.0.1
+
+info:
+  description: Api schema
+  version: "1.0.1"
+  title: API schema
+
+security:
+  - bearerAuth: []  
+
+tags:
+  - name: auth
+    description: Работа с авторизацией
+  - name: account
+    description: Работа с аккаунтом<br>Работа с паролями/идентификаторами пользователя
+  - name: profile
+    description: Работа с профилем<br>Работа с публичной информацией пользователя
+  - name: posts
+    description: Работа с публикациями
+  - name: likes
+    description: Работа с \"Лайками\"
+  - name: friends
+    description: Работа с друзьями
+  - name: feeds
+    description: Работа с лентой новостей
+  - name: dialogs
+    description: Работа с диалогами
+  - name: notifications
+    description: Работа с уведомлениями
+  - name: tags
+    description: Работа с тегами
+  - name: storage
+    description: Работа с хранилищем сервиса
+  - name: platform
+    description: Работа с платформой
+
+paths:
+  /api/v1/auth/login:
+    post:
+      tags:
+        - auth
+      description: "Вход через логин/пароль"
+      summary: "Вход через логин/пароль"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                email:
+                  type: string
+                  description: "E-Mail"
+                  example: "alex@example.com"
+                password:
+                  description: "Пароль"
+                  example: "1234567890"
+                  type: string
+                  format: password
+              required:
+                - email
+                - password
+      responses:
+        "200":
+          description: "Успешный вход"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/Response"
+                - type: object
+                  properties:
+                    data:
+                      allOf:
+                      - $ref: "#/components/schemas/Person"
+                      - $ref: "#/components/schemas/Token"
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: "Server error"
+  /api/v1/auth/logout:
+    post:
+      tags:
+        - auth
+      description: "Выполнить выход"
+      summary: "Выход"
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: "Успешная выход"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/Response"
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        message:
+                          type: string
+                          example: "ok"
+        '400':
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+  
+  /api/v1/account/register:
+    post:
+      tags:
+        - account
+      description: "Регистрация пользователя"
+      summary: "Регистрация"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: "E-Mail"
+                  example: "arkady@example.com"
+                passwd1:
+                  type: string
+                  description: "Пароль"
+                  example: "123456"
+                passwd2:
+                  type: string
+                  description: "Повтор пароля"
+                  example: "123456"
+                firstName:
+                  type: string
+                  description: "Имя"
+                  example: "Аркадий"
+                lastName:
+                  type: string
+                  description: "Фамилия"
+                  example: "Паровозов"
+                code:
+                  type: string
+                  description: "Код"
+                  example: "3675"
+      responses:
+        "200":
+          description: "Успешная регистрация"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/Response"
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        message:
+                          type: string
+                          example: "ok"
+        '400':
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      
+  /api/v1/account/password/recovery:
+    put:
+      tags: 
+        - account
+      description: "Восстановить пароль по email.<br>Высылает ссылку для восстановления на почтовый ящик."
+      summary: "Восстановление пароля"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: "E-Mail"
+                  example: "alex@example.com"
+      responses:
+        "200":
+          description: "Успешный запрос"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/Response"
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        message:
+                          type: string
+                          example: "ok"
+        '400':
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/account/password/set:
+    put:
+      tags: 
+        - account
+      description: "Изменить пароль."
+      summary: "Смена пароля"
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                  description: "Токен высланый на почтоый ящик. (Параметр используется в случае если пользователь восстанавливает пароль по почте)"
+                  example: "ad1fj118f11"
+                password:
+                  type: string
+                  description: "Новый пароль"
+                  example: "123456"
+      responses:
+        "200":
+          description: "Успешная смена пароля"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/Response"
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        message:
+                          type: string
+                          example: "ok"
+        '400':
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/account/email:
+    put:
+      tags: 
+        - account
+      description: "Смена email'а пользователя."
+      summary: "Смена email'а"
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: "Новый email"
+                  example: "arkady-ukupnik@thebest.com"
+      responses:
+        "200":
+          description: "Успешная смена email'a"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/Response"
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        message:
+                          type: string
+                          example: "ok"
+        '400':
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/account/notifications:
+    put:
+      tags: 
+        - account
+      description: "Редактирование настроек оповещения"
+      summary: "Редактирование настроек оповещения"
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                notification_type:
+                  $ref: "#/components/schemas/NotificationTypeCode"
+                enable:
+                  type: boolean
+                  description: "Уведомлять о событиях данного типа"
+                  example: true
+      responses:
+        "200":
+          description: "Успешная смена статуса"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/Response"
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        message:
+                          type: string
+                          example: "ok"
+        '400':
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/users/me:
+    get:
+      tags:
+        - profile
+      description: "Получить текущего пользователя"
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: "Успешное получение текущего пользователя"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/Response"
+                - type: object
+                  properties:
+                    data:
+                      $ref: "#/components/schemas/Person"
+        '401':
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - profile
+      description: "Редактирование текущего пользователя"
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PersonEditBody"
+      responses:
+        '200':
+          description: "Успешное получение текущего пользователя"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/Response"
+                - type: object
+                  properties:
+                    data:
+                      $ref: "#/components/schemas/Person"
+        '401':
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - profile
+      description: "Удаление текущего пользователя"
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: "Успешное удаление текущего пользователя"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/Response"
+                - type: object
+                  properties:
+                    data:
+                      properties:
+                        message:
+                          type: string
+                          description: "Сообщение о успехе"
+                          example: "ok"
+        '401':
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/users/{id}:
+    get:
+      tags:
+        - profile
+      description: "Получить пользователя по id"
+      security:
+        - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        description: "ID пользователя"
+        required: true
+        schema:
+          type: number
+          example: 1
+      responses:
+        '200':
+          description: "Успешное получение пользователя"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/Response"
+                - type: object
+                  properties:
+                    data:
+                      $ref: "#/components/schemas/Person"
+        '401':
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/users/{id}/wall:
+    get:
+      tags:
+        - profile
+      description: "Получение записей на стене пользователя"
+      parameters:
+      - name: id
+        in: path
+        description: "ID пользователя"
+        required: true
+        schema:
+          type: number
+          example: 1
+      - $ref: '#/components/parameters/offsetParam'
+      - $ref: '#/components/parameters/limitParam'
+      responses:
+        '200':
+          description: "Успешное получение публикаций"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/ListResponse"
+                - type: object
+                  properties:
+                    data:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/PersonsWallPost'
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      tags:
+        - profile
+      description: "Добавление публикации на стену пользователя"
+      security:
+        - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        description: "ID пользователя"
+        required: true
+        schema:
+          type: number
+          example: 1
+      - name: publish_date
+        in: query
+        description: "Отложить до даты определенной даты"
+        required: false
+        schema:
+          type: number
+          example: 1559751301818
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostRequestBody'
+      responses:
+        '200':
+          description: "Успешное добавление публикации"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/Response"
+                - type: object
+                  properties:
+                    data:
+                      $ref: '#/components/schemas/Post'
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /api/v1/users/search/:
+    get:
+      tags:
+        - profile
+      description: "Поиск пользователя"
+      summary: "Поиск пользователя"
+      parameters:
+      - name: first_name
+        in: query
+        description: "Имя пользователя"
+        required: false
+        schema:
+          type: string
+          example: "Григорий"
+      - name: last_name
+        in: query
+        description: "Фамилия пользователя"
+        required: false
+        schema:
+          type: string
+          example: "Пепс"
+      - name: age_from
+        in: query
+        description: "Кол-во лет ОТ"
+        required: false
+        schema:
+          type: number
+          example: 18
+      - name: age_to
+        in: query
+        description: "Кол-во лет ДО"
+        required: false
+        schema:
+          type: number
+          example: 50
+      - name: country_id
+        in: query
+        description: "ID страны"
+        required: false
+        schema:
+          type: number
+          example: 1
+      - name: city_id
+        in: query
+        description: "ID города"
+        required: false
+        schema:
+          type: number
+          example: 3
+      - $ref: '#/components/parameters/offsetParam'
+      - $ref: '#/components/parameters/limitParam'
+      responses:
+        '200':
+          description: "Успешное получение списка пользователей"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/ListResponse"
+                - type: object
+                  properties:
+                    data:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Person'
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/users/block/{id}:
+    put:
+      tags:
+        - profile
+      description: "Блокировка пользователя по id"
+      summary: "Блокировка пользователя по id"
+      security:
+        - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        description: "ID пользователя"
+        required: true
+        schema:
+          type: number
+          example: 1
+      responses:
+        '200':
+          description: "Успешная блокировка пользователя"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/Response"
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        message:
+                          type: string
+                          example: "ok"
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - profile
+      description: "Разблокировать пользователя по id"
+      summary: "Разблокировать пользователя по id"
+      security:
+        - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        description: "ID пользователя"
+        required: true
+        schema:
+          type: number
+          example: 1
+      responses:
+        '200':
+          description: "Успешное снятие блокировки с пользователя"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/Response"
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        message:
+                          type: string
+                          example: "ok"
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /api/v1/post/:
+    get:
+      tags:
+        - posts
+      description: "Поиск публикации"
+      summary: "Поиск публикации"
+      security:
+        - bearerAuth: []
+      parameters:
+      - name: text
+        in: query
+        description: "Текст публикации"
+        required: true
+        schema:
+          type: string
+          example: "Бла бла"
+      - name: date_from
+        in: query
+        description: "Дата публикации ОТ"
+        required: false
+        schema:
+          type: number
+          example: 1559751301818
+      - name: date_to
+        in: query
+        description: "Дата публикации ДО"
+        required: false
+        schema:
+          type: number
+          example: 1559751301818
+      - $ref: '#/components/parameters/offsetParam'
+      - $ref: '#/components/parameters/limitParam'
+      responses:
+        '200':
+          description: "Успешное получение публикации"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/ListResponse"
+                - type: object
+                  properties:
+                    data:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Post'
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/post/{id}:
+    get:
+      tags:
+        - posts
+      description: "Получение публикации по ID"
+      summary: "Получение публикации по ID"
+      security:
+        - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        description: "ID публикации"
+        required: true
+        schema:
+          type: number
+          example: 1
+      responses:
+        '200':
+          description: "Успешное получение публикации"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/Response"
+                - type: object
+                  properties:
+                    data:
+                      $ref: '#/components/schemas/Post'
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - posts
+      description: "Редактирование публикации"
+      summary: "Редактирование публикации по ID"
+      security:
+        - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        description: "ID публикации"
+        required: true
+        schema:
+          type: number
+          example: 1
+      - name: publish_date
+        in: query
+        description: "Отложить до даты определенной даты"
+        required: false
+        schema:
+          type: number
+          example: 1559751301818
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostRequestBody'
+      responses:
+        '200':
+          description: "Успешное редактирование публикации"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/Response"
+                - type: object
+                  properties:
+                    data:
+                      $ref: '#/components/schemas/Post'
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - posts
+      description: "Удаление публикации"
+      summary: "Удаление публикации по ID"
+      security:
+        - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        description: "ID публикации"
+        required: true
+        schema:
+          type: number
+          example: 1
+      responses:
+        '200':
+          description: "Успешное удаление публикации"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/Response"
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        id:
+                          type: number
+                          description: "ID удаленной публикации"
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/post/{id}/recover:
+    put:
+      tags:
+        - posts
+      description: "Восстановление публикации по ID"
+      summary: "Восстановление публикации по ID"
+      security:
+        - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        description: "ID публикации"
+        required: true
+        schema:
+          type: number
+          example: 1
+      responses:
+        '200':
+          description: "Успешное восстановление публикации"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/Response"
+                - type: object
+                  properties:
+                    data:
+                      $ref: '#/components/schemas/Post'
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/post/{id}/comments:
+    get:
+      tags:
+        - posts
+      description: "Получение комментариев на публикации"
+      summary: "Получение комментариев на публикации"
+      parameters:
+      - name: id
+        in: path
+        description: "ID публикации"
+        required: true
+        schema:
+          type: number
+          example: 1
+      - $ref: '#/components/parameters/offsetParam'
+      - $ref: '#/components/parameters/limitParam'
+      responses:
+        '200':
+          description: "Успешное получение комментариев"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/ListResponse"
+                - type: object
+                  properties:
+                    data:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Comment'
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      tags:
+        - posts
+      description: "Создание комментария к публикации"
+      summary: "Создание комментария к публикации"
+      parameters:
+      - name: id
+        in: path
+        description: "ID публикации"
+        required: true
+        schema:
+          type: number
+          example: 1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CommentModel"
+      responses:
+        '200':
+          description: "Успешное создание комментария"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/Response"
+                - type: object
+                  properties:
+                    data:
+                      $ref: "#/components/schemas/Comment"
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/post/{id}/comments/{comment_id}:
+    put:
+      tags:
+        - posts
+      description: "Редактирование комментария к публикации"
+      summary: "Редактирование комментария к публикации"
+      parameters:
+      - name: id
+        in: path
+        description: "ID публикации"
+        required: true
+        schema:
+          type: number
+          example: 1
+      - name: comment_id
+        in: path
+        description: "ID комментария публикации"
+        required: true
+        schema:
+          type: number
+          example: 1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CommentModel"
+      responses:
+        '200':
+          description: "Успешное создание комментария"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/Response"
+                - type: object
+                  properties:
+                    data:
+                      $ref: "#/components/schemas/Comment"
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - posts
+      description: "Удаление комментария к публикации"
+      summary: "Удаление комментария к публикации"
+      parameters:
+      - name: id
+        in: path
+        description: "ID публикации"
+        required: true
+        schema:
+          type: number
+          example: 1
+      - name: comment_id
+        in: path
+        description: "ID комментария публикации"
+        required: true
+        schema:
+          type: number
+          example: 1
+      responses:
+        '200':
+          description: "Успешное создание комментария"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/Response"
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        id:
+                          type: number
+                          description: "ID удаленной публикации"
+                          example: 13
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/post/{id}/comments/{comment_id}/recover:
+    put:
+      tags:
+        - posts
+      description: "Восстановление комментария"
+      summary: "Восстановление комментария"
+      parameters:
+      - name: id
+        in: path
+        description: "ID публикации"
+        required: true
+        schema:
+          type: number
+          example: 1
+      - name: comment_id
+        in: path
+        description: "ID комментария публикации"
+        required: true
+        schema:
+          type: number
+          example: 1
+      responses:
+        '200':
+          description: "Успешное восстановление комментария"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/Response"
+                - type: object
+                  properties:
+                    data:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Comment'
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /api/v1/post/{id}/report:
+    post:
+      tags:
+        - posts
+      description: "Подать жалобу на публикацию"
+      summary: "Подать жалобу на публикацию"
+      parameters:
+      - name: id
+        in: path
+        description: "ID публикации"
+        required: true
+        schema:
+          type: number
+          example: 1
+      responses:
+        '200':
+          description: "Успешное создание жалобы на публикацию"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/Response"
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        message:
+                          type: string
+                          example: "ok"
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/post/{id}/comments/{comment_id}/report:
+    post:
+      tags:
+        - posts
+      description: "Подать жалобу на комментарий к публикации"
+      summary: "Подать жалобу на комментарий к публикации"
+      parameters:
+      - name: id
+        in: path
+        description: "ID публикации"
+        required: true
+        schema:
+          type: number
+          example: 1
+      - name: comment_id
+        in: path
+        description: "ID комментария"
+        required: true
+        schema:
+          type: number
+          example: 13
+      responses:
+        '200':
+          description: "Успешное создание жалобы на комментарий"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/Response"
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        message:
+                          type: string
+                          example: "ok"
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+                
+  /api/v1/liked:
+    get:
+      tags:
+        - likes
+      description: "Был ли поставлен лайк пользователем"
+      summary: "Был ли поставлен лайк пользователем"
+      security:
+        - bearerAuth: []
+      parameters: 
+        - name: user_id
+          in: query
+          required: false
+          description: "ID пользователя"
+          schema:
+            type: number
+            example: 12
+        - name: item_id
+          in: query
+          required: true
+          description: "ID объекта у которого необходимо получить \"Лайки\""
+          schema:
+            type: number
+            example: 42
+        - name: type
+          in: query
+          required: true
+          schema:
+            $ref: "#/components/schemas/LikeType"
+      responses:
+        "200":
+          description: "Успешно"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/Response"
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        likes:
+                          type: boolean
+                          example: false
+
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/likes:
+    get:
+      tags:
+        - likes
+      description: "Получить список пользователей оставивших лайк"
+      summary: "Получить список лайков"
+      security:
+        - bearerAuth: []
+      parameters: 
+        - name: item_id
+          in: query
+          required: true
+          description: "ID объекта у которого необходимо получить \"Лайки\""
+          schema:
+            type: number
+            example: 42
+        - name: type
+          in: query
+          required: true
+          schema:
+            $ref: "#/components/schemas/LikeType"
+      responses:
+        "200":
+          description: "Успешно"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/Response"
+                - type: object
+                  properties:
+                    data:
+                      $ref: "#/components/schemas/LikeUsersList"
+
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - likes
+      description: "Поставить лайк"
+      summary: "Поставить лайк"
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LikeRequestBody"
+      responses:
+        "200":
+          description: "Успешно"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/Response"
+                - type: object
+                  properties:
+                    data:
+                      $ref: "#/components/schemas/LikeUsersList"
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - likes
+      description: "Убрать лайк"
+      summary: "Убрать лайк"
+      security:
+        - bearerAuth: []
+      parameters: 
+        - name: item_id
+          in: query
+          required: true
+          description: "ID объекта которому убирается \"Лайк\""
+          schema:
+            type: number
+            example: 42
+        - name: type
+          in: query
+          required: true
+          schema:
+            $ref: "#/components/schemas/LikeType"
+      responses:
+        "200":
+          description: "Успешно"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/Response"
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        likes:
+                          $ref: "#/components/schemas/LikesCount"
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+
+
+  /api/v1/friends:
+    get:
+      tags:
+        - friends
+      description: "Получить список друзей"
+      summary: "Получить список друзей"
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: name
+          in: query
+          description: "Имя друга для поиска"
+          required: false
+          schema:
+            type: string
+            example: "Петр"
+        - $ref: '#/components/parameters/offsetParam'
+        - $ref: '#/components/parameters/limitParam'
+      responses:
+        "200":
+          description: "Успешное получение списка друзей"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/ListResponse"
+                - type: object
+                  properties:
+                    data:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Person'
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/friends/{id}:
+    delete:
+      tags:
+        - friends
+      description: "Удалить пользователя из друзей"
+      summary: "Удалить пользователя из друзей"
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: "Id друга"
+          required: true
+          schema:
+            type: string
+            example: 1
+      responses:
+        "200":
+          description: "Успешное удаление друга"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/Response"
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        message:
+                          type: string
+                          example: "ok"
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      tags:
+        - friends
+      description: "Принять/Добавить пользователя в друзья"
+      summary: "Принять/Добавить пользователя в друзья"
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: "Id пользователя"
+          required: true
+          schema:
+            type: string
+            example: 1
+      responses:
+        "200":
+          description: "Успешно"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/Response"
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        message:
+                          type: string
+                          example: "ok"
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/friends/request:
+    get:
+      tags:
+        - friends
+      description: "Получить список входящик заявок на добавление в друзья"
+      summary: "Получить список заявок"
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: name
+          in: query
+          description: "Имя пользователя для поиска по заявкам"
+          required: false
+          schema:
+            type: string
+            example: "Петр"
+        - $ref: '#/components/parameters/offsetParam'
+        - $ref: '#/components/parameters/limitParam'
+      responses:
+        "200":
+          description: "Успешное получение списка заявок"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/ListResponse"
+                - type: object
+                  properties:
+                    data:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Person'
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/friends/recommendations:
+    get:
+      tags:
+        - friends
+      description: "Получить список рекомендаций"
+      summary: "Получить список рекомендаций"
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/offsetParam'
+        - $ref: '#/components/parameters/limitParam'
+      responses:
+        "200":
+          description: "Успешное получение списка рекомендаций"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/ListResponse"
+                - type: object
+                  properties:
+                    data:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Person'
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/is/friends:
+    post:
+      tags:
+        - friends
+      description: "Получить информацию является ли пользователь другом указанных пользователей"
+      summary: "Получить информацию является ли пользователь другом указанных пользователей"
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_ids:
+                  type: array
+                  description: "Id пользователей, статус дружбы с которыми нужно проверить"
+                  items:
+                    type: number
+                    description: "Id пользователя"
+                    example: 3
+      responses:
+        "200":
+          description: "Успешное получение"
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        user_id:
+                          type: number
+                          description: "Id пользователя"
+                          example: 3
+                        status: 
+                          $ref: '#/components/schemas/FriendshipStatusCode'
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/dialogs:
+    get:
+      tags:
+        - dialogs
+      description: "Получение списка диалогов пользователя"
+      summary: "Получить список диалогов"
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: query
+          in: query
+          description: "Строка для поиска диалога"
+          required: false
+          schema:
+            type: string
+            example: "Something"
+        - $ref: '#/components/parameters/offsetParam'
+        - $ref: '#/components/parameters/limitParam'
+      responses:
+        "200":
+          description: "Успешное получение списка Диалогов"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/ListResponse"
+                - type: object
+                  properties:
+                    data:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Dialog'
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      tags:
+        - dialogs
+      description: "Создание диалога"
+      summary: "Создать диалог"
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DialogUserShortList"
+      responses:
+        "200":
+          description: "Успешное создание Диалога"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/Response"
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        id:
+                          type: number
+                          description: "Id созданного диалога"
+                          example: 45
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /api/v1/dialogs/unreaded:
+    get:
+      tags:
+        - dialogs
+      description: "Получение общего кол-ва непрочитанных сообщений"
+      summary: "Получение общего кол-ва непрочитанных сообщений"
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: "Успешное получение общего кол-ва непрочитанных сообщений"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/Response"
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        count:
+                          type: number
+                          example: 1000
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/dialogs/{id}:
+    delete:
+      tags:
+        - dialogs
+      description: "Удаление диалога"
+      summary: "Удалить диалог"
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: "Id диалога"
+          required: true
+          schema:
+            type: number
+            example: 53
+      responses:
+        "200":
+          description: "Успешное удаление Диалога"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/Response"
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        id:
+                          type: number
+                          description: "Id удаленного диалога"
+                          example: 45
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/dialogs/{id}/users:
+    put:
+      tags:
+        - dialogs
+      description: "Добавить пользователя в диалог"
+      summary: "Добавить пользователя в диалог"
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: "Id диалога"
+          required: true
+          schema:
+            type: number
+            example: 53
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DialogUserShortList"
+      responses:
+        "200":
+          description: "Успешное добавление пользователей в диалог"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/Response"
+                - type: object
+                  properties:
+                    data:
+                      $ref: "#/components/schemas/DialogUserShortList"
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - dialogs
+      description: "Удалить пользователей из диалога"
+      summary: "Удалить пользователей из диалога"
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: "Id диалога"
+          required: true
+          schema:
+            type: number
+            example: 53
+        - name: users_ids
+          in: path
+          description: "Id пользователей которых следует удалить из диалога"
+          required: true
+          schema:
+            type: array
+            items:
+              type: string
+              description: "Id пользователя"
+              example: 53
+            
+      responses:
+        "200":
+          description: "Успешное удаление пользователей из диалога"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/Response"
+                - type: object
+                  properties:
+                    data:
+                      $ref: "#/components/schemas/DialogUserShortList"
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/dialogs/{id}/users/invite:
+    get:
+      tags:
+        - dialogs
+      description: "Получить ссылку-приглашение в диалог"
+      summary: "Получить ссылку-приглашение в диалог"
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: "Id диалога"
+          required: true
+          schema:
+            type: number
+            example: 53
+      responses:
+        "200":
+          description: "Успешное получение ссылки-приглашения"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/Response"
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        link:
+                          type: string
+                          description: "Ссылка-приглашение"
+
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/dialogs/{id}/users/join:
+    put:
+      tags:
+        - dialogs
+      description: "Присоедениться к диалогу по ссылке-приглашению"
+      summary: "Присоедениться к диалогу по ссылке-приглашению"
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: "Id диалога"
+          required: true
+          schema:
+            type: number
+            example: 53
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                link:
+                  type: string
+                  description: "Ссылка-приглашение"
+      responses:
+        "200":
+          description: "Успешное добавление пользователя в диалог"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/Response"
+                - type: object
+                  properties:
+                    data:
+                      $ref: "#/components/schemas/DialogUserShortList"
+
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/dialogs/{id}/messages:
+    get:
+      tags:
+        - dialogs
+      description: "Получение списка сообщений в диалоге"
+      summary: "Получить список сообщений в диалоге"
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: "Id диалога"
+          required: true
+          schema:
+            type: number
+            example: 53
+        - name: query
+          in: query
+          description: "Строка для поиска сообщения"
+          required: false
+          schema:
+            type: string
+            example: "Something"
+        - $ref: '#/components/parameters/offsetParam'
+        - $ref: '#/components/parameters/limitParam'
+      responses:
+        "200":
+          description: "Успешное получение списка сообщений"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/ListResponse"
+                - type: object
+                  properties:
+                    data:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Message'
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      tags:
+        - dialogs
+      description: "Отправка сообщений"
+      summary: "Отправка сообщений"
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: "Id диалога"
+          required: true
+          schema:
+            type: number
+            example: 53
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MeasageSendRequestBody"
+      responses:
+        "200":
+          description: "Успешная отправка сообщения"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/Response"
+                - type: object
+                  properties:
+                    data:
+                      $ref: "#/components/schemas/Message"
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/dialogs/{dialog_id}/messages/{message_id}:
+    delete:
+      tags:
+        - dialogs
+      description: "Удаление сообщения"
+      summary: "Удаление сообщения"
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: dialog_id
+          in: path
+          description: "Id диалога"
+          required: true
+          schema:
+            type: number
+            example: 53
+        - name: message_id
+          in: path
+          description: "Id сообщения"
+          required: true
+          schema:
+            type: number
+            example: 1141
+      responses:
+        "200":
+          description: "Успешное удаление сообщения"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/Response"
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        message_id:
+                          type: number
+                          description: "Id удаленного сообщения"
+                          example: 1141
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - dialogs
+      description: "Редактирование сообщения"
+      summary: "Редактирование сообщения"
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: dialog_id
+          in: path
+          description: "Id диалога"
+          required: true
+          schema:
+            type: number
+            example: 53
+        - name: message_id
+          in: path
+          description: "Id сообщения"
+          required: true
+          schema:
+            type: number
+            example: 1141
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MeasageSendRequestBody"
+      responses:
+        "200":
+          description: "Успешное редактирование сообщения"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/Response"
+                - type: object
+                  properties:
+                    data:
+                      $ref: "#/components/schemas/Message"
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/dialogs/{dialog_id}/messages/{message_id}/recover:
+    put:
+      tags:
+        - dialogs
+      description: "Восстановление удаленного сообщения"
+      summary: "Восстановление удаленного сообщения"
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: dialog_id
+          in: path
+          description: "Id диалога"
+          required: true
+          schema:
+            type: number
+            example: 53
+        - name: message_id
+          in: path
+          description: "Id сообщения"
+          required: true
+          schema:
+            type: number
+            example: 1141
+      responses:
+        "200":
+          description: "Успешное восстановление сообщения"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/Response"
+                - type: object
+                  properties:
+                    data:
+                      $ref: "#/components/schemas/Message"
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/dialogs/{dialog_id}/messages/{message_id}/read:
+    put:
+      tags:
+        - dialogs
+      description: "Пометить сообщение как \"Прочитанное\""
+      summary: "Пометить сообщение как \"Прочитанное\""
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: dialog_id
+          in: path
+          description: "Id диалога"
+          required: true
+          schema:
+            type: number
+            example: 53
+        - name: message_id
+          in: path
+          description: "Id сообщения"
+          required: true
+          schema:
+            type: number
+            example: 1141
+      responses:
+        "200":
+          description: "Успешное прочтение сообщения"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/Response"
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        message:
+                          type: string
+                          example: "ok"
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/feeds:
+    get:
+      tags:
+        - feeds
+      description: "Получение списка новостей"
+      parameters:
+        - name: name
+          in: query
+          description: "Текст новости для поиска"
+          required: false
+          schema:
+            type: string
+            example: "Бла бла"
+        - $ref: '#/components/parameters/offsetParam'
+        - $ref: '#/components/parameters/limitParam'
+      responses:
+        '200':
+          description: "Успешное получение списка новостей"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/ListResponse"
+                - type: object
+                  properties:
+                    data:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Post'
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /api/v1/dialogs/{id}/activity/{user_id}:
+    get:
+      tags:
+        - dialogs
+      description: "Получить последнюю активность и текущий статус для пользователя с которым ведется диалог"
+      summary: "Получить последнюю активность и текущий статус"
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: "Id диалога"
+          required: true
+          schema:
+            type: number
+            example: 53
+        - name: user_id
+          in: path
+          description: "Id пользователя"
+          required: true
+          schema:
+            type: number
+            example: 141
+      responses:
+        "200":
+          description: "Успешное получение списка сообщений"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/Response"
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        online:
+                          type: boolean
+                          example: false
+                        last_activity:
+                          type: number
+                          example: 1559751301818
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      tags:
+        - dialogs
+      description: "Изменить статус набора текста пользователем в диалоге."
+      summary: "Изменить статус набора текста пользователем в диалоге."
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: "Id диалога"
+          required: true
+          schema:
+            type: number
+            example: 53
+        - name: user_id
+          in: path
+          description: "Id пользователя"
+          required: true
+          schema:
+            type: number
+            example: 141
+      responses:
+        "200":
+          description: "Успешная установка статуса"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/Response"
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        message:
+                          type: string
+                          example: "ok"
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+
+  /api/v1/dialogs/longpoll:
+    get:
+      tags:
+        - dialogs
+      description: "Получить данные для подключения к longpoll серверу"
+      summary: "Получить данные для подключения к longpoll серверу"
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: "Успешное получение данных"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/Response"
+                - type: object
+                  properties:
+                    data:
+                      $ref: "#/components/schemas/LongpollServerResponseBody"
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/dialogs/longpoll/history:
+    post:
+      tags:
+        - dialogs
+      description: "Получить обновления личных сообщений пользователя"
+      summary: "Получить обновления личных сообщений пользователя"
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LongpollHistoryRequestBody"
+      responses:
+        "200":
+          description: "Успешное получение данных"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/Response"
+                - type: object
+                  properties:
+                    data:
+                      $ref: "#/components/schemas/LongpollHistoryResponse"
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/notifications:
+    get:
+      tags:
+        - notifications
+      description: "Получить список уведомлений для текущего пользователя"
+      summary: "Получить список уведомлений"
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/offsetParam'
+        - $ref: '#/components/parameters/limitParam'
+      responses:
+        "200":
+          description: "Успешное получение списка уведомлений"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/ListResponse"
+                - type: object
+                  properties:
+                    data:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/NotificationBase'
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:  
+      tags:
+        - notifications
+      description: "Отметить уведомление как \"прочитанное\""
+      summary: "Прочитать уведомление"
+      security:
+        - bearerAuth: []
+      parameters:
+      - name: id
+        in: query
+        description: "ID уведомления"
+        required: false
+        schema:
+          type: number
+          example: 1
+      - name: all
+        in: query
+        description: "Пометка что прочесть все уведомления"
+        required: false
+        schema:
+          type: boolean
+          example: true
+        
+      responses:
+        "200":
+          description: "Успешное получение списка уведомлений"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/ListResponse"
+                - type: object
+                  properties:
+                    data:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/NotificationBase'
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/tags/:
+    get:
+      tags:
+        - tags
+      description: "Получение тегов для публикации"
+      security:
+        - bearerAuth: []
+      parameters:
+      - name: tag
+        in: query
+        description: "Строчка для поиска по тегам"
+        required: false
+        schema:
+          type: string
+      - $ref: '#/components/parameters/offsetParam'
+      - $ref: '#/components/parameters/limitParam'
+      responses:
+        '200':
+          description: "Успешное получение тегов"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/ListResponse"
+                - type: object
+                  properties:
+                    data:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Tag'
+        '401':
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      tags:
+        - tags
+      description: "Создание тега для публикации"
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                tag:
+                  type: string
+                  description: "Название тега"
+      responses:
+        '200':
+          description: "Успешное создание тега"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/Response"
+                - type: object
+                  properties:
+                    data:
+                      $ref: '#/components/schemas/Tag'
+        '401':
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - tags
+      description: "Удаление тега"
+      security:
+        - bearerAuth: []
+      parameters:
+      - name: id
+        in: query
+        description: "Id тега"
+        required: true
+        schema:
+          type: number
+      responses:
+        '200':
+          description: "Успешное удаление тега"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/Response"
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        message:
+                          type: string
+                          example: "ok"
+        '401':
+          description: "unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/storage/:
+    post:
+      tags:
+        - storage
+      description: "Загрузка файла в хранилище"
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: type
+          in: path
+          description: "Тип файла"
+          required: true
+          schema:
+            $ref: "#/components/schemas/FileType"
+      responses:
+        '200':
+          description: "Успешная закгрузка файла"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/Response"
+                - type: object
+                  properties:
+                    data:
+                      $ref: '#/components/schemas/FileUploadResponse'
+  /api/v1/platform/languages:
+    get:
+      tags:
+        - platform
+      description: "Получение языков платформы"
+      summary: "Получение языков"
+      parameters:
+      - name: language
+        in: query
+        description: "Строка для поиска по языкам"
+        required: false
+        schema:
+          type: string
+      - $ref: '#/components/parameters/offsetParam'
+      - $ref: '#/components/parameters/limitParam'
+      responses:
+        "200":
+          description: "Успешное получение языков"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/ListResponse"
+                - type: object
+                  properties:
+                    data:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/PlatfomLanguage'
+  /api/v1/platform/countries:
+    get:
+      tags:
+        - platform
+      description: "Получение стран платформы"
+      summary: "Получение стран"
+      parameters:
+      - name: country
+        in: query
+        description: "Строка для поиска по странам"
+        required: false
+        schema:
+          type: string
+      - $ref: '#/components/parameters/offsetParam'
+      - $ref: '#/components/parameters/limitParam'
+      responses:
+        "200":
+          description: "Успешное получение стран"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/ListResponse"
+                - type: object
+                  properties:
+                    data:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Country'
+  /api/v1/platform/cities:
+    get:
+      tags:
+        - platform
+      description: "Получение городов платформы"
+      summary: "Получение городов"
+      parameters:
+      - name: countryId
+        in: query
+        description: "ID страны"
+        required: true
+        schema:
+          type: number
+      - name: city
+        in: query
+        description: "Строка для поиска по городам"
+        required: false
+        schema:
+          type: string
+      - $ref: '#/components/parameters/offsetParam'
+      - $ref: '#/components/parameters/limitParam'
+      responses:
+        "200":
+          description: "Успешное получение городов"
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/ListResponse"
+                - type: object
+                  properties:
+                    data:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/City'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT  
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: "Тип ошибки"
+          example: "invalid_request"
+          enum:
+            - invalid_request
+            - unauthorized
+        error_description:
+          type: string
+          items:
+            $ref: '#/components/schemas/ErrorDescription'
+    ErrorDescription:
+      type: object
+      properties:
+        error_description:
+          type: string
+          description: "Error description"
+          enum:
+            - "Unauthorized"
+            - "An authorization code must be supplied"
+            - "Redirect URI mismatch"
+            - "Invalid authorization code: CODE"
+            - "Bad credentials"
+    Response:
+      type: object
+      properties:
+        error: 
+          type: string
+          description: "Сообщение, в случае ошибки здесь будет причина"
+        timestamp:
+          type: number
+          example: 1559751301818
+    ListResponse:
+      allOf:
+      - $ref: "#/components/schemas/Response"
+      - type: object
+        properties:
+          total:
+            type: integer
+            description: "Количество элементов в списке"
+            format: int64
+          offset:
+            type: integer
+            description: "Отступ от начала списка"
+            format: int64
+          perPage:
+            type: integer
+            description: "Количество элементов на страницу"
+            format: int64
+            default: 20
+
+    PersonEditBody:
+      type: object
+      description: "Пользователь соц. сети"
+      properties:
+        first_name:
+          type: string
+          example: "Петр"
+        last_name:
+          type: string
+          example: "Петрович"
+        birth_date:
+          type: number
+          example: 1559751301818
+        phone:
+          type: string
+          example: '89100000000'
+        photo_id:
+          type: number
+          description: "ID на фото в хранилище"
+          example: "o1doj1d91j1d01d-1d1f"
+        about:
+          type: string
+          example: "Родился в небольшой, но честной семье"
+        town_id:
+          type: number
+          example: 123
+        country_id:
+          type: number
+          example: 33
+        messages_permission:
+          type: string
+          example: "ALL"
+          description: "Разрешение на получение сообщений: ALL - от всех пользователей (кроме заблокированных), FRIENDS - только от друзей"
+    Person:
+      type: object
+      description: "Пользователь соц. сети"
+      properties:
+        id:
+          type: number
+          example: 1
+        first_name:
+          type: string
+          example: "Петр"
+        last_name:
+          type: string
+          example: "Петрович"
+        reg_date:
+          type: number
+          example: 1559751301818
+        birth_date:
+          type: number
+          example: 1559751301818
+        email:
+          type: string
+          example: "petr@mail.ru"
+        phone:
+          type: string
+          example: '89100000000'
+        photo:
+          type: string
+          example: "https://...../photos/image123.jpg"
+        about:
+          type: string
+          example: "Родился в небольшой, но честной семье"
+        city:
+          $ref: "#/components/schemas/City"
+        country:
+          $ref: "#/components/schemas/Country"
+        messages_permission:
+          type: string
+          example: "ALL"
+          description: "Разрешение на получение сообщений: ALL - от всех пользователей (кроме заблокированных), FRIENDS - только от друзей"
+        last_online_time:
+          type: number
+          example: 1559751301818
+        is_blocked:
+          type: boolean
+          example: false
+    BlockHistory:
+      type: object
+      description: "История блокировок пользователей за пост / комментарий"
+      properties:
+        id:
+          type: number
+          example: 1
+        time:
+          type: number
+          example: 1559751301818
+        person_id:
+          type: number
+          example: 1
+        post_id:
+          type: number
+          example: 1
+        comment_id:
+          type: number
+          example: 1
+        action:
+          type: string
+          description: "Тип действия: BLOCK (блокировка) или UNBLOCK (разблокировка)"
+    User:
+      type: object
+      description: "Модераторы и администраторы"
+      properties:
+        id:
+          type: number
+          example: 1
+        name:
+          type: string
+        email:
+          type: string
+        type:
+          type: string
+          description: "Тип пользователя: MODERATOR, ADMIN (может управлять другими админами и модераторами)"
+    Friendship:
+      type: object
+      description: "Дружба"
+      properties:
+        id:
+          type: number
+          example: 1
+        status_id:
+          type: number
+          example: 13
+          description: "Статус связи (см. ниже)"
+        src_person_id:
+          type: number
+          example: 1
+        dst_person_id:
+          type: number
+          example: 2
+    FriendshipStatus:
+      type: object
+      description: "Статус дружбы"
+      properties:
+        id:
+          type: number
+          example: 13
+        time:
+          type: number
+          example: 1559751301818
+          description: "Дата и время установки данного статуса"
+        name:
+          type: string
+        code:
+          $ref: "#/components/schemas/FriendshipStatusCode"
+    FriendshipStatusCode:
+      description: "Код статуса статуса дружбы"
+      type: string
+      enum: 
+        - FRIEND
+        - REQUEST
+        - BLOCKED
+        - DECLINED
+        - SUBSCRIBED
+    Dialog:
+      type: object
+      description: "Диалог пользователя"
+      properties:
+        id:
+          type: number
+          example: 10
+        unread_count:
+          type: number
+          description: "Число непрочитанных сообщений в диалоге"
+          example: 0
+        last_message:
+          $ref: "#/components/schemas/Message"
+    DialogUserShortList:
+      type: object
+      properties:
+        user_ids:
+          type: array
+          description: "Id пользователей, c которыми создается диалог"
+          items:
+            type: number
+            description: "Id пользователя"
+            example: 3
+    Message:
+      type: object
+      description: "Личное сообщение"
+      properties:
+        id:
+          type: number
+          example: 12
+        time:
+          type: number
+          description: "Дата и время отправки"
+          format: date-time
+          example: 1559751301818
+        author_id:
+          type: number
+          example: 1
+        recipient_id:
+          type: number
+          example: 1
+        message_text:
+          type: string
+        read_status:
+          $ref: "#/components/schemas/ReadStatus"
+    MeasageSendRequestBody:
+      type: object
+      description: "Личное сообщение"
+      properties:
+        message_text:
+          type: string
+    LongpollServerResponseBody:
+      type: object
+      properties:
+        key:
+          type: string
+          example: "0d8fd9459427ab0d481b9deddae3d5350e25f5ab"
+        server:
+          type: string
+          description: "Url для подключения к longpoll серверу"
+        ts:
+          type: number
+          example: 1614211035
+
+    LongpollHistoryRequestBody:
+      type: object
+      properties:
+        ts:
+          type: number
+          example: 1614211035
+          description: "Последнее значение параметра ts, полученное от Long Poll сервера"
+        pts:
+          type: number
+          description: "Последнее значение параметра new_pts, полученное от Long Poll сервера, используется для получения действий, которые хранятся всегда."
+        preview_length:
+          type: number
+          description: "Количество символов, по которому нужно обрезать сообщение. Укажите 0, если Вы не хотите обрезать сообщение. (по умолчанию сообщения не обрезаются)."
+        onlines:
+          type: number
+          description: "1 — возвращать в числе прочих события 8 и 9 (пользователь стал онлайн/оффлайн). Учитывается только при использовании ts."
+        events_limit:
+          type: number
+          description: "Лимит по количеству всех событий в истории. Обратите внимание, параметры events_limit и msgs_limit применяются совместно. Число результатов в ответе ограничивается первым достигнутым лимитом."
+        msgs_limit:
+          type: number
+          description: "Kимит по количеству событий с сообщениями в истории. Обратите внимание, параметры events_limit и msgs_limit применяются совместно. Число результатов в ответе ограничивается первым достигнутым лимитом."
+        max_msg_id:
+          type: number
+          description: "Максимальный идентификатор сообщения среди уже имеющихся в локальной копии."
+    LongpollHistoryResponse:
+      type: object
+      properties:
+        messages:
+          type: object
+          properties:
+            count:
+              type: number
+              example: 1
+            messages:
+              type: array
+              items:
+                $ref: '#/components/schemas/Message'
+        profiles:
+          type: array
+          items:
+            $ref: '#/components/schemas/Person'
+            
+    ReadStatus:
+      type: string
+      description: "Статус прочтения"
+      enum:
+        - SENT
+        - READ
+    PostRequestBody:
+      type: object
+      properties:
+        title:
+          type: string
+          description: "Заголовок"
+        post_text:
+          type: string
+          description: "HTML-текст поста"
+    Post:
+      type: object
+      properties:
+        id:
+          type: number
+          example: 1
+        time:
+          type: number
+          example: 1559751301818
+          description: "дата и время публикации"
+        author:
+          $ref: "#/components/schemas/Person"
+            
+        title:
+          type: string
+          description: "Заголовок"
+        post_text:
+          type: string
+          description: "HTML-текст поста"
+        is_blocked:
+          type: boolean
+          description: "Отметка о том, что пост заблокирован"
+          example: false
+        likes:
+          type: number
+          description: "Количество лайков"
+          example: 23
+        comments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Comment'
+    PersonsWallPost:
+      description: "Пост на стене пользователя"
+      allOf:
+        - $ref: "#/components/schemas/Post"
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - POSTED
+                - QUEUED
+              example: "POSTED"
+    Tag:
+      type: object
+      properties:
+        id:
+          type: number
+          example: 1
+        tag:
+          type: string
+    Post2Tag:
+      type: object
+      properties:
+        id:
+          type: number
+          example: 1
+        post_id:
+          type: number
+          example: 13
+        tag_id:
+          type: number
+          example: 111
+    Like:
+      type: object
+      description: "Лайки постов"
+      properties:
+        id:
+          type: number
+          example: 13
+        time:
+          type: number
+          example: 1559751301818
+        person_id:
+          type: number
+          example: 1
+        post_id:
+          type: number
+          example: 11
+    LikeRequestBody:
+      type: object
+      properties:
+        item_id:
+          type: number
+          description: "ID объекта которому ставится \"Лайк\""
+        type:
+          $ref: "#/components/schemas/LikeType"
+    LikeType:
+      type: string
+      description: "Тип объекта которому поставили лайк"
+      example: "Post"
+      enum:
+        - Post
+        - Comment
+    LikesCount:
+      type: string
+      description: "Кол-во лайков"
+      example: 1
+    LikeUsersList:
+      type: object
+      properties:
+        likes:
+          $ref: "#/components/schemas/LikesCount"
+        users:
+          type: array
+          description: "Пользователи поставившие лайк"
+          items:
+            type: string
+            example: 1
+    Attachment:
+      type: object
+      description: "Файлы, прикреплённые к постам"
+      properties:
+        id:
+          type: number
+          example: 11
+        post_id:
+          type: string
+        name:
+          type: string
+        path:
+          type: string
+          description: "Путь к файлу в хранилище"
+    CommentModel:
+      type: object
+      description: "Комментарий к посту"
+      properties:
+        parent_id:
+          type: number
+          example: 1
+          description: "Родительский комментарий (если ответ на комментарий к посту)"
+        comment_text:
+          type: string
+    Comment:
+      type: object
+      description: "Комментарий к посту"
+      allOf:
+        - $ref: "#/components/schemas/CommentModel"
+        - type: object
+          properties:
+            id:
+              type: number
+              description: "Id комментария"
+              example: 111
+            post_id:
+              type: string
+            time:
+              type: number
+              example: 1559751301818
+            author_id:
+              type: number
+              example: 1
+            is_blocked:
+              type: boolean
+              description: "Комментарий заблокирован"
+          
+    NotificationBase:
+      type: object
+      description: "Оповещения"
+      properties:
+        id:
+          type: number
+          example: 1
+        type_id:
+          type: number
+          example: 1
+          description: "ID типа оповещения"
+        sent_time:
+          type: number
+          example: 1559751301818
+          description: "Время отправки"
+        entity_id:
+          type: number
+          example: 1
+          description: "Идентификатор сущности, относительно которой отправлено оповещение (комментарий, друг, пост или сообщение)"
+        info:
+          type: string
+          description: "Текст уведомления"
+    Notification:
+      description: "Оповещения"
+      allOf:
+        - $ref: "#/components/schemas/NotificationBase"
+        - type: object
+          properties:
+            person_id:
+              type: number
+              example: 1
+              description: "Кому отправлено"
+            contact:
+              type: string
+              description: "Куда отправлено оповещение (конкретный e-mail или телефон)"
+    NotificationType:
+      type: object
+      properties:
+        id:
+          type: number
+          example: 1
+        code:
+          $ref: "#/components/schemas/NotificationTypeCode"
+        name:
+          type: string
+    NotificationTypeCode:
+      type: string
+      description: "Код типа уведомлений"
+      enum:
+        - POST
+        - POST_COMMENT
+        - COMMENT_COMMENT
+        - FRIEND_REQUEST
+        - MESSAGE
+    Token:
+      type: object
+      description: "Token"
+      properties:
+        token:
+          type: string
+          description: "Token"
+          example: "1q2e3e3r4t5"
+    FileType:
+      type: string
+      description: "Тип файла"
+      enum:
+        - IMAGE
+    FileUploadResponse:
+      type: object
+      description: "Загруженный файл"
+      properties:
+        id:
+          type: string
+        ownerId:
+          type: number
+          example: 12
+          description: "ID владельца"
+        fileName:
+          type: string
+          description: "Название файла"
+        relativeFilePath: 
+          type: string
+          description: "Относительный путь до сжатого изображения"
+        rawFileURL:
+          type: string
+          description: "Путь до исходного изрображения"
+        fileFormat:
+          type: string
+          description: "Формат файла"
+        bytes:
+          type: number
+          description: "Размер файла"
+        fileType:
+          $ref: "#/components/schemas/FileType"
+        createdAt:
+          type: number
+          description: "Время загрузки файла на сервис"
+    UserConnectionStatus:
+      type: string
+      description: "Статус соеденения с пользователя"
+      enum:
+        - online
+        - offline
+    PlatfomLanguage: 
+      type: object
+      properties:
+        id:
+          type: number
+          description: "Id языка"
+          example: 1
+        title:
+          type: number
+          description: "Язык"
+          example: "Русский"
+    Country:
+      type: object
+      properties:
+        id:
+          type: number
+          description: "Id страны"
+          example: 1
+        title:
+          type: string
+          description: "Название страны"
+          example: "Россия"
+    City:
+      type: object
+      properties:
+        id:
+          type: number
+          description: "Id города"
+          example: 1
+        title:
+          type: string
+          description: "Название города"
+          example: "Москва"
+  parameters:
+    offsetParam:
+      in: query
+      description: "Отступ от начала списка"
+      name: offset
+      required: false
+      schema:
+        type: integer
+        format: int64
+    limitParam:
+      in: query
+      description: "Количество элементов на страницу"
+      name: itemPerPage
+      required: false
+      schema:
+        default: 20
+        type: integer
+        format: int64

@@ -1,0 +1,14 @@
+#server:
+#    port: 8086
+#
+#spring:
+#    datasource:
+#        driver-class-name: org.postgresql.Driver
+#        url: jdbc:postgresql://localhost/test_java_project
+#
+#    liquibase:
+#        enabled: true
+#
+#logging:
+#    level:
+#        root: info

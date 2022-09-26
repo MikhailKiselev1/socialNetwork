@@ -1,0 +1,21 @@
+server:
+    port: 8086
+
+spring:
+    datasource:
+        driver-class-name: org.postgresql.Driver
+        url: jdbc:postgresql://localhost/postgres
+        username: root
+        password: testtest
+    liquibase:
+        enabled: true
+    mail:
+        protocol: smtps
+        host: smtp.yandex.ru
+        port: 465
+        username: javaproteams27@yandex.ru
+        password: ddlmgyrcybsvjthu
+
+logging:
+    level:
+        root: info
