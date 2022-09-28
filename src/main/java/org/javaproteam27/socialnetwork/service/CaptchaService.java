@@ -25,12 +25,6 @@ public class CaptchaService {
 
     public CaptchaRs getCaptcha() throws IOException {
 
-//        captchaRepository.findAll().forEach(captcha -> {
-//            if (captcha.getTime().isBefore(LocalDateTime.now().minusHours(1))) {
-//                captchaRepository.deleteProfileById(captcha.getId());
-//            }
-//        });
-
         StringBuilder image = new StringBuilder("data:image/png;base64, ");
         CaptchaRs response = new CaptchaRs();
         Cage cage = new GCage();

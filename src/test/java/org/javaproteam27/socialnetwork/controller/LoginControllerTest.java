@@ -1,34 +1,21 @@
 package org.javaproteam27.socialnetwork.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.tomcat.jni.Local;
 import org.javaproteam27.socialnetwork.handler.exception.EntityNotFoundException;
 import org.javaproteam27.socialnetwork.handler.exception.InvalidRequestException;
 import org.javaproteam27.socialnetwork.model.dto.request.LoginRq;
-import org.javaproteam27.socialnetwork.model.entity.Person;
-import org.javaproteam27.socialnetwork.model.enums.MessagesPermission;
-import org.javaproteam27.socialnetwork.repository.PersonRepository;
-import org.javaproteam27.socialnetwork.repository.PersonRepositoryTest;
-import org.junit.Before;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.data.jdbc.DataJdbcTest;
-import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.context.jdbc.SqlMergeMode;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-
-import java.time.LocalDateTime;
-import java.util.Date;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.authenticated;
 import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.unauthenticated;
@@ -43,8 +30,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Sql("classpath:sql/person/insert-person.sql")
-@Sql(value = "classpath:sql/person/delete-person.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-class LoginControllerTest {
+@Transactional
+public class LoginControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -54,7 +41,7 @@ class LoginControllerTest {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
-    public void correctLoginTest() throws Exception {
+    public void loginCorrectRqIsOkResponseWithJsonContent() throws Exception {
         LoginRq rq = new LoginRq();
         rq.setEmail("test@mail.ru");
         rq.setPassword("test1234");
@@ -66,7 +53,7 @@ class LoginControllerTest {
     }
 
     @Test
-    public void badEmailTest() throws Exception {
+    public void loginBadEmailRqEntityNotFoundThrown() throws Exception {
         LoginRq rq = new LoginRq();
         rq.setEmail("bad@mail.ru");
         rq.setPassword("test1234");
@@ -79,7 +66,7 @@ class LoginControllerTest {
     }
 
     @Test
-    public void badPasswordTest() throws Exception {
+    public void loginBadPasswordRqInvalidRequestThrown() throws Exception {
         LoginRq rq = new LoginRq();
         rq.setEmail("test@mail.ru");
         rq.setPassword("bad");
@@ -92,7 +79,7 @@ class LoginControllerTest {
     }
 
     @Test
-    public void emptyRequestTest() throws Exception {
+    public void loginEmptyRequest400Response() throws Exception {
         this.mockMvc.perform(post(loginUrl))
                 .andDo(print())
                 .andExpect(status().is4xxClientError());
@@ -100,7 +87,7 @@ class LoginControllerTest {
 
     @Test
     @WithUserDetails("test@mail.ru")
-    public void authorizedLogoutTest() throws Exception {
+    public void logoutAuthorizedRqIsOkResponse() throws Exception {
         this.mockMvc.perform(post(logoutUrl))
                 .andDo(print())
                 .andExpect(authenticated())
@@ -108,7 +95,7 @@ class LoginControllerTest {
     }
 
     @Test
-    public void unauthorizedLogoutTest() throws Exception {
+    public void logoutUnAuthorizedRqAccessDeniedResponse() throws Exception {
         this.mockMvc.perform(post(logoutUrl))
                 .andDo(print())
                 .andExpect(unauthenticated())

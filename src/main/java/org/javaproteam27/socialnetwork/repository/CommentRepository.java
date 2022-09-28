@@ -95,4 +95,18 @@ public class CommentRepository {
             throw new EntityNotFoundException("comment id = " + id);
         }
     }
+
+    public Integer getCount() {
+        String sql = "select count(*) from post_comment";
+        return jdbcTemplate.queryForObject(sql, Integer.class);
+    }
+
+    public Integer getPersonalCount(int id) {
+        try {
+            String sql = "select count(*) from post_comment where author_id = ?";
+            return jdbcTemplate.queryForObject(sql, Integer.class, id);
+        } catch (EmptyResultDataAccessException e) {
+            throw new EntityNotFoundException("id = " + id);
+        }
+    }
 }

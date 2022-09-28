@@ -7,6 +7,7 @@ import lombok.*;
 import java.util.List;
 
 @Data
+@Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @AllArgsConstructor
 @NoArgsConstructor

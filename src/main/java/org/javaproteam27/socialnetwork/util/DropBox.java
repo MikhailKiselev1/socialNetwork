@@ -3,15 +3,20 @@ package org.javaproteam27.socialnetwork.util;
 import com.dropbox.core.*;
 import com.dropbox.core.oauth.DbxCredential;
 import com.dropbox.core.oauth.DbxRefreshResult;
+import com.dropbox.core.v2.DbxClientV2;
+import com.dropbox.core.v2.files.FileMetadata;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.UUID;
 
 @Component
 @Slf4j
@@ -22,6 +27,7 @@ public class DropBox {
     private static String dropboxAppKey = "rr6vbi7z7brhld3";
     private static String dropboxAppSecret = "dguh74c9giceow7";
     private static String refreshToken = "ZdM_cscUFxQAAAAAAAAAAaYgNW47F-G6ZADxwhWouthi_NbOtYP0h68pY9V3FIOu";
+    private static String dropboxPath = "dropbox/javaproteams_27";
 
     public static String getRefreshToken() throws DbxException, IOException {
         try {
@@ -38,6 +44,29 @@ public class DropBox {
         } catch (Exception ignored) {}
 
         return refreshToken;
+    }
+
+    public static String dropBoxUploadImages(MultipartFile image) throws DbxException, IOException {
+        String imageName = "/" + UUID.randomUUID() + "." + image.getOriginalFilename().split("\\.")[1];
+
+        DbxClientV2 client = getClient();
+        try (InputStream in = image.getInputStream()) {
+            FileMetadata metadata = client.files().uploadBuilder(imageName)
+                    .uploadAndFinish(in);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return imageName;
+    }
+
+    public static String getLingImages(String imageName) throws IOException, DbxException {
+        return getClient().files().getTemporaryLink(imageName).getLink();
+    }
+
+    public static DbxClientV2 getClient() throws IOException, DbxException {
+        String token = getRefreshToken();
+        DbxRequestConfig config = DbxRequestConfig.newBuilder(dropboxPath).build();
+        return new DbxClientV2(config, token);
     }
 
 

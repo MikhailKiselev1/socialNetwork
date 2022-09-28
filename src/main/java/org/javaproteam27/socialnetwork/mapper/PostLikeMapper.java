@@ -10,14 +10,12 @@ public class PostLikeMapper implements RowMapper<PostLike> {
 
     @Override
     public PostLike mapRow(ResultSet rs, int i) throws SQLException {
-        PostLike postLike = new PostLike();
-
-        postLike.setId(rs.getInt("id"));
-        postLike.setTime(rs.getTimestamp("time").getTime());
-        postLike.setPersonId(rs.getInt("person_id"));
-        postLike.setPostId(rs.getInt("post_id"));
-        postLike.setType(rs.getString("type"));
-
-        return postLike;
+        return PostLike.builder()
+                .id(rs.getInt("id"))
+                .time(rs.getTimestamp("time").getTime())
+                .personId(rs.getInt("person_id"))
+                .postId(rs.getInt("post_id"))
+                .type(rs.getString("type"))
+                .build();
     }
 }

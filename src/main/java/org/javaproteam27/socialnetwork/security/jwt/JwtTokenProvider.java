@@ -20,7 +20,7 @@ public class JwtTokenProvider {
 
     private String secret = "jwtapp";
 
-    private long validityInMilliseconds = 3600_000;
+    private long validityInMilliseconds = 3600000;
 
 
     @Autowired

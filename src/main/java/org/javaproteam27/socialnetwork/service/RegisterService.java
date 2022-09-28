@@ -9,11 +9,9 @@ import org.javaproteam27.socialnetwork.repository.PersonRepository;
 import org.javaproteam27.socialnetwork.security.jwt.JwtTokenProvider;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import javax.validation.constraints.AssertTrue;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.Pattern;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 
@@ -24,25 +22,19 @@ public class RegisterService {
     private final PersonRepository personRepository;
     private final CaptchaRepository captchaRepository;
     private final JwtTokenProvider jwtTokenProvider;
+    private final PasswordEncoder passwordEncoder;
     private String captchaSecret1;
     private String captchaSecret2;
     private String password1;
     private String password2;
-
-    @Email
     private String email;
-
-    @Pattern(regexp = "[A-Z][a-z]{2,15}|[А-ЯЁ][а-яё]{2,15}", message = "Неверно введено имя")
     private String firstName;
-
-    @Pattern(regexp = "[A-Z][a-z]{2,15}|[А-ЯЁ][а-яё]{2,15}", message = "Неверно введена Фамилия")
     private String lastName;
 
-    private String defaultPhoto = "https://dl.dropbox.com/s/ea3n2vw79u0s33u/default.jpg?dl=1";
+    private String defaultPhoto = "/c55aeb2a-6100-48e6-a006-0cec9f913b38.jpg";
 
 
-    public ResponseEntity<RegisterRs> postRegister(RegisterRq request) {
-        RegisterRs registerRS = new RegisterRs();
+    public ResponseEntity postRegister(RegisterRq request) {
         HashMap<String, String> data = new HashMap<>();
 
         captchaSecret1 = captchaRepository.findByCode(request.getCode()).getSecretCode();
@@ -53,9 +45,8 @@ public class RegisterService {
         // Проверка введенных данных
         checkPassword();
         if (!checkCaptcha()) {
-            registerRS.setError("invalid_captcha");
-            registerRS.setErrorDescription("невверно введена капча");
-            return new ResponseEntity<>(registerRS, HttpStatus.BAD_REQUEST);
+            return new  ResponseEntity(RegisterRs.builder().error("invalid_captcha")
+                    .errorDescription("невверно введена капча").build(), HttpStatus.BAD_REQUEST);
         }
         email = request.getEmail();
         firstName = request.getFirstName();
@@ -67,25 +58,22 @@ public class RegisterService {
         person.setFirstName(firstName);
         person.setLastName(lastName);
         person.setRegDate(LocalDateTime.now());
-        person.setPassword(request.getPassword1());
+        person.setPassword(passwordEncoder.encode(password1));
         person.setPhoto(defaultPhoto);
         person.setIsApproved(true);  // добавить проверку почты
         personRepository.save(person);
         // ответ успешной регистрации
-        registerRS.setError("string");
-        registerRS.setTimestamp(System.currentTimeMillis());
         data.put( "message","ok");
-        registerRS.setData(data);
 
-        return new ResponseEntity<>(registerRS, HttpStatus.OK);
+        return new ResponseEntity<>(RegisterRs.builder().error("string")
+                .timestamp(System.currentTimeMillis())
+                .data(data).build(), HttpStatus.OK);
     }
 
-    @AssertTrue(message = "Пароли не совпадают")
     private boolean checkPassword() {
         return password1.equals(password2);
     }
 
-    @AssertTrue(message = "Неверно введен код с картинки")
     private boolean checkCaptcha() {
         return captchaSecret1.equals(captchaSecret2);
     }

@@ -1,5 +1,6 @@
 package org.javaproteam27.socialnetwork.controller;
 
+import com.dropbox.core.DbxException;
 import lombok.RequiredArgsConstructor;
 import org.javaproteam27.socialnetwork.aop.InfoLogger;
 import org.javaproteam27.socialnetwork.model.dto.request.LoginRq;
@@ -22,7 +23,7 @@ public class LoginController {
     private final CaptchaService captchaService;
 
     @PostMapping("login")
-    public ResponseRs<PersonRs> login(@RequestBody LoginRq loginRq) {
+    public ResponseRs<PersonRs> login(@RequestBody LoginRq loginRq) throws IOException, DbxException {
         return loginService.login(loginRq);
     }
 

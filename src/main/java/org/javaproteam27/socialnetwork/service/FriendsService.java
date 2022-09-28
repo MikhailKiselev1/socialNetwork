@@ -2,6 +2,7 @@ package org.javaproteam27.socialnetwork.service;
 
 import lombok.RequiredArgsConstructor;
 import org.javaproteam27.socialnetwork.handler.exception.EntityNotFoundException;
+import org.javaproteam27.socialnetwork.model.dto.response.DialogRs;
 import org.javaproteam27.socialnetwork.model.dto.response.ListResponseRs;
 import org.javaproteam27.socialnetwork.model.dto.response.PersonRs;
 import org.javaproteam27.socialnetwork.model.entity.City;
@@ -25,8 +26,8 @@ public class FriendsService {
     
     private final PersonService personService;
     private final FriendshipService friendshipService;
-    private final CityService cityService;
-    private final CountryService countryService;
+//    private final CityService cityService;
+//    private final CountryService countryService;
     private final PersonRepository personRepository;
     private final JwtTokenProvider jwtTokenProvider;
     
@@ -42,7 +43,7 @@ public class FriendsService {
         List<Integer> limitedRecommendations = limitRecommendations(sortedRecommendationsByCount, offset, itemPerPage);
         List<Person> persons = getPersons(limitedRecommendations);
         
-        return getResultJson(persons, offset, itemPerPage);
+        return getResultJson(persons, friendsIdsForFriends.size(), offset, itemPerPage);
     }
     
     private List<Integer> getMyFriendsIds(Integer myId) {
@@ -111,43 +112,48 @@ public class FriendsService {
                 .collect(Collectors.toList());
     }
     
-    private ListResponseRs<PersonRs> getResultJson(List<Person> persons, int offset, int itemPerPage) {
+    private ListResponseRs<PersonRs> getResultJson(List<Person> persons, Integer total,
+                                                   Integer offset, Integer itemPerPage) {
         
         List<PersonRs> data = persons.stream()
-                .map(person -> {
-                    
-                    return PersonRs.builder()
-                            .id(person.getId())
-                            .firstName(person.getFirstName())
-                            .lastName(person.getLastName())
-                            .regDate(person.getRegDate())
-                            .birthDate(person.getBirthDate())
-                            .email(person.getEmail())
-                            .phone(person.getPhone())
-                            .photo(person.getPhoto())
-                            .about(person.getAbout())
-                            .city(person.getCity())
-                            .country(person.getCountry())
-                            .messagesPermission(person.getMessagesPermission())
-                            .lastOnlineTime(person.getLastOnlineTime())
-                            .isBlocked(person.getIsBlocked())
-                            .build();
-                })
+                .map(person -> PersonRs.builder()
+                        .id(person.getId())
+                        .firstName(person.getFirstName())
+                        .lastName(person.getLastName())
+                        .regDate(person.getRegDate())
+                        .birthDate(person.getBirthDate())
+                        .email(person.getEmail())
+                        .phone(person.getPhone())
+                        .photo(person.getPhoto())
+                        .about(person.getAbout())
+                        .city(person.getCity())
+                        .country(person.getCountry())
+                        .messagesPermission(person.getMessagesPermission())
+                        .lastOnlineTime(person.getLastOnlineTime())
+                        .isBlocked(person.getIsBlocked())
+                        .build())
                 .collect(Collectors.toList());
         
-        return new ListResponseRs<>("", offset, itemPerPage, data);
+        return ListResponseRs.<PersonRs>builder()
+                .error("")
+                .timestamp(System.currentTimeMillis())
+                .total((total == 0) ? data.size() : total)
+                .offset(offset)
+                .perPage(itemPerPage)
+                .data(data)
+                .build();
     }
 
-    public ListResponseRs<PersonRs> getListFriends(String name, int offset, int itemPerPage){
+    public ListResponseRs<PersonRs> getListFriends(String name, Integer offset, Integer itemPerPage) {
+        
         List<Person> person = personRepository.getFriendsPersonById(name,personService.getAuthorizedPerson().getId());
-
-        return getResultJson(person,offset,itemPerPage);
+        return getResultJson(person, 0, offset, itemPerPage);
     }
 
-    public ListResponseRs<PersonRs> getListApplicationsFriends(String name, int offset, int itemPerPage){
+    public ListResponseRs<PersonRs> getListApplicationsFriends(String name, Integer offset, Integer itemPerPage) {
 
         List<Person> personList = personRepository.getApplicationsFriendsPersonById(name,personService.getAuthorizedPerson().getId());
-        return getResultJson(personList,offset,itemPerPage);
+        return getResultJson(personList, 0, offset, itemPerPage);
     }
     
 }

@@ -16,7 +16,7 @@ import java.util.List;
 public class FriendshipService {
     
     private final FriendshipRepository friendshipRepository;
-    private final NotificationsService notificationsService;
+    private final NotificationService notificationService;
     
     
     public void save(Friendship friendship) {
@@ -41,7 +41,7 @@ public class FriendshipService {
         friendship.setDstPersonId(id);
 
         friendshipRepository.save(friendship);
-        notificationsService.createFriendshipNotification(id, friendshipStatusId, srcPersonId);
+        notificationService.createFriendshipNotification(id, friendshipStatusId, srcPersonId);
 
         String error = "";
         HashMap<String,String> messageMap= new HashMap<>();

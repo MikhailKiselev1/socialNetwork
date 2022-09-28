@@ -4,19 +4,11 @@ server:
 spring:
     datasource:
         driver-class-name: org.postgresql.Driver
-        url: jdbc:postgresql://localhost/postgres
-        username: root
-        password: testtest
+        url: jdbc:postgresql://195.133.48.174:5432/social
+        username: javapro
+        password: admin
     liquibase:
         enabled: true
-    mail:
-        protocol: smtps
-        host: smtp.yandex.ru
-        port: 465
-        username: javaproteams27@yandex.ru
-        password: ddlmgyrcybsvjthu
-mail:
-    debug: true
 
 logging:
     level:

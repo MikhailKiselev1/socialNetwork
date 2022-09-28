@@ -21,7 +21,6 @@ public class StorageController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public StorageRs postStorage( @RequestHeader("Authorization") String token,
                                   @RequestParam MultipartFile file) throws ServerException, IOException, DbxException {
-        storageService.dropBoxUploadImages(file);
         return storageService.postStorage(file, token);
     }
 }

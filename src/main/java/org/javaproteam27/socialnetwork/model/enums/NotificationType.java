@@ -7,5 +7,6 @@ public enum NotificationType {
     FRIEND_REQUEST,
     MESSAGE,
     POST_LIKE,
-    COMMENT_LIKE
+    COMMENT_LIKE,
+    FRIEND_BIRTHDAY
 }

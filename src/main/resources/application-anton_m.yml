@@ -9,12 +9,6 @@ spring:
         password: testtest
     liquibase:
         enabled: true
-    mail:
-        protocol: smtps
-        host: smtp.yandex.ru
-        port: 465
-        username: javaproteams27@yandex.ru
-        password: ddlmgyrcybsvjthu
 
 logging:
     level:

@@ -79,4 +79,18 @@ public class LikeRepository {
             throw new EntityNotFoundException("id = " + id);
         }
     }
+
+    public Integer getCount() {
+        String sql = "select count(*) from post_like";
+        return jdbcTemplate.queryForObject(sql, Integer.class);
+    }
+
+    public Integer getPersonalCount(int id) {
+        try {
+            String sql = "select count(*) from post_like where person_id = ?";
+            return jdbcTemplate.queryForObject(sql, Integer.class, id);
+        } catch (EmptyResultDataAccessException e) {
+            throw new EntityNotFoundException("id = " + id);
+        }
+    }
 }

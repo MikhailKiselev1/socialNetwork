@@ -1,6 +1,5 @@
 package org.javaproteam27.socialnetwork.repository;
 
-import ch.qos.logback.core.db.dialect.PostgreSQLDialect;
 import lombok.RequiredArgsConstructor;
 import org.javaproteam27.socialnetwork.handler.exception.EntityNotFoundException;
 import org.javaproteam27.socialnetwork.handler.exception.ErrorException;
@@ -12,12 +11,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
-import javax.sql.DataSource;
-import java.sql.Timestamp;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 @Repository
 @RequiredArgsConstructor
@@ -70,13 +66,10 @@ public class PersonRepository {
         }
     }
 
-    public Integer count() {
-        try {
-            String sql = "select count(*) from person";
-            return jdbcTemplate.queryForObject(sql, Integer.class);
-        } catch (EmptyResultDataAccessException e) {
-            return 0; // todo обработать исключение
-        }
+    public Integer getCount() {
+        
+        String sql = "select count(*) from person";
+        return jdbcTemplate.queryForObject(sql, Integer.class);
     }
 
     public Person getPersonById(Integer id) {
@@ -193,13 +186,34 @@ public class PersonRepository {
         return retValue;
     }
 
+    public Boolean editPassword(Person person) {
+        try {
+            return (jdbcTemplate.update("UPDATE person SET password = ? WHERE id = ?", person.getPassword(),
+                    person.getId()) == 1);
+        } catch (DataAccessException exception) {
+            throw new ErrorException(exception.getMessage());
+        }
+    }
+
     public Boolean savePhoto(Person person) {
-        Boolean retValue;
         try {
             return (jdbcTemplate.update("UPDATE person SET photo = ? WHERE id = ?", person.getPhoto(),
                     person.getId()) == 1);
         } catch (DataAccessException exception) {
             throw new ErrorException(exception.getMessage());
         }
+    }
+
+    public List<Person> getByBirthDay(String birthDay) {
+        try {
+            String sql = "SELECT * FROM person where birth_date = '" + birthDay + "'";
+            return jdbcTemplate.query(sql, rowMapper);
+        } catch (EmptyResultDataAccessException e) {
+            throw new EntityNotFoundException("birth_date = " + birthDay);
+        }
+    }
+
+    public List<Person> findAll() {
+        return jdbcTemplate.query("select * from person", rowMapper);
     }
 }

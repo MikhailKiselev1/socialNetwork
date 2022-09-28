@@ -38,7 +38,7 @@ public class StorageService {
         }
         Person person = personRepository.findByEmail(jwtTokenProvider.getUsername(token));
 
-        person.setPhoto(dropBoxUploadImages(image));
+        person.setPhoto(DropBox.dropBoxUploadImages(image));
         StorageDataRs storageDataRs = new StorageDataRs();
         storageDataRs.setId(imageName);
         storageDataRs.setOwnerId(person.getId());
@@ -49,19 +49,4 @@ public class StorageService {
         return response;
     }
 
-
-    public String dropBoxUploadImages(MultipartFile image) throws DbxException, IOException {
-        imageName = "/" + UUID.randomUUID().toString() + "." + image.getOriginalFilename().split("\\.")[1];
-
-        String token = dropBox.getRefreshToken();
-        DbxRequestConfig config = DbxRequestConfig.newBuilder("dropbox/javaproteams_27").build();
-        DbxClientV2 client = new DbxClientV2(config, token);
-        try (InputStream in = image.getInputStream()) {
-            FileMetadata metadata = client.files().uploadBuilder(imageName)
-                    .uploadAndFinish(in);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return client.files().getTemporaryLink(imageName).getLink();
-    }
 }

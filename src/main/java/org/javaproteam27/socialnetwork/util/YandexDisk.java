@@ -5,7 +5,6 @@ import com.yandex.disk.rest.ProgressListener;
 import com.yandex.disk.rest.RestClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
 import org.javaproteam27.socialnetwork.config.YandexDiskConfig;
 import org.springframework.stereotype.Component;
 
@@ -24,7 +23,7 @@ public class YandexDisk {
     public ProgressListener getProgressListener() {
         return new ProgressListener() {
             @Override
-            public void updateProgress(long l, long l1) {
+            public void updateProgress(long l, long l1) throws UnsupportedOperationException {
 
             }
 

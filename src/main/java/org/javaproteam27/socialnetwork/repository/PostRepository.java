@@ -1,19 +1,19 @@
 package org.javaproteam27.socialnetwork.repository;
 
 import lombok.RequiredArgsConstructor;
+import org.javaproteam27.socialnetwork.handler.exception.EntityNotFoundException;
 import org.javaproteam27.socialnetwork.handler.exception.ErrorException;
 import org.javaproteam27.socialnetwork.model.entity.Post;
 import org.javaproteam27.socialnetwork.mapper.PostMapper;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,8 +41,8 @@ public class PostRepository {
         List<Post> retList;
         try {
             retList = jdbcTemplate.query("SELECT * FROM post WHERE author_id = " + authorId
-                    + " AND is_deleted is false" + " LIMIT " + limit + " OFFSET " + offset, new PostMapper());
-        } catch (DataAccessException exception){
+                    + " AND is_deleted is false ORDER BY time DESC" + " LIMIT " + limit + " OFFSET " + offset, new PostMapper());
+        } catch (DataAccessException exception) {
             throw new ErrorException(exception.getMessage());
         }
         return retList;
@@ -52,7 +52,7 @@ public class PostRepository {
         Boolean retValue;
         try {
             retValue = (jdbcTemplate.update("UPDATE post SET is_deleted = true WHERE id = ?", postId) == 1);
-        } catch (DataAccessException exception){
+        } catch (DataAccessException exception) {
             throw new ErrorException(exception.getMessage());
         }
         return retValue;
@@ -80,13 +80,13 @@ public class PostRepository {
         return post;
     }
 
-    public List<Post> findAllPublishedPosts(int offset, int limit){
+    public List<Post> findAllPublishedPosts(int offset, int limit) {
         List<Post> retList;
         try {
             retList = jdbcTemplate.query("SELECT * FROM post WHERE time <= CURRENT_TIMESTAMP " +
-                    "AND is_deleted is false LIMIT " + limit + " OFFSET " + offset,new PostMapper());
+                    "AND is_deleted is false ORDER BY time DESC LIMIT " + limit + " OFFSET " + offset, new PostMapper());
             //                "SELECT * FROM post WHERE post_text LIKE '%" + postText + "%'"
-        } catch (DataAccessException exception){
+        } catch (DataAccessException exception) {
             throw new ErrorException(exception.getMessage());
         }
 
@@ -107,29 +107,55 @@ public class PostRepository {
             query.append(" WHERE ");
         }
 
-        if (tags != null) {
-            query.insert(0, " JOIN post2tag AS pt ON p.id = pt.post_id JOIN tag AS t ON t.id = pt.tag_id");
-
-            tags.forEach(tag -> queryParts.add("tag = '" + tag + "'"));
-        }
-        query.insert(0, "SELECT * FROM post AS p");
-
         if (dateFrom != null) {
-            LocalDate dateFromParsed = LocalDate.parse(dateFrom.toString(), formatter);
+            LocalDateTime dateFromParsed = LocalDateTime.parse(dateFrom.toString(), formatter);
             queryParts.add("p.time > '" + dateFromParsed + "'::date");
         }
 
         if (dateTo != null) {
-            LocalDate dateToParsed = LocalDate.parse(dateTo.toString(), formatter);
+            LocalDateTime dateToParsed = LocalDateTime.parse(dateTo.toString(), formatter);
             queryParts.add("p.time < '" + dateToParsed + "'::date");
         }
 
         queryParts.add("(p.post_text ILIKE '%" + text + "%' OR p.title ILIKE '%" + text + "%')");
 
-        String buildQuery = query +
-                String.join(" AND ", queryParts) + ";";
+        if (tags != null) {
+            queryParts.add(buildQueryTags(tags));
+            query.insert(0, " JOIN post2tag AS pt ON p.id = pt.post_id JOIN tag AS t ON t.id = pt.tag_id");
+            query.insert(0, "SELECT p.id, p.time, p.author_id, p.title, p.post_text, p.is_blocked, " +
+                    "count(*) FROM post AS p");
+        } else {
+            query.insert(0, "SELECT * FROM post AS p");
+        }
+
+        String buildQuery = query + String.join(" AND ", queryParts) + ";";
 
         return jdbcTemplate.query(buildQuery, new PostMapper());
+    }
+
+    public Integer getCount() {
+        String sql = "select count(*) from post";
+        return jdbcTemplate.queryForObject(sql, Integer.class);
+    }
+
+    public Integer getPersonalCount(int id) {
+        try {
+            String sql = "select count(*) from post where author_id = ?";
+            return jdbcTemplate.queryForObject(sql, Integer.class, id);
+        } catch (EmptyResultDataAccessException e) {
+            throw new EntityNotFoundException("id = " + id);
+        }
+    }
+
+    private String buildQueryTags(List<String> tags) {
+        List<String> buildQueryTags = new ArrayList<>();
+        StringBuilder sb = new StringBuilder("(");
+
+        tags.forEach(tag -> buildQueryTags.add("tag = '" + tag + "'"));
+        String buildTags = String.join(" OR ", buildQueryTags);
+        sb.append(buildTags).append(")").append(" GROUP BY p.id ORDER BY COUNT(*) DESC");
+
+        return sb.toString();
     }
 
 }

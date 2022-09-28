@@ -1,7 +1,6 @@
 package org.javaproteam27.socialnetwork.service;
 
 import lombok.RequiredArgsConstructor;
-import org.javaproteam27.socialnetwork.aop.InfoLogger;
 import org.javaproteam27.socialnetwork.model.dto.response.ListResponseRs;
 import org.javaproteam27.socialnetwork.model.dto.response.PersonRs;
 import org.javaproteam27.socialnetwork.model.dto.response.ResponseRs;
@@ -21,7 +20,7 @@ public class CommentService {
     private final PersonService personService;
     private final CommentRepository commentRepository;
     private final LikeService likeService;
-    private final NotificationsService notificationsService;
+    private final NotificationService notificationService;
     public final String COMMENT_MARKER = "Comment";
 
     private CommentRs convertToCommentRs(Comment comment) {
@@ -42,9 +41,9 @@ public class CommentService {
                 lastName(person.getLastName()).photo(person.getPhoto()).build();
         Long time = System.currentTimeMillis();
         Integer commentId = commentRepository.addComment(postId, commentText, parentId, author.getId(), time);
-        notificationsService.createCommentNotification(postId, time, commentId, parentId);
+        notificationService.createCommentNotification(postId, time, commentId, parentId);
         if (parentId != null) {
-            notificationsService.createSubCommentNotification(parentId, time, commentId);
+            notificationService.createSubCommentNotification(parentId, time, commentId);
         }
         CommentRs data = CommentRs.builder().isDeleted(false).parentId(parentId).commentText(commentText).id(commentId).
                 postId(postId).time(time).author(author).isBlocked(false).subComments(new ArrayList<>()).build();

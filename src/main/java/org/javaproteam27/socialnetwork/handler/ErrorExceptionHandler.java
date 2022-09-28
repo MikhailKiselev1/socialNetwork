@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 @ControllerAdvice
 @Slf4j
 public class ErrorExceptionHandler {
+    
     @ExceptionHandler
     public ResponseEntity<ResponseRs<T>> catchErrorException(ErrorException e) {
         log.error(e.getMessage(), e);
