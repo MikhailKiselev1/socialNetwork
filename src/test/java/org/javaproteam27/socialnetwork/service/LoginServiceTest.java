@@ -12,6 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
@@ -34,7 +35,7 @@ public class LoginServiceTest {
     @Mock
     private JwtTokenProvider jwtTokenProvider;
 
-    @Mock
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     private LoginService loginService;
@@ -70,13 +71,14 @@ public class LoginServiceTest {
 
     @Test
     public void loginCorrectRqAllDataIsOk() throws IOException, DbxException {
+        var password = passwordEncoder.encode("test1234");
         LoginRq loginRq = new LoginRq();
         loginRq.setEmail("test@mail.ru");
-        loginRq.setPassword("test");
+        loginRq.setPassword("test1234");
 
         Person person = new Person();
         person.setEmail("test@mail.ru");
-        person.setPassword("test");
+        person.setPassword(password);
         person.setIsBlocked(false);
 
         when(personRepository.findByEmail(loginRq.getEmail())).thenReturn(person);

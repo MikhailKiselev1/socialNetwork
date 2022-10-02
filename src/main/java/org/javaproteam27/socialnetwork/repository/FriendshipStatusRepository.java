@@ -15,6 +15,7 @@ import org.springframework.stereotype.Repository;
 import java.sql.PreparedStatement;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -48,7 +49,8 @@ public class FriendshipStatusRepository {
             return ps;
         }, keyHolder);
 
-        return keyHolder.getKey().intValue();
+        Optional<Number> key = Optional.of(keyHolder.getKey());
+        return key.get().intValue();
     }
 
     public List<FriendshipStatus> getApplicationsFriendshipStatus(Integer srcPersonId, Integer id){

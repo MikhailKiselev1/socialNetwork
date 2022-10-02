@@ -4,12 +4,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.javaproteam27.socialnetwork.handler.exception.EntityNotFoundException;
 import org.javaproteam27.socialnetwork.handler.exception.InvalidRequestException;
 import org.javaproteam27.socialnetwork.model.dto.request.LoginRq;
+import org.javaproteam27.socialnetwork.repository.PersonRepository;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
@@ -35,10 +38,22 @@ public class LoginControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    @Autowired
+    private PersonRepository personRepository;
 
     private final String loginUrl = "/api/v1/auth/login";
     private final String logoutUrl = "/api/v1/auth/logout";
     private final ObjectMapper objectMapper = new ObjectMapper();
+
+    @Before
+    public void setUp() {
+        var password = passwordEncoder.encode("test1234");
+        var person = personRepository.findById(1);
+        person.setPassword(password);
+        personRepository.editPassword(person);
+    }
 
     @Test
     public void loginCorrectRqIsOkResponseWithJsonContent() throws Exception {

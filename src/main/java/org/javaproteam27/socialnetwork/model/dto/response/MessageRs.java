@@ -1,5 +1,6 @@
 package org.javaproteam27.socialnetwork.model.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,6 +11,7 @@ import java.time.LocalDateTime;
 
 @Data
 @Builder
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class MessageRs {
     
     private Integer id;
@@ -22,5 +24,8 @@ public class MessageRs {
     private String messageText;
     @JsonProperty("read_status")
     private ReadStatus readStatus;
+    @JsonProperty("recipient")
+    private PersonRs recipient;
+    private Boolean isSentByMe;
     
 }

@@ -20,6 +20,7 @@ public class MessageMapper implements RowMapper<Message> {
                 .messageText(rs.getString("message_text"))
                 .readStatus(ReadStatus.valueOf(rs.getString("read_status")))
                 .dialogId(rs.getInt("dialog_id"))
+                .isDeleted(rs.getBoolean("is_deleted"))
                 .build();
     }
 }

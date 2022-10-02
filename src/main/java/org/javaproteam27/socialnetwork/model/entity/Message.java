@@ -17,6 +17,7 @@ public class Message implements Comparable<Message> {
     private String messageText;
     private ReadStatus readStatus;
     private Integer dialogId;
+    private boolean isDeleted;
     
     
     @Override

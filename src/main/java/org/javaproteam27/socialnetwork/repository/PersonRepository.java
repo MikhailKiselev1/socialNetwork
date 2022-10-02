@@ -216,4 +216,12 @@ public class PersonRepository {
     public List<Person> findAll() {
         return jdbcTemplate.query("select * from person", rowMapper);
     }
+
+    public Boolean deletePerson(int id) {
+        try {
+            return (jdbcTemplate.update("DELETE * FROM person WHERE id = ?", id) == 1);
+        } catch (DataAccessException exception) {
+            throw new ErrorException(exception.getMessage());
+        }
+    }
 }

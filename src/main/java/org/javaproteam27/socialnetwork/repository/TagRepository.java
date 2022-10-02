@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -26,7 +27,8 @@ public class TagRepository {
                 jdbcTemplate.update(connection -> connection.prepareStatement(sqlInsertQuery, new String[]{"id"}), keyHolder);
                 tagId = (Integer) keyHolder.getKey();
             } else {
-                tagId = idTags.stream().findFirst().get();
+                Optional<Integer> id = Optional.of(idTags.get(0));
+                tagId = id.get();
             }
             jdbcTemplate.update("INSERT INTO post2tag (tag_id, post_id) " + "VALUES (?, ?)", tagId, postId);
         } catch (DataAccessException exception){
@@ -54,12 +56,9 @@ public class TagRepository {
     }
 
     public Boolean deleteTagsByPostId(int postId) {
-        Boolean retValue;
+        boolean retValue;
         try {
             List<Integer> tagIds = getTagIdsByPostId(postId);
-            if (tagIds.isEmpty()) {
-                retValue = true;
-            }
             tagIds.forEach(tagId -> {
                 jdbcTemplate.update("DELETE FROM post2tag WHERE tag_id = ?", tagId);
                 jdbcTemplate.update("DELETE FROM tag WHERE id = ?", tagId);
@@ -71,9 +70,9 @@ public class TagRepository {
         return retValue;
     }
 
-    public Boolean updateTagsPostId(int postId, ArrayList<String> tags) {
+    public Boolean updateTagsPostId(int postId, List<String> tags) {
         Boolean retValue = null;
-        if (deleteTagsByPostId(postId)) {
+        if (Boolean.TRUE.equals(deleteTagsByPostId(postId))) {
             tags.forEach(tag -> addTag(tag, postId));
             retValue = true;
         }
