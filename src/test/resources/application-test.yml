@@ -3,17 +3,18 @@ server:
 
 spring:
   datasource:
-      url: jdbc:h2:mem:mydb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
-      username: sa
-      password: password
-      driverClassName: org.h2.Driver
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:mydb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;
+    username: sa
+    password: sa
   liquibase:
-      enabled: true
-
+    enabled: true
 
 logging:
   level:
     root: info
+  profiles:
+    active: prod
 
 yandexprofile:
   login: javaproteams27@yandex.ru

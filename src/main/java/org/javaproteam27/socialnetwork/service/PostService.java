@@ -9,11 +9,9 @@ import org.javaproteam27.socialnetwork.model.dto.response.ResponseRs;
 import org.javaproteam27.socialnetwork.model.entity.Post;
 import org.javaproteam27.socialnetwork.repository.PostRepository;
 import org.javaproteam27.socialnetwork.repository.TagRepository;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,16 +23,15 @@ public class PostService {
     private final CommentService commentService;
     private final LikeService likeService;
     private final NotificationService notificationService;
-    private final String POST_MARKER = "Post";
-
     private final PersonService personService;
+    private final String POST_MARKER = "Post";
 
     private PostRs convertToPostRs(Post post){
 
         if (post == null) return null;
         long timestamp = post.getTime();
-        String type = (timestamp > System.currentTimeMillis()) ? "QUEUED" : "POSTED";
-        List<CommentRs> comments = commentService.InitializeCommentsToPost(post.getId(), null, null);
+        String type = (post.getIsDeleted()) ? "DELETED" : ((timestamp > System.currentTimeMillis()) ? "QUEUED" : "POSTED");
+        List<CommentRs> comments = commentService.initializeCommentsToPost(post.getId(), null, null);
         return PostRs.builder()
                 .id(post.getId())
                 .time(timestamp)//.toLocalDateTime())
@@ -45,7 +42,7 @@ public class PostService {
                 .commentRs(comments)
                 .type(type)
                 .postText(post.getPostText())
-                .isBlocked(post.getIsBlocked()).myLike(false)
+                .isBlocked(post.getIsBlocked()).myLike(false) //TODO: привязать к таблице post_like
                 .myLike(likeService.isLikedByUser(personService.getAuthorizedPerson().getId(), post.getId(), POST_MARKER))
                 .build();
     }
@@ -68,7 +65,7 @@ public class PostService {
     public ResponseRs<PostRs> deletePost(int postId) {
 
         tagRepository.deleteTagsByPostId(postId);
-        List<Integer> commentIds = commentService.InitializeCommentsToPost(postId, null, null).stream().
+        List<Integer> commentIds = commentService.initializeCommentsToPost(postId, null, null).stream().
                 map(CommentRs::getId).collect(Collectors.toList());
         commentIds.forEach(commentId -> likeService.deleteAllLikesByLikedObjectId(commentId,
                 commentService.COMMENT_MARKER));
@@ -78,7 +75,7 @@ public class PostService {
         return new ResponseRs<>("", PostRs.builder().id(postId).build(),null);
     }
 
-    public ResponseRs<PostRs> updatePost(int postId, String title, String postText, ArrayList<String> tags) {
+    public ResponseRs<PostRs> updatePost(int postId, String title, String postText, List<String> tags) {
         tagRepository.updateTagsPostId(postId, tags);
         postRepository.updatePostById(postId, title, postText);
         return new ResponseRs<>("", convertToPostRs(postRepository.findPostById(postId)),null);
@@ -92,17 +89,25 @@ public class PostService {
         return (new ResponseRs<>("", convertToPostRs(postRepository.findPostById(postId)),null));
     }
 
-    public ResponseEntity<?> findPost (String text, Long dateFrom, Long dateTo, String authorName, List<String> tags,
+    public ListResponseRs<PostRs> findPost (String text, Long dateFrom, Long dateTo, String authorName, List<String> tags,
                                        int offset, int itemPerPage) {
 
         List<Post> postsFound = postRepository.findPost(text, dateFrom, dateTo, authorName, tags);
         List<PostRs> data = (postsFound != null) ? postsFound.stream().map(this::convertToPostRs).
                 collect(Collectors.toList()) : null;
 
-        return ResponseEntity.ok(new ListResponseRs<>("", offset, itemPerPage, data));
+        return new ListResponseRs<>("", offset, itemPerPage, data);
     }
 
     public ResponseRs<PostRs> getPost(int postId) {
+        Post post = postRepository.findPostById(postId);
+        PostRs data = (post != null) ? convertToPostRs(post) : null;
+        return new ResponseRs<>("", data, null);
+    }
+
+    @Transactional
+    public ResponseRs<PostRs> recoverPost(int postId) {
+        postRepository.recoverPostById(postId);
         Post post = postRepository.findPostById(postId);
         PostRs data = (post != null) ? convertToPostRs(post) : null;
         return new ResponseRs<>("", data, null);

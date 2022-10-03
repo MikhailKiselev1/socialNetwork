@@ -5,13 +5,21 @@ spring:
     datasource:
         driver-class-name: org.postgresql.Driver
         url: jdbc:postgresql://localhost/postgres
-        username: root
-        password: testtest
+        username: anton
+        password:
     liquibase:
         enabled: true
 
 logging:
     level:
         root: info
+    profiles:
+        active: prod
 
+yandexprofile:
+    login: javaproteams27@yandex.ru
+    token: y0_AgAAAABkHWYcAAhcJAAAAADNMMSQdTIhTbQjRfCCNvyw30mWw_U7WIY
+
+logsupload:
+    enabled: false
 

@@ -26,6 +26,7 @@ public class LoginService {
     private final JwtTokenProvider jwtTokenProvider;
     private final PersonRepository personRepository;
     private final PasswordEncoder passwordEncoder;
+    private final DropBox dropBox;
 
     public ResponseRs<PersonRs> profileResponse(String token) throws IOException, DbxException {
         String email = jwtTokenProvider.getUsername(token);
@@ -52,7 +53,7 @@ public class LoginService {
     private PersonRs getPersonRs(Person person, String token) throws IOException, DbxException {
         return PersonRs.builder().id(person.getId()).firstName(person.getFirstName()).
                 lastName(person.getLastName()).regDate(person.getRegDate()).birthDate(person.getBirthDate()).
-                email(person.getEmail()).phone(person.getPhone()).photo(person.getPhoto()).about(person.getAbout()).
+                email(person.getEmail()).phone(person.getPhone()).photo(dropBox.getLinkImages(person.getPhoto())).about(person.getAbout()).
                 city(person.getCity()).country(person.getCountry()).messagesPermission(person.getMessagesPermission()).
                 lastOnlineTime(person.getLastOnlineTime()).isBlocked(person.getIsBlocked()).token(token)
                 .build();

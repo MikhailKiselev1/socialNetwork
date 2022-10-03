@@ -11,4 +11,5 @@ public class Post {
     private String title;
     private String postText;
     private Boolean isBlocked;
+    private Boolean isDeleted;
 }

@@ -41,24 +41,26 @@ public class PostRepository {
         List<Post> retList;
         try {
             retList = jdbcTemplate.query("SELECT * FROM post WHERE author_id = " + authorId
-                    + " AND is_deleted is false ORDER BY time DESC" + " LIMIT " + limit + " OFFSET " + offset, new PostMapper());
+                    + " ORDER BY time DESC" + " LIMIT " + limit + " OFFSET " + offset, new PostMapper());
         } catch (DataAccessException exception) {
             throw new ErrorException(exception.getMessage());
         }
         return retList;
     }
 
-    public Boolean deletePostById(int postId) {
+    public void deletePostById(int postId) {
         Boolean retValue;
         try {
             retValue = (jdbcTemplate.update("UPDATE post SET is_deleted = true WHERE id = ?", postId) == 1);
         } catch (DataAccessException exception) {
             throw new ErrorException(exception.getMessage());
         }
-        return retValue;
+        if (!retValue) {
+            throw new ErrorException("Post not deleted");
+        }
     }
 
-    public Boolean updatePostById(int postId, String title, String postText) {
+    public void updatePostById(int postId, String title, String postText) {
         Boolean retValue;
         try {
             retValue = (jdbcTemplate.update("UPDATE post SET title = ?, post_text = ? WHERE id = ?", title,
@@ -66,7 +68,9 @@ public class PostRepository {
         } catch (DataAccessException exception) {
             throw new ErrorException(exception.getMessage());
         }
-        return retValue;
+        if (!retValue) {
+            throw new ErrorException("Post not updated");
+        }
     }
 
     public Post findPostById(int postId) {
@@ -158,4 +162,15 @@ public class PostRepository {
         return sb.toString();
     }
 
+    public void recoverPostById(int postId) {
+        Boolean retValue;
+        try {
+            retValue = (jdbcTemplate.update("UPDATE post SET is_deleted = false WHERE id = ?", postId) == 1);
+        } catch (DataAccessException exception) {
+            throw new ErrorException(exception.getMessage());
+        }
+        if (!retValue) {
+            throw new ErrorException("Post not recovered");
+        }
+    }
 }

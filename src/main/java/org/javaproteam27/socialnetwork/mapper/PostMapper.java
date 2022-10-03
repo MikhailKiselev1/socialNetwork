@@ -16,6 +16,7 @@ public class PostMapper implements RowMapper<Post> {
                 .title(resultSet.getString("title"))
                 .postText(resultSet.getString("post_text"))
                 .isBlocked(resultSet.getBoolean("is_blocked"))
+                .isDeleted(resultSet.getBoolean("is_deleted"))
                 .build();
     }
 }

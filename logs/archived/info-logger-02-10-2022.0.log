@@ -1,0 +1,578 @@
+2022-10-02 08:49:58 [main] INFO  o.j.s.controller.UserControllerTest - Starting UserControllerTest on DESKTOP-5144I2V with PID 2452 (started by Mikhail in C:\Users\Mikhail\Desktop\commandProject\javapro_teams27_backend)
+2022-10-02 08:49:58 [main] INFO  o.j.s.controller.UserControllerTest - The following profiles are active: test
+2022-10-02 08:50:00 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JDBC repositories in DEFAULT mode.
+2022-10-02 08:50:00 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 72ms. Found 0 JDBC repository interfaces.
+2022-10-02 08:50:04 [main] INFO  o.s.s.c.ThreadPoolTaskExecutor - Initializing ExecutorService 'applicationTaskExecutor'
+2022-10-02 08:50:04 [main] INFO  o.s.b.a.w.s.WelcomePageHandlerMapping - Adding welcome page: class path resource [static/index.html]
+2022-10-02 08:50:05 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2022-10-02 08:50:05 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2022-10-02 08:50:07 [main] INFO  liquibase.executor.jvm.JdbcExecutor - SELECT COUNT(*) FROM PUBLIC.DATABASECHANGELOGLOCK
+2022-10-02 08:50:07 [main] INFO  liquibase.executor.jvm.JdbcExecutor - CREATE TABLE PUBLIC.DATABASECHANGELOGLOCK (ID INT NOT NULL, LOCKED BOOLEAN NOT NULL, LOCKGRANTED TIMESTAMP, LOCKEDBY VARCHAR(255), CONSTRAINT PK_DATABASECHANGELOGLOCK PRIMARY KEY (ID))
+2022-10-02 08:50:07 [main] INFO  liquibase.executor.jvm.JdbcExecutor - SELECT COUNT(*) FROM PUBLIC.DATABASECHANGELOGLOCK
+2022-10-02 08:50:07 [main] INFO  liquibase.executor.jvm.JdbcExecutor - DELETE FROM PUBLIC.DATABASECHANGELOGLOCK
+2022-10-02 08:50:07 [main] INFO  liquibase.executor.jvm.JdbcExecutor - INSERT INTO PUBLIC.DATABASECHANGELOGLOCK (ID, LOCKED) VALUES (1, FALSE)
+2022-10-02 08:50:07 [main] INFO  liquibase.executor.jvm.JdbcExecutor - SELECT LOCKED FROM PUBLIC.DATABASECHANGELOGLOCK WHERE ID=1
+2022-10-02 08:50:07 [main] INFO  l.lockservice.StandardLockService - Successfully acquired change log lock
+2022-10-02 08:50:07 [main] INFO  l.c.StandardChangeLogHistoryService - Creating database history table with name: PUBLIC.DATABASECHANGELOG
+2022-10-02 08:50:07 [main] INFO  liquibase.executor.jvm.JdbcExecutor - CREATE TABLE PUBLIC.DATABASECHANGELOG (ID VARCHAR(255) NOT NULL, AUTHOR VARCHAR(255) NOT NULL, FILENAME VARCHAR(255) NOT NULL, DATEEXECUTED TIMESTAMP NOT NULL, ORDEREXECUTED INT NOT NULL, EXECTYPE VARCHAR(10) NOT NULL, MD5SUM VARCHAR(35), DESCRIPTION VARCHAR(255), COMMENTS VARCHAR(255), TAG VARCHAR(255), LIQUIBASE VARCHAR(20), CONTEXTS VARCHAR(255), LABELS VARCHAR(255), DEPLOYMENT_ID VARCHAR(10))
+2022-10-02 08:50:07 [main] INFO  liquibase.executor.jvm.JdbcExecutor - SELECT COUNT(*) FROM PUBLIC.DATABASECHANGELOG
+2022-10-02 08:50:07 [main] INFO  l.c.StandardChangeLogHistoryService - Reading from PUBLIC.DATABASECHANGELOG
+2022-10-02 08:50:07 [main] INFO  liquibase.executor.jvm.JdbcExecutor - SELECT * FROM PUBLIC.DATABASECHANGELOG ORDER BY DATEEXECUTED ASC, ORDEREXECUTED ASC
+2022-10-02 08:50:07 [main] INFO  liquibase.executor.jvm.JdbcExecutor - SELECT COUNT(*) FROM PUBLIC.DATABASECHANGELOGLOCK
+2022-10-02 08:50:07 [main] INFO  liquibase.executor.jvm.JdbcExecutor - CREATE TABLE person (
+                        id SERIAL PRIMARY KEY,
+                        first_name VARCHAR (255) NOT NULL,
+                        last_name VARCHAR (255) NOT NULL,
+                        reg_date TIMESTAMP NOT NULL,
+                        birth_date TIMESTAMP,
+                        email VARCHAR (255) UNIQUE NOT NULL,
+                        phone VARCHAR(255) UNIQUE,
+                        password VARCHAR(255) NOT NULL,
+                        photo VARCHAR(255),
+                        about VARCHAR (255),
+                        city VARCHAR (255),
+                        country VARCHAR (255),
+                        confirmation_code INT,
+                        is_approved BOOLEAN DEFAULT FALSE NOT NULL,
+                        messages_permission VARCHAR (255),
+                        last_online_time TIMESTAMP,
+                        is_blocked BOOLEAN DEFAULT FALSE
+);
+2022-10-02 08:50:07 [main] INFO  liquibase.changelog.ChangeSet - Custom SQL executed
+2022-10-02 08:50:07 [main] INFO  liquibase.changelog.ChangeSet - ChangeSet /db/changelog/migrations/001-create-person.sql::raw::includeAll ran successfully in 311ms
+2022-10-02 08:50:07 [main] INFO  liquibase.executor.jvm.JdbcExecutor - SELECT MAX(ORDEREXECUTED) FROM PUBLIC.DATABASECHANGELOG
+2022-10-02 08:50:09 [main] INFO  liquibase.executor.jvm.JdbcExecutor - INSERT INTO PUBLIC.DATABASECHANGELOG (ID, AUTHOR, FILENAME, DATEEXECUTED, ORDEREXECUTED, MD5SUM, DESCRIPTION, COMMENTS, EXECTYPE, CONTEXTS, LABELS, LIQUIBASE, DEPLOYMENT_ID) VALUES ('raw', 'includeAll', '/db/changelog/migrations/001-create-person.sql', NOW(), 1, '8:3344edd928e2a3b94226bee86849c8e6', 'sql', '', 'EXECUTED', NULL, NULL, '3.8.9', '4689807583')
+2022-10-02 08:50:09 [main] INFO  liquibase.executor.jvm.JdbcExecutor - CREATE TABLE post (
+                      id SERIAL PRIMARY KEY,
+                      time TIMESTAMP NOT NULL,
+                      author_id INT,
+                      title VARCHAR (255),
+                      post_text TEXT,
+                      is_blocked BOOLEAN DEFAULT FALSE,
+                      is_deleted BOOLEAN DEFAULT FALSE,
+                      CONSTRAINT fk_person_post
+                            FOREIGN KEY (author_id)
+                                REFERENCES person (id)
+);
+2022-10-02 08:50:09 [main] INFO  liquibase.changelog.ChangeSet - Custom SQL executed
+2022-10-02 08:50:09 [main] INFO  liquibase.changelog.ChangeSet - ChangeSet /db/changelog/migrations/002-create-post.sql::raw::includeAll ran successfully in 25ms
+2022-10-02 08:50:09 [main] INFO  liquibase.executor.jvm.JdbcExecutor - INSERT INTO PUBLIC.DATABASECHANGELOG (ID, AUTHOR, FILENAME, DATEEXECUTED, ORDEREXECUTED, MD5SUM, DESCRIPTION, COMMENTS, EXECTYPE, CONTEXTS, LABELS, LIQUIBASE, DEPLOYMENT_ID) VALUES ('raw', 'includeAll', '/db/changelog/migrations/002-create-post.sql', NOW(), 2, '8:2e31f03646f1252beb8e3de88971b020', 'sql', '', 'EXECUTED', NULL, NULL, '3.8.9', '4689807583')
+2022-10-02 08:50:09 [main] INFO  liquibase.executor.jvm.JdbcExecutor - CREATE TABLE post_comment (
+                      id serial PRIMARY KEY,
+                      time TIMESTAMP NOT NULL,
+                      post_id INT,
+                      parent_id INT,
+                      author_id INT,
+                      comment_text TEXT,
+                      is_blocked BOOLEAN DEFAULT FALSE,
+                      is_deleted BOOLEAN DEFAULT FALSE,
+                        CONSTRAINT fk_comment_parent
+                            FOREIGN KEY (parent_id)
+                                REFERENCES post_comment (id),
+                        CONSTRAINT fk_comment_person
+                            FOREIGN KEY (author_id)
+                                REFERENCES person (id),
+                        CONSTRAINT fk_comment_post
+                            FOREIGN KEY (post_id)
+                                REFERENCES post (id)
+);
+2022-10-02 08:50:09 [main] INFO  liquibase.changelog.ChangeSet - Custom SQL executed
+2022-10-02 08:50:09 [main] INFO  liquibase.changelog.ChangeSet - ChangeSet /db/changelog/migrations/003-create-post-comment.sql::raw::includeAll ran successfully in 38ms
+2022-10-02 08:50:09 [main] INFO  liquibase.executor.jvm.JdbcExecutor - INSERT INTO PUBLIC.DATABASECHANGELOG (ID, AUTHOR, FILENAME, DATEEXECUTED, ORDEREXECUTED, MD5SUM, DESCRIPTION, COMMENTS, EXECTYPE, CONTEXTS, LABELS, LIQUIBASE, DEPLOYMENT_ID) VALUES ('raw', 'includeAll', '/db/changelog/migrations/003-create-post-comment.sql', NOW(), 3, '8:694eabf684e5bbf4fcb886b789af5771', 'sql', '', 'EXECUTED', NULL, NULL, '3.8.9', '4689807583')
+2022-10-02 08:50:09 [main] INFO  liquibase.executor.jvm.JdbcExecutor - CREATE TABLE post_like (
+                           id serial PRIMARY KEY,
+                           time TIMESTAMP NOT NULL,
+                           person_id INT,
+                           post_id INT,
+                           type VARCHAR (255),
+                           CONSTRAINT fk_person_like
+                                FOREIGN KEY (person_id)
+                                    REFERENCES person (id)
+);
+2022-10-02 08:50:09 [main] INFO  liquibase.changelog.ChangeSet - Custom SQL executed
+2022-10-02 08:50:09 [main] INFO  liquibase.changelog.ChangeSet - ChangeSet /db/changelog/migrations/004-create-post-like.sql::raw::includeAll ran successfully in 9ms
+2022-10-02 08:50:09 [main] INFO  liquibase.executor.jvm.JdbcExecutor - INSERT INTO PUBLIC.DATABASECHANGELOG (ID, AUTHOR, FILENAME, DATEEXECUTED, ORDEREXECUTED, MD5SUM, DESCRIPTION, COMMENTS, EXECTYPE, CONTEXTS, LABELS, LIQUIBASE, DEPLOYMENT_ID) VALUES ('raw', 'includeAll', '/db/changelog/migrations/004-create-post-like.sql', NOW(), 4, '8:63fa7356663d06ea4f68812948ab5dee', 'sql', '', 'EXECUTED', NULL, NULL, '3.8.9', '4689807583')
+2022-10-02 08:50:09 [main] INFO  liquibase.executor.jvm.JdbcExecutor - CREATE TABLE post_file (
+                           id serial PRIMARY KEY,
+                           post_id INT,
+                           name VARCHAR (255),
+                           path VARCHAR (255),
+                           CONSTRAINT fk_file_post
+                                FOREIGN KEY (post_id)
+                                    REFERENCES post (id)
+);
+2022-10-02 08:50:09 [main] INFO  liquibase.changelog.ChangeSet - Custom SQL executed
+2022-10-02 08:50:09 [main] INFO  liquibase.changelog.ChangeSet - ChangeSet /db/changelog/migrations/005-create-post-file.sql::raw::includeAll ran successfully in 15ms
+2022-10-02 08:50:09 [main] INFO  liquibase.executor.jvm.JdbcExecutor - INSERT INTO PUBLIC.DATABASECHANGELOG (ID, AUTHOR, FILENAME, DATEEXECUTED, ORDEREXECUTED, MD5SUM, DESCRIPTION, COMMENTS, EXECTYPE, CONTEXTS, LABELS, LIQUIBASE, DEPLOYMENT_ID) VALUES ('raw', 'includeAll', '/db/changelog/migrations/005-create-post-file.sql', NOW(), 5, '8:edc3764f1a66da59686e3c8691bd2b1d', 'sql', '', 'EXECUTED', NULL, NULL, '3.8.9', '4689807583')
+2022-10-02 08:50:09 [main] INFO  liquibase.executor.jvm.JdbcExecutor - CREATE TABLE tag (
+                     id serial PRIMARY KEY,
+                     tag VARCHAR (255)
+);
+2022-10-02 08:50:09 [main] INFO  liquibase.changelog.ChangeSet - Custom SQL executed
+2022-10-02 08:50:09 [main] INFO  liquibase.changelog.ChangeSet - ChangeSet /db/changelog/migrations/006-create-tag.sql::raw::includeAll ran successfully in 5ms
+2022-10-02 08:50:09 [main] INFO  liquibase.executor.jvm.JdbcExecutor - INSERT INTO PUBLIC.DATABASECHANGELOG (ID, AUTHOR, FILENAME, DATEEXECUTED, ORDEREXECUTED, MD5SUM, DESCRIPTION, COMMENTS, EXECTYPE, CONTEXTS, LABELS, LIQUIBASE, DEPLOYMENT_ID) VALUES ('raw', 'includeAll', '/db/changelog/migrations/006-create-tag.sql', NOW(), 6, '8:222ae51bcf8e1ed784c85f698182a70c', 'sql', '', 'EXECUTED', NULL, NULL, '3.8.9', '4689807583')
+2022-10-02 08:50:09 [main] INFO  liquibase.executor.jvm.JdbcExecutor - CREATE TABLE post2tag (
+                          id serial PRIMARY KEY,
+                          tag_id INT,
+                          post_id INT,
+                                CONSTRAINT fk_tag
+                                    FOREIGN KEY (tag_id)
+                                        REFERENCES tag (id)
+);
+2022-10-02 08:50:09 [main] INFO  liquibase.changelog.ChangeSet - Custom SQL executed
+2022-10-02 08:50:09 [main] INFO  liquibase.changelog.ChangeSet - ChangeSet /db/changelog/migrations/007-create-post2tag.sql::raw::includeAll ran successfully in 8ms
+2022-10-02 08:50:09 [main] INFO  liquibase.executor.jvm.JdbcExecutor - INSERT INTO PUBLIC.DATABASECHANGELOG (ID, AUTHOR, FILENAME, DATEEXECUTED, ORDEREXECUTED, MD5SUM, DESCRIPTION, COMMENTS, EXECTYPE, CONTEXTS, LABELS, LIQUIBASE, DEPLOYMENT_ID) VALUES ('raw', 'includeAll', '/db/changelog/migrations/007-create-post2tag.sql', NOW(), 7, '8:d82ea7e5cc0ad1c4f9632f3ba7af0ee6', 'sql', '', 'EXECUTED', NULL, NULL, '3.8.9', '4689807583')
+2022-10-02 08:50:09 [main] INFO  liquibase.executor.jvm.JdbcExecutor - CREATE TABLE block_history (
+                               id serial PRIMARY KEY,
+                               time TIMESTAMP NOT NULL,
+                               person_id INT,
+                               post_id INT,
+                               comment_id INT,
+                               action VARCHAR (255),
+                               CONSTRAINT fk_block_person
+                                    FOREIGN KEY (person_id)
+                                        REFERENCES person (id),
+                               CONSTRAINT fk_block_post
+                                    FOREIGN KEY (post_id)
+                                        REFERENCES post (id),
+                               CONSTRAINT fk_block_comment
+                                    FOREIGN KEY (comment_id)
+                                        REFERENCES post_comment (id)
+);
+2022-10-02 08:50:09 [main] INFO  liquibase.changelog.ChangeSet - Custom SQL executed
+2022-10-02 08:50:09 [main] INFO  liquibase.changelog.ChangeSet - ChangeSet /db/changelog/migrations/008-create-block-history.sql::raw::includeAll ran successfully in 16ms
+2022-10-02 08:50:09 [main] INFO  liquibase.executor.jvm.JdbcExecutor - INSERT INTO PUBLIC.DATABASECHANGELOG (ID, AUTHOR, FILENAME, DATEEXECUTED, ORDEREXECUTED, MD5SUM, DESCRIPTION, COMMENTS, EXECTYPE, CONTEXTS, LABELS, LIQUIBASE, DEPLOYMENT_ID) VALUES ('raw', 'includeAll', '/db/changelog/migrations/008-create-block-history.sql', NOW(), 8, '8:5b7f3ab9e19a135104d95fe2f1d21314', 'sql', '', 'EXECUTED', NULL, NULL, '3.8.9', '4689807583')
+2022-10-02 08:50:09 [main] INFO  liquibase.executor.jvm.JdbcExecutor - CREATE TABLE message (
+                         id serial PRIMARY KEY,
+                         time TIMESTAMP NOT NULL,
+                         author_id INT,
+                         recipient_id INT,
+                         message_text TEXT,
+                         read_status VARCHAR (255),
+                         CONSTRAINT fk_message_author
+                                FOREIGN KEY (author_id)
+                                    REFERENCES person (id),
+                         CONSTRAINT fk_message_recipient
+                                FOREIGN KEY (recipient_id)
+                                    REFERENCES person (id)
+);
+2022-10-02 08:50:09 [main] INFO  liquibase.changelog.ChangeSet - Custom SQL executed
+2022-10-02 08:50:09 [main] INFO  liquibase.changelog.ChangeSet - ChangeSet /db/changelog/migrations/009-create-message.sql::raw::includeAll ran successfully in 14ms
+2022-10-02 08:50:09 [main] INFO  liquibase.executor.jvm.JdbcExecutor - INSERT INTO PUBLIC.DATABASECHANGELOG (ID, AUTHOR, FILENAME, DATEEXECUTED, ORDEREXECUTED, MD5SUM, DESCRIPTION, COMMENTS, EXECTYPE, CONTEXTS, LABELS, LIQUIBASE, DEPLOYMENT_ID) VALUES ('raw', 'includeAll', '/db/changelog/migrations/009-create-message.sql', NOW(), 9, '8:8c0bc5ef8b805672b0dd7dda093b8bce', 'sql', '', 'EXECUTED', NULL, NULL, '3.8.9', '4689807583')
+2022-10-02 08:50:09 [main] INFO  liquibase.executor.jvm.JdbcExecutor - CREATE TABLE notification (
+                              id serial PRIMARY KEY,
+                              notification_type VARCHAR (255),
+                              sent_time TIMESTAMP NOT NULL,
+                              person_id INT,
+                              entity_id INT,
+                              contact VARCHAR (255),
+                              is_read BOOLEAN DEFAULT FALSE,
+                              CONSTRAINT fk_person_notification
+                                    FOREIGN KEY (person_id)
+                                        REFERENCES person (id)
+);
+2022-10-02 08:50:09 [main] INFO  liquibase.changelog.ChangeSet - Custom SQL executed
+2022-10-02 08:50:09 [main] INFO  liquibase.changelog.ChangeSet - ChangeSet /db/changelog/migrations/010-create-notification.sql::raw::includeAll ran successfully in 10ms
+2022-10-02 08:50:09 [main] INFO  liquibase.executor.jvm.JdbcExecutor - INSERT INTO PUBLIC.DATABASECHANGELOG (ID, AUTHOR, FILENAME, DATEEXECUTED, ORDEREXECUTED, MD5SUM, DESCRIPTION, COMMENTS, EXECTYPE, CONTEXTS, LABELS, LIQUIBASE, DEPLOYMENT_ID) VALUES ('raw', 'includeAll', '/db/changelog/migrations/010-create-notification.sql', NOW(), 10, '8:c5bd50cd8a751a64f8a910e9ab4f6282', 'sql', '', 'EXECUTED', NULL, NULL, '3.8.9', '4689807583')
+2022-10-02 08:50:09 [main] INFO  liquibase.executor.jvm.JdbcExecutor - CREATE TABLE friendship_status (
+                                   id serial PRIMARY KEY,
+                                   time TIMESTAMP NOT NULL,
+                                   name VARCHAR (255),
+                                   code VARCHAR (255)
+);
+2022-10-02 08:50:09 [main] INFO  liquibase.changelog.ChangeSet - Custom SQL executed
+2022-10-02 08:50:09 [main] INFO  liquibase.changelog.ChangeSet - ChangeSet /db/changelog/migrations/011-create-friendship-status.sql::raw::includeAll ran successfully in 44ms
+2022-10-02 08:50:09 [main] INFO  liquibase.executor.jvm.JdbcExecutor - INSERT INTO PUBLIC.DATABASECHANGELOG (ID, AUTHOR, FILENAME, DATEEXECUTED, ORDEREXECUTED, MD5SUM, DESCRIPTION, COMMENTS, EXECTYPE, CONTEXTS, LABELS, LIQUIBASE, DEPLOYMENT_ID) VALUES ('raw', 'includeAll', '/db/changelog/migrations/011-create-friendship-status.sql', NOW(), 11, '8:ff5787c37005ebf4cf4aba612f9a480b', 'sql', '', 'EXECUTED', NULL, NULL, '3.8.9', '4689807583')
+2022-10-02 08:50:09 [main] INFO  liquibase.executor.jvm.JdbcExecutor - CREATE TABLE friendship (
+                            id serial PRIMARY KEY,
+                            status_id INT,
+                            sent_time TIMESTAMP NOT NULL,
+                            src_person_id INT,
+                            dst_person_id INT,
+                            CONSTRAINT fk_friendship
+                                FOREIGN KEY (status_id)
+                                    REFERENCES friendship_status (id),
+                            CONSTRAINT fk_sender_person
+                                FOREIGN KEY (src_person_id)
+                                    REFERENCES person (id),
+                            CONSTRAINT fk_recipient_person
+                                FOREIGN KEY (dst_person_id)
+                                    REFERENCES person (id)
+);
+2022-10-02 08:50:10 [main] INFO  liquibase.changelog.ChangeSet - Custom SQL executed
+2022-10-02 08:50:10 [main] INFO  liquibase.changelog.ChangeSet - ChangeSet /db/changelog/migrations/012-create-friendship.sql::raw::includeAll ran successfully in 91ms
+2022-10-02 08:50:10 [main] INFO  liquibase.executor.jvm.JdbcExecutor - INSERT INTO PUBLIC.DATABASECHANGELOG (ID, AUTHOR, FILENAME, DATEEXECUTED, ORDEREXECUTED, MD5SUM, DESCRIPTION, COMMENTS, EXECTYPE, CONTEXTS, LABELS, LIQUIBASE, DEPLOYMENT_ID) VALUES ('raw', 'includeAll', '/db/changelog/migrations/012-create-friendship.sql', NOW(), 12, '8:678a9aff4585a850fe65e6830038e4db', 'sql', '', 'EXECUTED', NULL, NULL, '3.8.9', '4689807583')
+2022-10-02 08:50:10 [main] INFO  liquibase.executor.jvm.JdbcExecutor - CREATE TABLE "user" (
+                      id serial PRIMARY KEY,
+                      name VARCHAR (255) NOT NULL,
+                      e_mail VARCHAR (255),
+                      password VARCHAR (255) NOT NULL,
+                      type VARCHAR (255) NOT NULL
+);
+2022-10-02 08:50:10 [main] INFO  liquibase.changelog.ChangeSet - Custom SQL executed
+2022-10-02 08:50:10 [main] INFO  liquibase.changelog.ChangeSet - ChangeSet /db/changelog/migrations/013-create-user.sql::raw::includeAll ran successfully in 6ms
+2022-10-02 08:50:10 [main] INFO  liquibase.executor.jvm.JdbcExecutor - INSERT INTO PUBLIC.DATABASECHANGELOG (ID, AUTHOR, FILENAME, DATEEXECUTED, ORDEREXECUTED, MD5SUM, DESCRIPTION, COMMENTS, EXECTYPE, CONTEXTS, LABELS, LIQUIBASE, DEPLOYMENT_ID) VALUES ('raw', 'includeAll', '/db/changelog/migrations/013-create-user.sql', NOW(), 13, '8:346a89a13410da301b5097d7762fb1c1', 'sql', '', 'EXECUTED', NULL, NULL, '3.8.9', '4689807583')
+2022-10-02 08:50:10 [main] INFO  liquibase.executor.jvm.JdbcExecutor - CREATE TABLE city (
+                      id serial PRIMARY KEY,
+                      title VARCHAR (255) NOT NULL,
+                      country_id INT
+);
+2022-10-02 08:50:10 [main] INFO  liquibase.changelog.ChangeSet - Custom SQL executed
+2022-10-02 08:50:10 [main] INFO  liquibase.changelog.ChangeSet - ChangeSet /db/changelog/migrations/014-create-city.sql::raw::includeAll ran successfully in 8ms
+2022-10-02 08:50:10 [main] INFO  liquibase.executor.jvm.JdbcExecutor - INSERT INTO PUBLIC.DATABASECHANGELOG (ID, AUTHOR, FILENAME, DATEEXECUTED, ORDEREXECUTED, MD5SUM, DESCRIPTION, COMMENTS, EXECTYPE, CONTEXTS, LABELS, LIQUIBASE, DEPLOYMENT_ID) VALUES ('raw', 'includeAll', '/db/changelog/migrations/014-create-city.sql', NOW(), 14, '8:48226efc224da326e2ae33e05b0c7117', 'sql', '', 'EXECUTED', NULL, NULL, '3.8.9', '4689807583')
+2022-10-02 08:50:10 [main] INFO  liquibase.executor.jvm.JdbcExecutor - CREATE TABLE country (
+                      id serial PRIMARY KEY,
+                      title VARCHAR (255) NOT NULL
+);
+2022-10-02 08:50:10 [main] INFO  liquibase.changelog.ChangeSet - Custom SQL executed
+2022-10-02 08:50:10 [main] INFO  liquibase.changelog.ChangeSet - ChangeSet /db/changelog/migrations/015-create-country.sql::raw::includeAll ran successfully in 3ms
+2022-10-02 08:50:10 [main] INFO  liquibase.executor.jvm.JdbcExecutor - INSERT INTO PUBLIC.DATABASECHANGELOG (ID, AUTHOR, FILENAME, DATEEXECUTED, ORDEREXECUTED, MD5SUM, DESCRIPTION, COMMENTS, EXECTYPE, CONTEXTS, LABELS, LIQUIBASE, DEPLOYMENT_ID) VALUES ('raw', 'includeAll', '/db/changelog/migrations/015-create-country.sql', NOW(), 15, '8:669a9e2f3e66755fbbb86be41bec15c1', 'sql', '', 'EXECUTED', NULL, NULL, '3.8.9', '4689807583')
+2022-10-02 08:50:10 [main] INFO  liquibase.executor.jvm.JdbcExecutor - CREATE TABLE captcha (
+                                   id serial PRIMARY KEY,
+                                   time TIMESTAMP NOT NULL,
+                                   code VARCHAR (255) NOT NULL,
+                                   secret_code VARCHAR (255) NOT NULL
+);
+2022-10-02 08:50:10 [main] INFO  liquibase.changelog.ChangeSet - Custom SQL executed
+2022-10-02 08:50:10 [main] INFO  liquibase.changelog.ChangeSet - ChangeSet /db/changelog/migrations/016-create-captcha.sql::raw::includeAll ran successfully in 6ms
+2022-10-02 08:50:10 [main] INFO  liquibase.executor.jvm.JdbcExecutor - INSERT INTO PUBLIC.DATABASECHANGELOG (ID, AUTHOR, FILENAME, DATEEXECUTED, ORDEREXECUTED, MD5SUM, DESCRIPTION, COMMENTS, EXECTYPE, CONTEXTS, LABELS, LIQUIBASE, DEPLOYMENT_ID) VALUES ('raw', 'includeAll', '/db/changelog/migrations/016-create-captcha.sql', NOW(), 16, '8:6c599d64a1ae8523bd6c322f9085d11a', 'sql', '', 'EXECUTED', NULL, NULL, '3.8.9', '4689807583')
+2022-10-02 08:50:10 [main] INFO  liquibase.executor.jvm.JdbcExecutor - ALTER TABLE person ALTER COLUMN photo TYPE text;
+2022-10-02 08:50:10 [main] INFO  liquibase.changelog.ChangeSet - Custom SQL executed
+2022-10-02 08:50:10 [main] INFO  liquibase.changelog.ChangeSet - ChangeSet /db/changelog/migrations/017-edit-person.sql::raw::includeAll ran successfully in 45ms
+2022-10-02 08:50:10 [main] INFO  liquibase.executor.jvm.JdbcExecutor - INSERT INTO PUBLIC.DATABASECHANGELOG (ID, AUTHOR, FILENAME, DATEEXECUTED, ORDEREXECUTED, MD5SUM, DESCRIPTION, COMMENTS, EXECTYPE, CONTEXTS, LABELS, LIQUIBASE, DEPLOYMENT_ID) VALUES ('raw', 'includeAll', '/db/changelog/migrations/017-edit-person.sql', NOW(), 17, '8:54f6d5354646f35e66fb52331e60bd23', 'sql', '', 'EXECUTED', NULL, NULL, '3.8.9', '4689807583')
+2022-10-02 08:50:10 [main] INFO  liquibase.executor.jvm.JdbcExecutor - CREATE TABLE dialog (
+                      id serial PRIMARY KEY,
+                      first_person_id INT NOT NULL,
+                      second_person_id INT,
+                      last_message_id INT,
+                      last_active_time TIMESTAMP NOT NULL,
+                      CONSTRAINT fk_dialog_first_person
+                          FOREIGN KEY (first_person_id)
+                              REFERENCES person (id),
+                      CONSTRAINT fk_dialog_second_person
+                          FOREIGN KEY (second_person_id)
+                              REFERENCES person (id),
+                      CONSTRAINT fk_dialog_last_message
+                          FOREIGN KEY (last_message_id)
+                              REFERENCES message (id)
+);
+2022-10-02 08:50:10 [main] INFO  liquibase.changelog.ChangeSet - Custom SQL executed
+2022-10-02 08:50:10 [main] INFO  liquibase.changelog.ChangeSet - ChangeSet /db/changelog/migrations/018-create-dialog.sql::raw::includeAll ran successfully in 72ms
+2022-10-02 08:50:10 [main] INFO  liquibase.executor.jvm.JdbcExecutor - INSERT INTO PUBLIC.DATABASECHANGELOG (ID, AUTHOR, FILENAME, DATEEXECUTED, ORDEREXECUTED, MD5SUM, DESCRIPTION, COMMENTS, EXECTYPE, CONTEXTS, LABELS, LIQUIBASE, DEPLOYMENT_ID) VALUES ('raw', 'includeAll', '/db/changelog/migrations/018-create-dialog.sql', NOW(), 18, '8:fedd10ecad3ce2e0d3cc464798811075', 'sql', '', 'EXECUTED', NULL, NULL, '3.8.9', '4689807583')
+2022-10-02 08:50:10 [main] INFO  liquibase.executor.jvm.JdbcExecutor - ALTER TABLE IF EXISTS message ADD COLUMN dialog_id INT NOT NULL;
+
+ALTER TABLE IF EXISTS message ADD CONSTRAINT fk_message_dialog FOREIGN KEY (dialog_id) REFERENCES dialog (id);
+2022-10-02 08:50:10 [main] INFO  liquibase.changelog.ChangeSet - Custom SQL executed
+2022-10-02 08:50:10 [main] INFO  liquibase.changelog.ChangeSet - ChangeSet /db/changelog/migrations/019-edit-message.sql::raw::includeAll ran successfully in 44ms
+2022-10-02 08:50:10 [main] INFO  liquibase.executor.jvm.JdbcExecutor - INSERT INTO PUBLIC.DATABASECHANGELOG (ID, AUTHOR, FILENAME, DATEEXECUTED, ORDEREXECUTED, MD5SUM, DESCRIPTION, COMMENTS, EXECTYPE, CONTEXTS, LABELS, LIQUIBASE, DEPLOYMENT_ID) VALUES ('raw', 'includeAll', '/db/changelog/migrations/019-edit-message.sql', NOW(), 19, '8:efc782040f51387c248126e641507586', 'sql', '', 'EXECUTED', NULL, NULL, '3.8.9', '4689807583')
+2022-10-02 08:50:10 [main] INFO  liquibase.executor.jvm.JdbcExecutor - ALTER TABLE IF EXISTS message ADD COLUMN is_deleted BOOLEAN DEFAULT FALSE;
+2022-10-02 08:50:10 [main] INFO  liquibase.changelog.ChangeSet - Custom SQL executed
+2022-10-02 08:50:10 [main] INFO  liquibase.changelog.ChangeSet - ChangeSet /db/changelog/migrations/020-edit-message.sql::raw::includeAll ran successfully in 68ms
+2022-10-02 08:50:10 [main] INFO  liquibase.executor.jvm.JdbcExecutor - INSERT INTO PUBLIC.DATABASECHANGELOG (ID, AUTHOR, FILENAME, DATEEXECUTED, ORDEREXECUTED, MD5SUM, DESCRIPTION, COMMENTS, EXECTYPE, CONTEXTS, LABELS, LIQUIBASE, DEPLOYMENT_ID) VALUES ('raw', 'includeAll', '/db/changelog/migrations/020-edit-message.sql', NOW(), 20, '8:64ed2acffa8fed3225a0f73f22ddd73f', 'sql', '', 'EXECUTED', NULL, NULL, '3.8.9', '4689807583')
+2022-10-02 08:50:10 [main] INFO  l.lockservice.StandardLockService - Successfully released change log lock
+2022-10-02 08:50:11 [main] INFO  o.s.s.web.DefaultSecurityFilterChain - Creating filter chain: any request, [org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@7194f5b, org.springframework.security.web.context.SecurityContextPersistenceFilter@48b53f3d, org.springframework.security.web.header.HeaderWriterFilter@7d91e9c9, org.springframework.web.filter.CorsFilter@1e0be005, org.springframework.security.web.authentication.logout.LogoutFilter@35f79e6d, org.javaproteam27.socialnetwork.security.jwt.JwtTokenFilter@a056b26, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@57bd0b3c, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@118932fe, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@1fd226da, org.springframework.security.web.session.SessionManagementFilter@ebd4486, org.springframework.security.web.access.ExceptionTranslationFilter@9d10078, org.springframework.security.web.access.intercept.FilterSecurityInterceptor@70b9a553]
+2022-10-02 08:50:11 [main] INFO  o.s.s.c.ThreadPoolTaskScheduler - Initializing ExecutorService 'taskScheduler'
+2022-10-02 08:50:11 [main] INFO  o.s.b.t.m.w.SpringBootMockServletContext - Initializing Spring TestDispatcherServlet ''
+2022-10-02 08:50:11 [main] INFO  o.s.t.w.s.TestDispatcherServlet - Initializing Servlet ''
+2022-10-02 08:50:11 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 2 endpoint(s) beneath base path '/actuator'
+2022-10-02 08:50:11 [main] INFO  o.s.t.w.s.TestDispatcherServlet - Completed initialization in 91 ms
+2022-10-02 08:50:11 [main] INFO  o.j.s.controller.UserControllerTest - Started UserControllerTest in 14.313 seconds (JVM running for 17.406)
+2022-10-02 08:50:11 [main] INFO  o.s.t.c.t.TransactionContext - Began transaction (1) for test context [DefaultTestContext@3d3e5463 testClass = UserControllerTest, testInstance = org.javaproteam27.socialnetwork.controller.UserControllerTest@780ccdc9, testMethod = profileResponseAuthorizedPersonIsOkResponseWithJsonContent@UserControllerTest, testException = [null], mergedContextConfiguration = [WebMergedContextConfiguration@64a40280 testClass = UserControllerTest, locations = '{}', classes = '{class org.javaproteam27.socialnetwork.SocialNetworkApplication}', contextInitializerClasses = '[]', activeProfiles = '{test}', propertySourceLocations = '{}', propertySourceProperties = '{org.springframework.boot.test.context.SpringBootTestContextBootstrapper=true}', contextCustomizers = set[[ImportsContextCustomizer@4b40f651 key = [org.springframework.boot.test.autoconfigure.web.servlet.MockMvcAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcWebClientAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcWebDriverAutoConfiguration, org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration, org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration, org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration, org.springframework.boot.autoconfigure.security.servlet.SecurityFilterAutoConfiguration, org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcSecurityConfiguration]], org.springframework.boot.test.context.filter.ExcludeFilterContextCustomizer@649bec2e, org.springframework.boot.test.json.DuplicateJsonObjectContextCustomizerFactory$DuplicateJsonObjectContextCustomizer@31e5415e, org.springframework.boot.test.mock.mockito.MockitoContextCustomizer@0, org.springframework.boot.test.web.client.TestRestTemplateContextCustomizer@793be5ca, org.springframework.boot.test.autoconfigure.properties.PropertyMappingContextCustomizer@4b3fa0b3, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverContextCustomizerFactory$Customizer@57d7f8ca, org.springframework.boot.test.context.SpringBootTestArgs@1, org.springframework.boot.test.context.SpringBootTestWebEnvironment@7c6908d7], resourceBasePath = 'src/main/webapp', contextLoader = 'org.springframework.boot.test.context.SpringBootContextLoader', parent = [null]], attributes = map['org.springframework.test.context.web.ServletTestExecutionListener.activateListener' -> true, 'org.springframework.test.context.web.ServletTestExecutionListener.populatedRequestContextHolder' -> true, 'org.springframework.test.context.web.ServletTestExecutionListener.resetRequestContextHolder' -> true]]; transaction manager [org.springframework.jdbc.datasource.DataSourceTransactionManager@5813046e]; rollback [true]
+2022-10-02 08:50:12 [main] INFO  o.j.socialnetwork.aop.LoggerAspect - Request = path: [org.javaproteam27.socialnetwork.controller.UserController], method: [profileResponse], arguments: [eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0QG1haWwucnUiLCJpYXQiOjE2NjQ2ODk4MTIsImV4cCI6MTY2NDY5MzQxMn0.uJubIs5ZOYUWOAtL9tGeSnE9y8kmXFzn1bhQ-pk446k] 
+2022-10-02 08:50:13 [main] INFO  o.j.socialnetwork.aop.LoggerAspect - Response = path: [org.javaproteam27.socialnetwork.controller.UserController], method: [profileResponse], return: [ResponseRs(error=string, timestamp=1664689813017, offset=0, perPage=20, data=org.javaproteam27.socialnetwork.model.dto.response.PersonRs@2f75c413, errorDescription=null)] 
+2022-10-02 08:50:13 [main] INFO  o.s.t.c.t.TransactionContext - Rolled back transaction for test: [DefaultTestContext@3d3e5463 testClass = UserControllerTest, testInstance = org.javaproteam27.socialnetwork.controller.UserControllerTest@780ccdc9, testMethod = profileResponseAuthorizedPersonIsOkResponseWithJsonContent@UserControllerTest, testException = [null], mergedContextConfiguration = [WebMergedContextConfiguration@64a40280 testClass = UserControllerTest, locations = '{}', classes = '{class org.javaproteam27.socialnetwork.SocialNetworkApplication}', contextInitializerClasses = '[]', activeProfiles = '{test}', propertySourceLocations = '{}', propertySourceProperties = '{org.springframework.boot.test.context.SpringBootTestContextBootstrapper=true}', contextCustomizers = set[[ImportsContextCustomizer@4b40f651 key = [org.springframework.boot.test.autoconfigure.web.servlet.MockMvcAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcWebClientAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcWebDriverAutoConfiguration, org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration, org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration, org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration, org.springframework.boot.autoconfigure.security.servlet.SecurityFilterAutoConfiguration, org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcSecurityConfiguration]], org.springframework.boot.test.context.filter.ExcludeFilterContextCustomizer@649bec2e, org.springframework.boot.test.json.DuplicateJsonObjectContextCustomizerFactory$DuplicateJsonObjectContextCustomizer@31e5415e, org.springframework.boot.test.mock.mockito.MockitoContextCustomizer@0, org.springframework.boot.test.web.client.TestRestTemplateContextCustomizer@793be5ca, org.springframework.boot.test.autoconfigure.properties.PropertyMappingContextCustomizer@4b3fa0b3, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverContextCustomizerFactory$Customizer@57d7f8ca, org.springframework.boot.test.context.SpringBootTestArgs@1, org.springframework.boot.test.context.SpringBootTestWebEnvironment@7c6908d7], resourceBasePath = 'src/main/webapp', contextLoader = 'org.springframework.boot.test.context.SpringBootContextLoader', parent = [null]], attributes = map['org.springframework.test.context.web.ServletTestExecutionListener.activateListener' -> true, 'org.springframework.test.context.web.ServletTestExecutionListener.populatedRequestContextHolder' -> true, 'org.springframework.test.context.web.ServletTestExecutionListener.resetRequestContextHolder' -> true]]
+2022-10-02 08:50:13 [main] INFO  o.s.t.c.t.TransactionContext - Began transaction (1) for test context [DefaultTestContext@3d3e5463 testClass = UserControllerTest, testInstance = org.javaproteam27.socialnetwork.controller.UserControllerTest@7da3cbeb, testMethod = profileResponseUnAuthorizedPersonAccessDeniedResponse@UserControllerTest, testException = [null], mergedContextConfiguration = [WebMergedContextConfiguration@64a40280 testClass = UserControllerTest, locations = '{}', classes = '{class org.javaproteam27.socialnetwork.SocialNetworkApplication}', contextInitializerClasses = '[]', activeProfiles = '{test}', propertySourceLocations = '{}', propertySourceProperties = '{org.springframework.boot.test.context.SpringBootTestContextBootstrapper=true}', contextCustomizers = set[[ImportsContextCustomizer@4b40f651 key = [org.springframework.boot.test.autoconfigure.web.servlet.MockMvcAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcWebClientAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcWebDriverAutoConfiguration, org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration, org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration, org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration, org.springframework.boot.autoconfigure.security.servlet.SecurityFilterAutoConfiguration, org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcSecurityConfiguration]], org.springframework.boot.test.context.filter.ExcludeFilterContextCustomizer@649bec2e, org.springframework.boot.test.json.DuplicateJsonObjectContextCustomizerFactory$DuplicateJsonObjectContextCustomizer@31e5415e, org.springframework.boot.test.mock.mockito.MockitoContextCustomizer@0, org.springframework.boot.test.web.client.TestRestTemplateContextCustomizer@793be5ca, org.springframework.boot.test.autoconfigure.properties.PropertyMappingContextCustomizer@4b3fa0b3, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverContextCustomizerFactory$Customizer@57d7f8ca, org.springframework.boot.test.context.SpringBootTestArgs@1, org.springframework.boot.test.context.SpringBootTestWebEnvironment@7c6908d7], resourceBasePath = 'src/main/webapp', contextLoader = 'org.springframework.boot.test.context.SpringBootContextLoader', parent = [null]], attributes = map['org.springframework.test.context.web.ServletTestExecutionListener.activateListener' -> true, 'org.springframework.test.context.web.ServletTestExecutionListener.populatedRequestContextHolder' -> true, 'org.springframework.test.context.web.ServletTestExecutionListener.resetRequestContextHolder' -> true]]; transaction manager [org.springframework.jdbc.datasource.DataSourceTransactionManager@5813046e]; rollback [true]
+2022-10-02 08:50:13 [main] INFO  o.s.t.c.t.TransactionContext - Rolled back transaction for test: [DefaultTestContext@3d3e5463 testClass = UserControllerTest, testInstance = org.javaproteam27.socialnetwork.controller.UserControllerTest@7da3cbeb, testMethod = profileResponseUnAuthorizedPersonAccessDeniedResponse@UserControllerTest, testException = [null], mergedContextConfiguration = [WebMergedContextConfiguration@64a40280 testClass = UserControllerTest, locations = '{}', classes = '{class org.javaproteam27.socialnetwork.SocialNetworkApplication}', contextInitializerClasses = '[]', activeProfiles = '{test}', propertySourceLocations = '{}', propertySourceProperties = '{org.springframework.boot.test.context.SpringBootTestContextBootstrapper=true}', contextCustomizers = set[[ImportsContextCustomizer@4b40f651 key = [org.springframework.boot.test.autoconfigure.web.servlet.MockMvcAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcWebClientAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcWebDriverAutoConfiguration, org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration, org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration, org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration, org.springframework.boot.autoconfigure.security.servlet.SecurityFilterAutoConfiguration, org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcSecurityConfiguration]], org.springframework.boot.test.context.filter.ExcludeFilterContextCustomizer@649bec2e, org.springframework.boot.test.json.DuplicateJsonObjectContextCustomizerFactory$DuplicateJsonObjectContextCustomizer@31e5415e, org.springframework.boot.test.mock.mockito.MockitoContextCustomizer@0, org.springframework.boot.test.web.client.TestRestTemplateContextCustomizer@793be5ca, org.springframework.boot.test.autoconfigure.properties.PropertyMappingContextCustomizer@4b3fa0b3, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverContextCustomizerFactory$Customizer@57d7f8ca, org.springframework.boot.test.context.SpringBootTestArgs@1, org.springframework.boot.test.context.SpringBootTestWebEnvironment@7c6908d7], resourceBasePath = 'src/main/webapp', contextLoader = 'org.springframework.boot.test.context.SpringBootContextLoader', parent = [null]], attributes = map['org.springframework.test.context.web.ServletTestExecutionListener.activateListener' -> true, 'org.springframework.test.context.web.ServletTestExecutionListener.populatedRequestContextHolder' -> true, 'org.springframework.test.context.web.ServletTestExecutionListener.resetRequestContextHolder' -> true]]
+2022-10-02 08:50:13 [main] INFO  o.s.t.c.t.TransactionContext - Began transaction (1) for test context [DefaultTestContext@3d3e5463 testClass = UserControllerTest, testInstance = org.javaproteam27.socialnetwork.controller.UserControllerTest@14c16388, testMethod = profileEditInformation@UserControllerTest, testException = [null], mergedContextConfiguration = [WebMergedContextConfiguration@64a40280 testClass = UserControllerTest, locations = '{}', classes = '{class org.javaproteam27.socialnetwork.SocialNetworkApplication}', contextInitializerClasses = '[]', activeProfiles = '{test}', propertySourceLocations = '{}', propertySourceProperties = '{org.springframework.boot.test.context.SpringBootTestContextBootstrapper=true}', contextCustomizers = set[[ImportsContextCustomizer@4b40f651 key = [org.springframework.boot.test.autoconfigure.web.servlet.MockMvcAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcWebClientAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcWebDriverAutoConfiguration, org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration, org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration, org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration, org.springframework.boot.autoconfigure.security.servlet.SecurityFilterAutoConfiguration, org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcSecurityConfiguration]], org.springframework.boot.test.context.filter.ExcludeFilterContextCustomizer@649bec2e, org.springframework.boot.test.json.DuplicateJsonObjectContextCustomizerFactory$DuplicateJsonObjectContextCustomizer@31e5415e, org.springframework.boot.test.mock.mockito.MockitoContextCustomizer@0, org.springframework.boot.test.web.client.TestRestTemplateContextCustomizer@793be5ca, org.springframework.boot.test.autoconfigure.properties.PropertyMappingContextCustomizer@4b3fa0b3, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverContextCustomizerFactory$Customizer@57d7f8ca, org.springframework.boot.test.context.SpringBootTestArgs@1, org.springframework.boot.test.context.SpringBootTestWebEnvironment@7c6908d7], resourceBasePath = 'src/main/webapp', contextLoader = 'org.springframework.boot.test.context.SpringBootContextLoader', parent = [null]], attributes = map['org.springframework.test.context.web.ServletTestExecutionListener.activateListener' -> true, 'org.springframework.test.context.web.ServletTestExecutionListener.populatedRequestContextHolder' -> true, 'org.springframework.test.context.web.ServletTestExecutionListener.resetRequestContextHolder' -> true]]; transaction manager [org.springframework.jdbc.datasource.DataSourceTransactionManager@5813046e]; rollback [true]
+2022-10-02 08:50:13 [main] INFO  o.s.t.c.t.TransactionContext - Rolled back transaction for test: [DefaultTestContext@3d3e5463 testClass = UserControllerTest, testInstance = org.javaproteam27.socialnetwork.controller.UserControllerTest@14c16388, testMethod = profileEditInformation@UserControllerTest, testException = java.lang.NullPointerException, mergedContextConfiguration = [WebMergedContextConfiguration@64a40280 testClass = UserControllerTest, locations = '{}', classes = '{class org.javaproteam27.socialnetwork.SocialNetworkApplication}', contextInitializerClasses = '[]', activeProfiles = '{test}', propertySourceLocations = '{}', propertySourceProperties = '{org.springframework.boot.test.context.SpringBootTestContextBootstrapper=true}', contextCustomizers = set[[ImportsContextCustomizer@4b40f651 key = [org.springframework.boot.test.autoconfigure.web.servlet.MockMvcAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcWebClientAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcWebDriverAutoConfiguration, org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration, org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration, org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration, org.springframework.boot.autoconfigure.security.servlet.SecurityFilterAutoConfiguration, org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcSecurityConfiguration]], org.springframework.boot.test.context.filter.ExcludeFilterContextCustomizer@649bec2e, org.springframework.boot.test.json.DuplicateJsonObjectContextCustomizerFactory$DuplicateJsonObjectContextCustomizer@31e5415e, org.springframework.boot.test.mock.mockito.MockitoContextCustomizer@0, org.springframework.boot.test.web.client.TestRestTemplateContextCustomizer@793be5ca, org.springframework.boot.test.autoconfigure.properties.PropertyMappingContextCustomizer@4b3fa0b3, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverContextCustomizerFactory$Customizer@57d7f8ca, org.springframework.boot.test.context.SpringBootTestArgs@1, org.springframework.boot.test.context.SpringBootTestWebEnvironment@7c6908d7], resourceBasePath = 'src/main/webapp', contextLoader = 'org.springframework.boot.test.context.SpringBootContextLoader', parent = [null]], attributes = map['org.springframework.test.context.web.ServletTestExecutionListener.activateListener' -> true, 'org.springframework.test.context.web.ServletTestExecutionListener.populatedRequestContextHolder' -> true, 'org.springframework.test.context.web.ServletTestExecutionListener.resetRequestContextHolder' -> true]]
+2022-10-02 08:50:13 [SpringContextShutdownHook] INFO  o.s.s.c.ThreadPoolTaskScheduler - Shutting down ExecutorService 'taskScheduler'
+2022-10-02 08:50:13 [SpringContextShutdownHook] INFO  o.s.s.c.ThreadPoolTaskExecutor - Shutting down ExecutorService 'applicationTaskExecutor'
+2022-10-02 08:50:13 [SpringContextShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2022-10-02 08:50:13 [SpringContextShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+2022-10-02 08:50:51 [main] INFO  o.j.s.controller.UserControllerTest - Starting UserControllerTest on DESKTOP-5144I2V with PID 3568 (started by Mikhail in C:\Users\Mikhail\Desktop\commandProject\javapro_teams27_backend)
+2022-10-02 08:50:51 [main] INFO  o.j.s.controller.UserControllerTest - The following profiles are active: test
+2022-10-02 08:50:53 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JDBC repositories in DEFAULT mode.
+2022-10-02 08:50:53 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 79ms. Found 0 JDBC repository interfaces.
+2022-10-02 08:50:56 [main] INFO  o.s.s.c.ThreadPoolTaskExecutor - Initializing ExecutorService 'applicationTaskExecutor'
+2022-10-02 08:50:57 [main] INFO  o.s.b.a.w.s.WelcomePageHandlerMapping - Adding welcome page: class path resource [static/index.html]
+2022-10-02 08:50:57 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2022-10-02 08:50:58 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2022-10-02 08:50:59 [main] INFO  liquibase.executor.jvm.JdbcExecutor - SELECT COUNT(*) FROM PUBLIC.DATABASECHANGELOGLOCK
+2022-10-02 08:50:59 [main] INFO  liquibase.executor.jvm.JdbcExecutor - CREATE TABLE PUBLIC.DATABASECHANGELOGLOCK (ID INT NOT NULL, LOCKED BOOLEAN NOT NULL, LOCKGRANTED TIMESTAMP, LOCKEDBY VARCHAR(255), CONSTRAINT PK_DATABASECHANGELOGLOCK PRIMARY KEY (ID))
+2022-10-02 08:50:59 [main] INFO  liquibase.executor.jvm.JdbcExecutor - SELECT COUNT(*) FROM PUBLIC.DATABASECHANGELOGLOCK
+2022-10-02 08:50:59 [main] INFO  liquibase.executor.jvm.JdbcExecutor - DELETE FROM PUBLIC.DATABASECHANGELOGLOCK
+2022-10-02 08:50:59 [main] INFO  liquibase.executor.jvm.JdbcExecutor - INSERT INTO PUBLIC.DATABASECHANGELOGLOCK (ID, LOCKED) VALUES (1, FALSE)
+2022-10-02 08:50:59 [main] INFO  liquibase.executor.jvm.JdbcExecutor - SELECT LOCKED FROM PUBLIC.DATABASECHANGELOGLOCK WHERE ID=1
+2022-10-02 08:50:59 [main] INFO  l.lockservice.StandardLockService - Successfully acquired change log lock
+2022-10-02 08:50:59 [main] INFO  l.c.StandardChangeLogHistoryService - Creating database history table with name: PUBLIC.DATABASECHANGELOG
+2022-10-02 08:50:59 [main] INFO  liquibase.executor.jvm.JdbcExecutor - CREATE TABLE PUBLIC.DATABASECHANGELOG (ID VARCHAR(255) NOT NULL, AUTHOR VARCHAR(255) NOT NULL, FILENAME VARCHAR(255) NOT NULL, DATEEXECUTED TIMESTAMP NOT NULL, ORDEREXECUTED INT NOT NULL, EXECTYPE VARCHAR(10) NOT NULL, MD5SUM VARCHAR(35), DESCRIPTION VARCHAR(255), COMMENTS VARCHAR(255), TAG VARCHAR(255), LIQUIBASE VARCHAR(20), CONTEXTS VARCHAR(255), LABELS VARCHAR(255), DEPLOYMENT_ID VARCHAR(10))
+2022-10-02 08:50:59 [main] INFO  liquibase.executor.jvm.JdbcExecutor - SELECT COUNT(*) FROM PUBLIC.DATABASECHANGELOG
+2022-10-02 08:50:59 [main] INFO  l.c.StandardChangeLogHistoryService - Reading from PUBLIC.DATABASECHANGELOG
+2022-10-02 08:50:59 [main] INFO  liquibase.executor.jvm.JdbcExecutor - SELECT * FROM PUBLIC.DATABASECHANGELOG ORDER BY DATEEXECUTED ASC, ORDEREXECUTED ASC
+2022-10-02 08:50:59 [main] INFO  liquibase.executor.jvm.JdbcExecutor - SELECT COUNT(*) FROM PUBLIC.DATABASECHANGELOGLOCK
+2022-10-02 08:51:00 [main] INFO  liquibase.executor.jvm.JdbcExecutor - CREATE TABLE person (
+                        id SERIAL PRIMARY KEY,
+                        first_name VARCHAR (255) NOT NULL,
+                        last_name VARCHAR (255) NOT NULL,
+                        reg_date TIMESTAMP NOT NULL,
+                        birth_date TIMESTAMP,
+                        email VARCHAR (255) UNIQUE NOT NULL,
+                        phone VARCHAR(255) UNIQUE,
+                        password VARCHAR(255) NOT NULL,
+                        photo VARCHAR(255),
+                        about VARCHAR (255),
+                        city VARCHAR (255),
+                        country VARCHAR (255),
+                        confirmation_code INT,
+                        is_approved BOOLEAN DEFAULT FALSE NOT NULL,
+                        messages_permission VARCHAR (255),
+                        last_online_time TIMESTAMP,
+                        is_blocked BOOLEAN DEFAULT FALSE
+);
+2022-10-02 08:51:00 [main] INFO  liquibase.changelog.ChangeSet - Custom SQL executed
+2022-10-02 08:51:00 [main] INFO  liquibase.changelog.ChangeSet - ChangeSet /db/changelog/migrations/001-create-person.sql::raw::includeAll ran successfully in 296ms
+2022-10-02 08:51:00 [main] INFO  liquibase.executor.jvm.JdbcExecutor - SELECT MAX(ORDEREXECUTED) FROM PUBLIC.DATABASECHANGELOG
+2022-10-02 08:51:01 [main] INFO  liquibase.executor.jvm.JdbcExecutor - INSERT INTO PUBLIC.DATABASECHANGELOG (ID, AUTHOR, FILENAME, DATEEXECUTED, ORDEREXECUTED, MD5SUM, DESCRIPTION, COMMENTS, EXECTYPE, CONTEXTS, LABELS, LIQUIBASE, DEPLOYMENT_ID) VALUES ('raw', 'includeAll', '/db/changelog/migrations/001-create-person.sql', NOW(), 1, '8:3344edd928e2a3b94226bee86849c8e6', 'sql', '', 'EXECUTED', NULL, NULL, '3.8.9', '4689859916')
+2022-10-02 08:51:01 [main] INFO  liquibase.executor.jvm.JdbcExecutor - CREATE TABLE post (
+                      id SERIAL PRIMARY KEY,
+                      time TIMESTAMP NOT NULL,
+                      author_id INT,
+                      title VARCHAR (255),
+                      post_text TEXT,
+                      is_blocked BOOLEAN DEFAULT FALSE,
+                      is_deleted BOOLEAN DEFAULT FALSE,
+                      CONSTRAINT fk_person_post
+                            FOREIGN KEY (author_id)
+                                REFERENCES person (id)
+);
+2022-10-02 08:51:01 [main] INFO  liquibase.changelog.ChangeSet - Custom SQL executed
+2022-10-02 08:51:01 [main] INFO  liquibase.changelog.ChangeSet - ChangeSet /db/changelog/migrations/002-create-post.sql::raw::includeAll ran successfully in 17ms
+2022-10-02 08:51:01 [main] INFO  liquibase.executor.jvm.JdbcExecutor - INSERT INTO PUBLIC.DATABASECHANGELOG (ID, AUTHOR, FILENAME, DATEEXECUTED, ORDEREXECUTED, MD5SUM, DESCRIPTION, COMMENTS, EXECTYPE, CONTEXTS, LABELS, LIQUIBASE, DEPLOYMENT_ID) VALUES ('raw', 'includeAll', '/db/changelog/migrations/002-create-post.sql', NOW(), 2, '8:2e31f03646f1252beb8e3de88971b020', 'sql', '', 'EXECUTED', NULL, NULL, '3.8.9', '4689859916')
+2022-10-02 08:51:01 [main] INFO  liquibase.executor.jvm.JdbcExecutor - CREATE TABLE post_comment (
+                      id serial PRIMARY KEY,
+                      time TIMESTAMP NOT NULL,
+                      post_id INT,
+                      parent_id INT,
+                      author_id INT,
+                      comment_text TEXT,
+                      is_blocked BOOLEAN DEFAULT FALSE,
+                      is_deleted BOOLEAN DEFAULT FALSE,
+                        CONSTRAINT fk_comment_parent
+                            FOREIGN KEY (parent_id)
+                                REFERENCES post_comment (id),
+                        CONSTRAINT fk_comment_person
+                            FOREIGN KEY (author_id)
+                                REFERENCES person (id),
+                        CONSTRAINT fk_comment_post
+                            FOREIGN KEY (post_id)
+                                REFERENCES post (id)
+);
+2022-10-02 08:51:01 [main] INFO  liquibase.changelog.ChangeSet - Custom SQL executed
+2022-10-02 08:51:01 [main] INFO  liquibase.changelog.ChangeSet - ChangeSet /db/changelog/migrations/003-create-post-comment.sql::raw::includeAll ran successfully in 13ms
+2022-10-02 08:51:01 [main] INFO  liquibase.executor.jvm.JdbcExecutor - INSERT INTO PUBLIC.DATABASECHANGELOG (ID, AUTHOR, FILENAME, DATEEXECUTED, ORDEREXECUTED, MD5SUM, DESCRIPTION, COMMENTS, EXECTYPE, CONTEXTS, LABELS, LIQUIBASE, DEPLOYMENT_ID) VALUES ('raw', 'includeAll', '/db/changelog/migrations/003-create-post-comment.sql', NOW(), 3, '8:694eabf684e5bbf4fcb886b789af5771', 'sql', '', 'EXECUTED', NULL, NULL, '3.8.9', '4689859916')
+2022-10-02 08:51:01 [main] INFO  liquibase.executor.jvm.JdbcExecutor - CREATE TABLE post_like (
+                           id serial PRIMARY KEY,
+                           time TIMESTAMP NOT NULL,
+                           person_id INT,
+                           post_id INT,
+                           type VARCHAR (255),
+                           CONSTRAINT fk_person_like
+                                FOREIGN KEY (person_id)
+                                    REFERENCES person (id)
+);
+2022-10-02 08:51:01 [main] INFO  liquibase.changelog.ChangeSet - Custom SQL executed
+2022-10-02 08:51:01 [main] INFO  liquibase.changelog.ChangeSet - ChangeSet /db/changelog/migrations/004-create-post-like.sql::raw::includeAll ran successfully in 15ms
+2022-10-02 08:51:01 [main] INFO  liquibase.executor.jvm.JdbcExecutor - INSERT INTO PUBLIC.DATABASECHANGELOG (ID, AUTHOR, FILENAME, DATEEXECUTED, ORDEREXECUTED, MD5SUM, DESCRIPTION, COMMENTS, EXECTYPE, CONTEXTS, LABELS, LIQUIBASE, DEPLOYMENT_ID) VALUES ('raw', 'includeAll', '/db/changelog/migrations/004-create-post-like.sql', NOW(), 4, '8:63fa7356663d06ea4f68812948ab5dee', 'sql', '', 'EXECUTED', NULL, NULL, '3.8.9', '4689859916')
+2022-10-02 08:51:01 [main] INFO  liquibase.executor.jvm.JdbcExecutor - CREATE TABLE post_file (
+                           id serial PRIMARY KEY,
+                           post_id INT,
+                           name VARCHAR (255),
+                           path VARCHAR (255),
+                           CONSTRAINT fk_file_post
+                                FOREIGN KEY (post_id)
+                                    REFERENCES post (id)
+);
+2022-10-02 08:51:01 [main] INFO  liquibase.changelog.ChangeSet - Custom SQL executed
+2022-10-02 08:51:01 [main] INFO  liquibase.changelog.ChangeSet - ChangeSet /db/changelog/migrations/005-create-post-file.sql::raw::includeAll ran successfully in 8ms
+2022-10-02 08:51:01 [main] INFO  liquibase.executor.jvm.JdbcExecutor - INSERT INTO PUBLIC.DATABASECHANGELOG (ID, AUTHOR, FILENAME, DATEEXECUTED, ORDEREXECUTED, MD5SUM, DESCRIPTION, COMMENTS, EXECTYPE, CONTEXTS, LABELS, LIQUIBASE, DEPLOYMENT_ID) VALUES ('raw', 'includeAll', '/db/changelog/migrations/005-create-post-file.sql', NOW(), 5, '8:edc3764f1a66da59686e3c8691bd2b1d', 'sql', '', 'EXECUTED', NULL, NULL, '3.8.9', '4689859916')
+2022-10-02 08:51:01 [main] INFO  liquibase.executor.jvm.JdbcExecutor - CREATE TABLE tag (
+                     id serial PRIMARY KEY,
+                     tag VARCHAR (255)
+);
+2022-10-02 08:51:01 [main] INFO  liquibase.changelog.ChangeSet - Custom SQL executed
+2022-10-02 08:51:01 [main] INFO  liquibase.changelog.ChangeSet - ChangeSet /db/changelog/migrations/006-create-tag.sql::raw::includeAll ran successfully in 5ms
+2022-10-02 08:51:01 [main] INFO  liquibase.executor.jvm.JdbcExecutor - INSERT INTO PUBLIC.DATABASECHANGELOG (ID, AUTHOR, FILENAME, DATEEXECUTED, ORDEREXECUTED, MD5SUM, DESCRIPTION, COMMENTS, EXECTYPE, CONTEXTS, LABELS, LIQUIBASE, DEPLOYMENT_ID) VALUES ('raw', 'includeAll', '/db/changelog/migrations/006-create-tag.sql', NOW(), 6, '8:222ae51bcf8e1ed784c85f698182a70c', 'sql', '', 'EXECUTED', NULL, NULL, '3.8.9', '4689859916')
+2022-10-02 08:51:01 [main] INFO  liquibase.executor.jvm.JdbcExecutor - CREATE TABLE post2tag (
+                          id serial PRIMARY KEY,
+                          tag_id INT,
+                          post_id INT,
+                                CONSTRAINT fk_tag
+                                    FOREIGN KEY (tag_id)
+                                        REFERENCES tag (id)
+);
+2022-10-02 08:51:01 [main] INFO  liquibase.changelog.ChangeSet - Custom SQL executed
+2022-10-02 08:51:01 [main] INFO  liquibase.changelog.ChangeSet - ChangeSet /db/changelog/migrations/007-create-post2tag.sql::raw::includeAll ran successfully in 10ms
+2022-10-02 08:51:01 [main] INFO  liquibase.executor.jvm.JdbcExecutor - INSERT INTO PUBLIC.DATABASECHANGELOG (ID, AUTHOR, FILENAME, DATEEXECUTED, ORDEREXECUTED, MD5SUM, DESCRIPTION, COMMENTS, EXECTYPE, CONTEXTS, LABELS, LIQUIBASE, DEPLOYMENT_ID) VALUES ('raw', 'includeAll', '/db/changelog/migrations/007-create-post2tag.sql', NOW(), 7, '8:d82ea7e5cc0ad1c4f9632f3ba7af0ee6', 'sql', '', 'EXECUTED', NULL, NULL, '3.8.9', '4689859916')
+2022-10-02 08:51:01 [main] INFO  liquibase.executor.jvm.JdbcExecutor - CREATE TABLE block_history (
+                               id serial PRIMARY KEY,
+                               time TIMESTAMP NOT NULL,
+                               person_id INT,
+                               post_id INT,
+                               comment_id INT,
+                               action VARCHAR (255),
+                               CONSTRAINT fk_block_person
+                                    FOREIGN KEY (person_id)
+                                        REFERENCES person (id),
+                               CONSTRAINT fk_block_post
+                                    FOREIGN KEY (post_id)
+                                        REFERENCES post (id),
+                               CONSTRAINT fk_block_comment
+                                    FOREIGN KEY (comment_id)
+                                        REFERENCES post_comment (id)
+);
+2022-10-02 08:51:01 [main] INFO  liquibase.changelog.ChangeSet - Custom SQL executed
+2022-10-02 08:51:01 [main] INFO  liquibase.changelog.ChangeSet - ChangeSet /db/changelog/migrations/008-create-block-history.sql::raw::includeAll ran successfully in 16ms
+2022-10-02 08:51:01 [main] INFO  liquibase.executor.jvm.JdbcExecutor - INSERT INTO PUBLIC.DATABASECHANGELOG (ID, AUTHOR, FILENAME, DATEEXECUTED, ORDEREXECUTED, MD5SUM, DESCRIPTION, COMMENTS, EXECTYPE, CONTEXTS, LABELS, LIQUIBASE, DEPLOYMENT_ID) VALUES ('raw', 'includeAll', '/db/changelog/migrations/008-create-block-history.sql', NOW(), 8, '8:5b7f3ab9e19a135104d95fe2f1d21314', 'sql', '', 'EXECUTED', NULL, NULL, '3.8.9', '4689859916')
+2022-10-02 08:51:01 [main] INFO  liquibase.executor.jvm.JdbcExecutor - CREATE TABLE message (
+                         id serial PRIMARY KEY,
+                         time TIMESTAMP NOT NULL,
+                         author_id INT,
+                         recipient_id INT,
+                         message_text TEXT,
+                         read_status VARCHAR (255),
+                         CONSTRAINT fk_message_author
+                                FOREIGN KEY (author_id)
+                                    REFERENCES person (id),
+                         CONSTRAINT fk_message_recipient
+                                FOREIGN KEY (recipient_id)
+                                    REFERENCES person (id)
+);
+2022-10-02 08:51:01 [main] INFO  liquibase.changelog.ChangeSet - Custom SQL executed
+2022-10-02 08:51:01 [main] INFO  liquibase.changelog.ChangeSet - ChangeSet /db/changelog/migrations/009-create-message.sql::raw::includeAll ran successfully in 12ms
+2022-10-02 08:51:01 [main] INFO  liquibase.executor.jvm.JdbcExecutor - INSERT INTO PUBLIC.DATABASECHANGELOG (ID, AUTHOR, FILENAME, DATEEXECUTED, ORDEREXECUTED, MD5SUM, DESCRIPTION, COMMENTS, EXECTYPE, CONTEXTS, LABELS, LIQUIBASE, DEPLOYMENT_ID) VALUES ('raw', 'includeAll', '/db/changelog/migrations/009-create-message.sql', NOW(), 9, '8:8c0bc5ef8b805672b0dd7dda093b8bce', 'sql', '', 'EXECUTED', NULL, NULL, '3.8.9', '4689859916')
+2022-10-02 08:51:01 [main] INFO  liquibase.executor.jvm.JdbcExecutor - CREATE TABLE notification (
+                              id serial PRIMARY KEY,
+                              notification_type VARCHAR (255),
+                              sent_time TIMESTAMP NOT NULL,
+                              person_id INT,
+                              entity_id INT,
+                              contact VARCHAR (255),
+                              is_read BOOLEAN DEFAULT FALSE,
+                              CONSTRAINT fk_person_notification
+                                    FOREIGN KEY (person_id)
+                                        REFERENCES person (id)
+);
+2022-10-02 08:51:01 [main] INFO  liquibase.changelog.ChangeSet - Custom SQL executed
+2022-10-02 08:51:01 [main] INFO  liquibase.changelog.ChangeSet - ChangeSet /db/changelog/migrations/010-create-notification.sql::raw::includeAll ran successfully in 7ms
+2022-10-02 08:51:01 [main] INFO  liquibase.executor.jvm.JdbcExecutor - INSERT INTO PUBLIC.DATABASECHANGELOG (ID, AUTHOR, FILENAME, DATEEXECUTED, ORDEREXECUTED, MD5SUM, DESCRIPTION, COMMENTS, EXECTYPE, CONTEXTS, LABELS, LIQUIBASE, DEPLOYMENT_ID) VALUES ('raw', 'includeAll', '/db/changelog/migrations/010-create-notification.sql', NOW(), 10, '8:c5bd50cd8a751a64f8a910e9ab4f6282', 'sql', '', 'EXECUTED', NULL, NULL, '3.8.9', '4689859916')
+2022-10-02 08:51:01 [main] INFO  liquibase.executor.jvm.JdbcExecutor - CREATE TABLE friendship_status (
+                                   id serial PRIMARY KEY,
+                                   time TIMESTAMP NOT NULL,
+                                   name VARCHAR (255),
+                                   code VARCHAR (255)
+);
+2022-10-02 08:51:01 [main] INFO  liquibase.changelog.ChangeSet - Custom SQL executed
+2022-10-02 08:51:01 [main] INFO  liquibase.changelog.ChangeSet - ChangeSet /db/changelog/migrations/011-create-friendship-status.sql::raw::includeAll ran successfully in 4ms
+2022-10-02 08:51:01 [main] INFO  liquibase.executor.jvm.JdbcExecutor - INSERT INTO PUBLIC.DATABASECHANGELOG (ID, AUTHOR, FILENAME, DATEEXECUTED, ORDEREXECUTED, MD5SUM, DESCRIPTION, COMMENTS, EXECTYPE, CONTEXTS, LABELS, LIQUIBASE, DEPLOYMENT_ID) VALUES ('raw', 'includeAll', '/db/changelog/migrations/011-create-friendship-status.sql', NOW(), 11, '8:ff5787c37005ebf4cf4aba612f9a480b', 'sql', '', 'EXECUTED', NULL, NULL, '3.8.9', '4689859916')
+2022-10-02 08:51:01 [main] INFO  liquibase.executor.jvm.JdbcExecutor - CREATE TABLE friendship (
+                            id serial PRIMARY KEY,
+                            status_id INT,
+                            sent_time TIMESTAMP NOT NULL,
+                            src_person_id INT,
+                            dst_person_id INT,
+                            CONSTRAINT fk_friendship
+                                FOREIGN KEY (status_id)
+                                    REFERENCES friendship_status (id),
+                            CONSTRAINT fk_sender_person
+                                FOREIGN KEY (src_person_id)
+                                    REFERENCES person (id),
+                            CONSTRAINT fk_recipient_person
+                                FOREIGN KEY (dst_person_id)
+                                    REFERENCES person (id)
+);
+2022-10-02 08:51:01 [main] INFO  liquibase.changelog.ChangeSet - Custom SQL executed
+2022-10-02 08:51:01 [main] INFO  liquibase.changelog.ChangeSet - ChangeSet /db/changelog/migrations/012-create-friendship.sql::raw::includeAll ran successfully in 12ms
+2022-10-02 08:51:01 [main] INFO  liquibase.executor.jvm.JdbcExecutor - INSERT INTO PUBLIC.DATABASECHANGELOG (ID, AUTHOR, FILENAME, DATEEXECUTED, ORDEREXECUTED, MD5SUM, DESCRIPTION, COMMENTS, EXECTYPE, CONTEXTS, LABELS, LIQUIBASE, DEPLOYMENT_ID) VALUES ('raw', 'includeAll', '/db/changelog/migrations/012-create-friendship.sql', NOW(), 12, '8:678a9aff4585a850fe65e6830038e4db', 'sql', '', 'EXECUTED', NULL, NULL, '3.8.9', '4689859916')
+2022-10-02 08:51:01 [main] INFO  liquibase.executor.jvm.JdbcExecutor - CREATE TABLE "user" (
+                      id serial PRIMARY KEY,
+                      name VARCHAR (255) NOT NULL,
+                      e_mail VARCHAR (255),
+                      password VARCHAR (255) NOT NULL,
+                      type VARCHAR (255) NOT NULL
+);
+2022-10-02 08:51:01 [main] INFO  liquibase.changelog.ChangeSet - Custom SQL executed
+2022-10-02 08:51:01 [main] INFO  liquibase.changelog.ChangeSet - ChangeSet /db/changelog/migrations/013-create-user.sql::raw::includeAll ran successfully in 6ms
+2022-10-02 08:51:01 [main] INFO  liquibase.executor.jvm.JdbcExecutor - INSERT INTO PUBLIC.DATABASECHANGELOG (ID, AUTHOR, FILENAME, DATEEXECUTED, ORDEREXECUTED, MD5SUM, DESCRIPTION, COMMENTS, EXECTYPE, CONTEXTS, LABELS, LIQUIBASE, DEPLOYMENT_ID) VALUES ('raw', 'includeAll', '/db/changelog/migrations/013-create-user.sql', NOW(), 13, '8:346a89a13410da301b5097d7762fb1c1', 'sql', '', 'EXECUTED', NULL, NULL, '3.8.9', '4689859916')
+2022-10-02 08:51:01 [main] INFO  liquibase.executor.jvm.JdbcExecutor - CREATE TABLE city (
+                      id serial PRIMARY KEY,
+                      title VARCHAR (255) NOT NULL,
+                      country_id INT
+);
+2022-10-02 08:51:01 [main] INFO  liquibase.changelog.ChangeSet - Custom SQL executed
+2022-10-02 08:51:01 [main] INFO  liquibase.changelog.ChangeSet - ChangeSet /db/changelog/migrations/014-create-city.sql::raw::includeAll ran successfully in 4ms
+2022-10-02 08:51:01 [main] INFO  liquibase.executor.jvm.JdbcExecutor - INSERT INTO PUBLIC.DATABASECHANGELOG (ID, AUTHOR, FILENAME, DATEEXECUTED, ORDEREXECUTED, MD5SUM, DESCRIPTION, COMMENTS, EXECTYPE, CONTEXTS, LABELS, LIQUIBASE, DEPLOYMENT_ID) VALUES ('raw', 'includeAll', '/db/changelog/migrations/014-create-city.sql', NOW(), 14, '8:48226efc224da326e2ae33e05b0c7117', 'sql', '', 'EXECUTED', NULL, NULL, '3.8.9', '4689859916')
+2022-10-02 08:51:01 [main] INFO  liquibase.executor.jvm.JdbcExecutor - CREATE TABLE country (
+                      id serial PRIMARY KEY,
+                      title VARCHAR (255) NOT NULL
+);
+2022-10-02 08:51:01 [main] INFO  liquibase.changelog.ChangeSet - Custom SQL executed
+2022-10-02 08:51:01 [main] INFO  liquibase.changelog.ChangeSet - ChangeSet /db/changelog/migrations/015-create-country.sql::raw::includeAll ran successfully in 3ms
+2022-10-02 08:51:01 [main] INFO  liquibase.executor.jvm.JdbcExecutor - INSERT INTO PUBLIC.DATABASECHANGELOG (ID, AUTHOR, FILENAME, DATEEXECUTED, ORDEREXECUTED, MD5SUM, DESCRIPTION, COMMENTS, EXECTYPE, CONTEXTS, LABELS, LIQUIBASE, DEPLOYMENT_ID) VALUES ('raw', 'includeAll', '/db/changelog/migrations/015-create-country.sql', NOW(), 15, '8:669a9e2f3e66755fbbb86be41bec15c1', 'sql', '', 'EXECUTED', NULL, NULL, '3.8.9', '4689859916')
+2022-10-02 08:51:01 [main] INFO  liquibase.executor.jvm.JdbcExecutor - CREATE TABLE captcha (
+                                   id serial PRIMARY KEY,
+                                   time TIMESTAMP NOT NULL,
+                                   code VARCHAR (255) NOT NULL,
+                                   secret_code VARCHAR (255) NOT NULL
+);
+2022-10-02 08:51:01 [main] INFO  liquibase.changelog.ChangeSet - Custom SQL executed
+2022-10-02 08:51:01 [main] INFO  liquibase.changelog.ChangeSet - ChangeSet /db/changelog/migrations/016-create-captcha.sql::raw::includeAll ran successfully in 3ms
+2022-10-02 08:51:01 [main] INFO  liquibase.executor.jvm.JdbcExecutor - INSERT INTO PUBLIC.DATABASECHANGELOG (ID, AUTHOR, FILENAME, DATEEXECUTED, ORDEREXECUTED, MD5SUM, DESCRIPTION, COMMENTS, EXECTYPE, CONTEXTS, LABELS, LIQUIBASE, DEPLOYMENT_ID) VALUES ('raw', 'includeAll', '/db/changelog/migrations/016-create-captcha.sql', NOW(), 16, '8:6c599d64a1ae8523bd6c322f9085d11a', 'sql', '', 'EXECUTED', NULL, NULL, '3.8.9', '4689859916')
+2022-10-02 08:51:01 [main] INFO  liquibase.executor.jvm.JdbcExecutor - ALTER TABLE person ALTER COLUMN photo TYPE text;
+2022-10-02 08:51:01 [main] INFO  liquibase.changelog.ChangeSet - Custom SQL executed
+2022-10-02 08:51:01 [main] INFO  liquibase.changelog.ChangeSet - ChangeSet /db/changelog/migrations/017-edit-person.sql::raw::includeAll ran successfully in 108ms
+2022-10-02 08:51:01 [main] INFO  liquibase.executor.jvm.JdbcExecutor - INSERT INTO PUBLIC.DATABASECHANGELOG (ID, AUTHOR, FILENAME, DATEEXECUTED, ORDEREXECUTED, MD5SUM, DESCRIPTION, COMMENTS, EXECTYPE, CONTEXTS, LABELS, LIQUIBASE, DEPLOYMENT_ID) VALUES ('raw', 'includeAll', '/db/changelog/migrations/017-edit-person.sql', NOW(), 17, '8:54f6d5354646f35e66fb52331e60bd23', 'sql', '', 'EXECUTED', NULL, NULL, '3.8.9', '4689859916')
+2022-10-02 08:51:01 [main] INFO  liquibase.executor.jvm.JdbcExecutor - CREATE TABLE dialog (
+                      id serial PRIMARY KEY,
+                      first_person_id INT NOT NULL,
+                      second_person_id INT,
+                      last_message_id INT,
+                      last_active_time TIMESTAMP NOT NULL,
+                      CONSTRAINT fk_dialog_first_person
+                          FOREIGN KEY (first_person_id)
+                              REFERENCES person (id),
+                      CONSTRAINT fk_dialog_second_person
+                          FOREIGN KEY (second_person_id)
+                              REFERENCES person (id),
+                      CONSTRAINT fk_dialog_last_message
+                          FOREIGN KEY (last_message_id)
+                              REFERENCES message (id)
+);
+2022-10-02 08:51:02 [main] INFO  liquibase.changelog.ChangeSet - Custom SQL executed
+2022-10-02 08:51:02 [main] INFO  liquibase.changelog.ChangeSet - ChangeSet /db/changelog/migrations/018-create-dialog.sql::raw::includeAll ran successfully in 25ms
+2022-10-02 08:51:02 [main] INFO  liquibase.executor.jvm.JdbcExecutor - INSERT INTO PUBLIC.DATABASECHANGELOG (ID, AUTHOR, FILENAME, DATEEXECUTED, ORDEREXECUTED, MD5SUM, DESCRIPTION, COMMENTS, EXECTYPE, CONTEXTS, LABELS, LIQUIBASE, DEPLOYMENT_ID) VALUES ('raw', 'includeAll', '/db/changelog/migrations/018-create-dialog.sql', NOW(), 18, '8:fedd10ecad3ce2e0d3cc464798811075', 'sql', '', 'EXECUTED', NULL, NULL, '3.8.9', '4689859916')
+2022-10-02 08:51:02 [main] INFO  liquibase.executor.jvm.JdbcExecutor - ALTER TABLE IF EXISTS message ADD COLUMN dialog_id INT NOT NULL;
+
+ALTER TABLE IF EXISTS message ADD CONSTRAINT fk_message_dialog FOREIGN KEY (dialog_id) REFERENCES dialog (id);
+2022-10-02 08:51:02 [main] INFO  liquibase.changelog.ChangeSet - Custom SQL executed
+2022-10-02 08:51:02 [main] INFO  liquibase.changelog.ChangeSet - ChangeSet /db/changelog/migrations/019-edit-message.sql::raw::includeAll ran successfully in 16ms
+2022-10-02 08:51:02 [main] INFO  liquibase.executor.jvm.JdbcExecutor - INSERT INTO PUBLIC.DATABASECHANGELOG (ID, AUTHOR, FILENAME, DATEEXECUTED, ORDEREXECUTED, MD5SUM, DESCRIPTION, COMMENTS, EXECTYPE, CONTEXTS, LABELS, LIQUIBASE, DEPLOYMENT_ID) VALUES ('raw', 'includeAll', '/db/changelog/migrations/019-edit-message.sql', NOW(), 19, '8:efc782040f51387c248126e641507586', 'sql', '', 'EXECUTED', NULL, NULL, '3.8.9', '4689859916')
+2022-10-02 08:51:02 [main] INFO  liquibase.executor.jvm.JdbcExecutor - ALTER TABLE IF EXISTS message ADD COLUMN is_deleted BOOLEAN DEFAULT FALSE;
+2022-10-02 08:51:02 [main] INFO  liquibase.changelog.ChangeSet - Custom SQL executed
+2022-10-02 08:51:02 [main] INFO  liquibase.changelog.ChangeSet - ChangeSet /db/changelog/migrations/020-edit-message.sql::raw::includeAll ran successfully in 12ms
+2022-10-02 08:51:02 [main] INFO  liquibase.executor.jvm.JdbcExecutor - INSERT INTO PUBLIC.DATABASECHANGELOG (ID, AUTHOR, FILENAME, DATEEXECUTED, ORDEREXECUTED, MD5SUM, DESCRIPTION, COMMENTS, EXECTYPE, CONTEXTS, LABELS, LIQUIBASE, DEPLOYMENT_ID) VALUES ('raw', 'includeAll', '/db/changelog/migrations/020-edit-message.sql', NOW(), 20, '8:64ed2acffa8fed3225a0f73f22ddd73f', 'sql', '', 'EXECUTED', NULL, NULL, '3.8.9', '4689859916')
+2022-10-02 08:51:02 [main] INFO  l.lockservice.StandardLockService - Successfully released change log lock
+2022-10-02 08:51:02 [main] INFO  o.s.s.web.DefaultSecurityFilterChain - Creating filter chain: any request, [org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@5f709b99, org.springframework.security.web.context.SecurityContextPersistenceFilter@f758e05, org.springframework.security.web.header.HeaderWriterFilter@18a8a40e, org.springframework.web.filter.CorsFilter@46ebfc09, org.springframework.security.web.authentication.logout.LogoutFilter@296c0293, org.javaproteam27.socialnetwork.security.jwt.JwtTokenFilter@370c7cc5, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@38de4f1d, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@5eace68f, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@21f41593, org.springframework.security.web.session.SessionManagementFilter@68a06914, org.springframework.security.web.access.ExceptionTranslationFilter@704205ef, org.springframework.security.web.access.intercept.FilterSecurityInterceptor@42018e32]
+2022-10-02 08:51:03 [main] INFO  o.s.s.c.ThreadPoolTaskScheduler - Initializing ExecutorService 'taskScheduler'
+2022-10-02 08:51:03 [main] INFO  o.s.b.t.m.w.SpringBootMockServletContext - Initializing Spring TestDispatcherServlet ''
+2022-10-02 08:51:03 [main] INFO  o.s.t.w.s.TestDispatcherServlet - Initializing Servlet ''
+2022-10-02 08:51:03 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 2 endpoint(s) beneath base path '/actuator'
+2022-10-02 08:51:03 [main] INFO  o.s.t.w.s.TestDispatcherServlet - Completed initialization in 122 ms
+2022-10-02 08:51:03 [main] INFO  o.j.s.controller.UserControllerTest - Started UserControllerTest in 13.45 seconds (JVM running for 16.261)
+2022-10-02 08:51:03 [main] INFO  o.s.t.c.t.TransactionContext - Began transaction (1) for test context [DefaultTestContext@ab7395e testClass = UserControllerTest, testInstance = org.javaproteam27.socialnetwork.controller.UserControllerTest@57404a8d, testMethod = profileEditInformation@UserControllerTest, testException = [null], mergedContextConfiguration = [WebMergedContextConfiguration@50d13246 testClass = UserControllerTest, locations = '{}', classes = '{class org.javaproteam27.socialnetwork.SocialNetworkApplication}', contextInitializerClasses = '[]', activeProfiles = '{test}', propertySourceLocations = '{}', propertySourceProperties = '{org.springframework.boot.test.context.SpringBootTestContextBootstrapper=true}', contextCustomizers = set[[ImportsContextCustomizer@2bd08376 key = [org.springframework.boot.test.autoconfigure.web.servlet.MockMvcAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcWebClientAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcWebDriverAutoConfiguration, org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration, org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration, org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration, org.springframework.boot.autoconfigure.security.servlet.SecurityFilterAutoConfiguration, org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcSecurityConfiguration]], org.springframework.boot.test.context.filter.ExcludeFilterContextCustomizer@a2431d0, org.springframework.boot.test.json.DuplicateJsonObjectContextCustomizerFactory$DuplicateJsonObjectContextCustomizer@1b6e1eff, org.springframework.boot.test.mock.mockito.MockitoContextCustomizer@0, org.springframework.boot.test.web.client.TestRestTemplateContextCustomizer@33990a0c, org.springframework.boot.test.autoconfigure.properties.PropertyMappingContextCustomizer@4b3fa0b3, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverContextCustomizerFactory$Customizer@78123e82, org.springframework.boot.test.context.SpringBootTestArgs@1, org.springframework.boot.test.context.SpringBootTestWebEnvironment@4d1c00d0], resourceBasePath = 'src/main/webapp', contextLoader = 'org.springframework.boot.test.context.SpringBootContextLoader', parent = [null]], attributes = map['org.springframework.test.context.web.ServletTestExecutionListener.activateListener' -> true, 'org.springframework.test.context.web.ServletTestExecutionListener.populatedRequestContextHolder' -> true, 'org.springframework.test.context.web.ServletTestExecutionListener.resetRequestContextHolder' -> true]]; transaction manager [org.springframework.jdbc.datasource.DataSourceTransactionManager@6225c800]; rollback [true]
+2022-10-02 08:51:04 [main] INFO  o.j.socialnetwork.aop.LoggerAspect - Request = path: [org.javaproteam27.socialnetwork.controller.UserController], method: [editUser], arguments: [UserRq(firstName=Тест, lastName=Тестов, birthDate=1987-07-01T00:00:00+04:00, phone=8064581946, photoId=null, about=null, city=Москва, country=Россия, messagesPermission=null), eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0QG1haWwucnUiLCJpYXQiOjE2NjQ2ODk4NjQsImV4cCI6MTY2NDY5MzQ2NH0.YuBpxzwg_RGLQUHH_xbA5Gs21kl4p5QcTMj7X9qfUO0] 
+2022-10-02 08:51:04 [main] INFO  o.j.socialnetwork.aop.LoggerAspect - Response = path: [org.javaproteam27.socialnetwork.controller.UserController], method: [editUser], return: [<200 OK OK,UserRs(error=null, timestamp=0, data=null, errorDescription=null),[]>] 
+2022-10-02 08:51:04 [main] INFO  o.s.t.c.t.TransactionContext - Rolled back transaction for test: [DefaultTestContext@ab7395e testClass = UserControllerTest, testInstance = org.javaproteam27.socialnetwork.controller.UserControllerTest@57404a8d, testMethod = profileEditInformation@UserControllerTest, testException = [null], mergedContextConfiguration = [WebMergedContextConfiguration@50d13246 testClass = UserControllerTest, locations = '{}', classes = '{class org.javaproteam27.socialnetwork.SocialNetworkApplication}', contextInitializerClasses = '[]', activeProfiles = '{test}', propertySourceLocations = '{}', propertySourceProperties = '{org.springframework.boot.test.context.SpringBootTestContextBootstrapper=true}', contextCustomizers = set[[ImportsContextCustomizer@2bd08376 key = [org.springframework.boot.test.autoconfigure.web.servlet.MockMvcAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcWebClientAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcWebDriverAutoConfiguration, org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration, org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration, org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration, org.springframework.boot.autoconfigure.security.servlet.SecurityFilterAutoConfiguration, org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcSecurityConfiguration]], org.springframework.boot.test.context.filter.ExcludeFilterContextCustomizer@a2431d0, org.springframework.boot.test.json.DuplicateJsonObjectContextCustomizerFactory$DuplicateJsonObjectContextCustomizer@1b6e1eff, org.springframework.boot.test.mock.mockito.MockitoContextCustomizer@0, org.springframework.boot.test.web.client.TestRestTemplateContextCustomizer@33990a0c, org.springframework.boot.test.autoconfigure.properties.PropertyMappingContextCustomizer@4b3fa0b3, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverContextCustomizerFactory$Customizer@78123e82, org.springframework.boot.test.context.SpringBootTestArgs@1, org.springframework.boot.test.context.SpringBootTestWebEnvironment@4d1c00d0], resourceBasePath = 'src/main/webapp', contextLoader = 'org.springframework.boot.test.context.SpringBootContextLoader', parent = [null]], attributes = map['org.springframework.test.context.web.ServletTestExecutionListener.activateListener' -> true, 'org.springframework.test.context.web.ServletTestExecutionListener.populatedRequestContextHolder' -> true, 'org.springframework.test.context.web.ServletTestExecutionListener.resetRequestContextHolder' -> true]]
+2022-10-02 08:51:04 [SpringContextShutdownHook] INFO  o.s.s.c.ThreadPoolTaskScheduler - Shutting down ExecutorService 'taskScheduler'
+2022-10-02 08:51:04 [SpringContextShutdownHook] INFO  o.s.s.c.ThreadPoolTaskExecutor - Shutting down ExecutorService 'applicationTaskExecutor'
+2022-10-02 08:51:04 [SpringContextShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2022-10-02 08:51:04 [SpringContextShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.

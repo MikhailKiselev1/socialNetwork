@@ -8,12 +8,14 @@ import org.javaproteam27.socialnetwork.model.dto.response.ResponseRs;
 import org.javaproteam27.socialnetwork.model.entity.Person;
 import org.javaproteam27.socialnetwork.repository.PersonRepository;
 import org.javaproteam27.socialnetwork.security.jwt.JwtTokenProvider;
+import org.javaproteam27.socialnetwork.util.DropBox;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -38,11 +40,14 @@ public class LoginServiceTest {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Mock
+    private DropBox dropBox;
+
     private LoginService loginService;
 
     @Before
     public void setUp() {
-        loginService = new LoginService(jwtTokenProvider, personRepository, passwordEncoder);
+        loginService = new LoginService(jwtTokenProvider, personRepository, passwordEncoder, dropBox);
     }
 
     @Test

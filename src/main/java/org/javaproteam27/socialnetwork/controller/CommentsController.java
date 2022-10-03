@@ -26,8 +26,8 @@ public class CommentsController {
 
     @GetMapping
     public ListResponseRs<CommentRs> getComments (@PathVariable(value = "id") int postId,
-                                                                  @RequestParam (defaultValue = "0") int offset,
-                                                                  @RequestParam (defaultValue = "20") int itemPerPage) {
+                                                                  @RequestParam (name = "offset", defaultValue = "0") int offset,
+                                                                  @RequestParam (name = "perPage", defaultValue = "20") int itemPerPage) {
 
         return commentService.getCommentsByPostIdInResponse(postId, offset, itemPerPage);
     }

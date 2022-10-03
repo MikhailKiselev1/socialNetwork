@@ -57,7 +57,7 @@ public class DropBox {
         return imageName;
     }
 
-    public static String getLingImages(String imageName) throws IOException, DbxException {
+    public String getLinkImages(String imageName) throws IOException, DbxException {
         return getClient().files().getTemporaryLink(imageName).getLink();
     }
 
