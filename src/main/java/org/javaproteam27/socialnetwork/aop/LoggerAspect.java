@@ -20,10 +20,12 @@ public class LoggerAspect {
 
     @Pointcut("@annotation(InfoLogger) || @within(InfoLogger)")
     public void infoLoggerMethod() {
+        // Do nothing because is name of log method
     }
 
     @Pointcut("@annotation(DebugLogger) || @within(DebugLogger)")
     public void debugLoggerMethod() {
+        // Do nothing because is name of log method
     }
 
     @Around("infoLoggerMethod()")
@@ -38,19 +40,20 @@ public class LoggerAspect {
 
     @Around("debugLoggerMethod()")
     public Object debugLogger(ProceedingJoinPoint joinPoint) throws Throwable {
+        String args = Arrays.toString(joinPoint.getArgs());
         logDebug.debug("Request = path: [{}], method: [{}], arguments: {} ",
                 joinPoint.getSignature().getDeclaringTypeName(),
-                joinPoint.getSignature().getName(), Arrays.toString(joinPoint.getArgs()));
+                joinPoint.getSignature().getName(), args);
         try {
             Object result = joinPoint.proceed();
             logDebug.debug("Response = path: [{}], method: [{}], return: [{}] ",
                     joinPoint.getSignature().getDeclaringTypeName(),
                     joinPoint.getSignature().getName(), result);
-            return result;
+
         } catch (Exception e) {
             logDebug.debug("An error has occurred", e.fillInStackTrace());
-            throw e;
+            e.printStackTrace();
         }
+        return joinPoint.proceed();
     }
-
 }

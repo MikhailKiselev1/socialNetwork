@@ -204,6 +204,15 @@ public class PersonRepository {
         }
     }
 
+    public Boolean editPasswordToken(Person person) {
+        try {
+            return (jdbcTemplate.update("UPDATE person SET change_password_token = ? WHERE id = ?",
+                    person.getChangePasswordToken(), person.getId()) == 1);
+        } catch (DataAccessException exception) {
+            throw new ErrorException(exception.getMessage());
+        }
+    }
+
     public List<Person> getByBirthDay(String birthDay) {
         try {
             String sql = "SELECT * FROM person where birth_date = '" + birthDay + "'";

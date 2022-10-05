@@ -126,7 +126,7 @@ public class MessageRepository {
         try {
             jdbcTemplate.update(sql, messageId);
         } catch (DataAccessException e) {
-            throw new UnableUpdateEntityException("message id = " + messageId);
+            throw new UnableUpdateEntityException("id = " + messageId);
         }
     }
 
@@ -139,9 +139,9 @@ public class MessageRepository {
         }
     }
 
-    public Message getLastUndeletedByDialogId(Integer dialogId) {
+    public List<Message> getLastUndeletedByDialogId(Integer dialogId) {
         String sql = "select * from message where id = " +
                 "(select max(id) from message where is_deleted = false and dialog_id = ?)";
-        return jdbcTemplate.queryForObject(sql, rowMapper, dialogId);
+        return jdbcTemplate.query(sql, rowMapper, dialogId);
     }
 }

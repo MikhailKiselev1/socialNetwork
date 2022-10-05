@@ -22,7 +22,10 @@ logsupload:
     enabled: false
 
 management:
-  endpoints.web.exposure.include: 'prometheus, health'
+  endpoints:
+      web:
+          exposure:
+              include: 'prometheus, health'
   metrics:
     export:
       prometheus:
@@ -30,3 +33,14 @@ management:
     distribution:
       percentiles-histogram:
         "[http.server.requests]": true
+global:
+  scrape_interval:     5s # By default, scrape targets every 15 seconds.
+  external_labels:
+    monitor: 'codelab-monitor'
+scrape_configs:
+  - job_name: 'taxi-servce'
+    scrape_interval: 5s
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['195.133.48.174:8080']
+

@@ -39,3 +39,5 @@ databaseChangeLog:
       file: /db/changelog/migrations/019-edit-message.sql
   - include:
       file: /db/changelog/migrations/020-edit-message.sql
+  - include:
+      file: /db/changelog/migrations/021-edit-person.sql

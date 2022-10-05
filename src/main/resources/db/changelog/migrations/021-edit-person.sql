@@ -1,0 +1,1 @@
+ALTER TABLE IF EXISTS person ADD COLUMN change_password_token VARCHAR (255);

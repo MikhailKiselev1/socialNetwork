@@ -64,27 +64,32 @@ public class CommentRepository {
         return retList;
     }
 
-    public Boolean deleteComment(int postId, int commentId) {
+    public void deleteComment(int postId, int commentId) {
 
-        Boolean retValue;
+        boolean retValue;
         try {
-            retValue = (jdbcTemplate.update("UPDATE post_comment SET is_deleted = true WHERE id = " + commentId +
+            retValue = (jdbcTemplate.update("DELETE FROM post_comment WHERE id = " + commentId +
                     " AND post_id = " + postId) == 1);
         } catch (DataAccessException exception) {
             throw new ErrorException(exception.getMessage());
         }
-        return retValue;
+        if (!retValue) {
+            throw new ErrorException("Comment not deleted");
+        }
     }
 
-    public Boolean editComment(int postId, int commentId, String commentText, Long time) {
-        Boolean retValue;
+    public void editComment(int postId, int commentId, String commentText, Long time) {
+
+        boolean retValue;
         try {
             retValue = (jdbcTemplate.update("UPDATE post_comment SET comment_text = ?, time = ? " +
                             "WHERE id = ? AND post_id = ?", commentText, new Timestamp(time), commentId, postId) == 1);
         } catch (DataAccessException exception) {
             throw new ErrorException(exception.getMessage());
         }
-        return retValue;
+        if (!retValue) {
+            throw new ErrorException("Comment not edited");
+        }
     }
 
     public Comment getCommentById(int id) {

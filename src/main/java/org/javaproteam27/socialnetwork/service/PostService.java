@@ -42,12 +42,13 @@ public class PostService {
                 .commentRs(comments)
                 .type(type)
                 .postText(post.getPostText())
-                .isBlocked(post.getIsBlocked()).myLike(false) //TODO: привязать к таблице post_like
+                .isBlocked(post.getIsBlocked())
                 .myLike(likeService.isLikedByUser(personService.getAuthorizedPerson().getId(), post.getId(), POST_MARKER))
                 .build();
     }
 
     public ListResponseRs<PostRs> findAllPosts(int offset, int itemPerPage) {
+
         List<Post> posts = postRepository.findAllPublishedPosts(offset, itemPerPage);
         List<PostRs> data = (posts != null) ? posts.stream().map(this::convertToPostRs).
                 collect(Collectors.toList()) : null;
@@ -55,14 +56,21 @@ public class PostService {
     }
 
     public ListResponseRs<PostRs> findAllUserPosts(int authorId, int offset, int itemPerPage) {
+
         List<Post> posts = postRepository.findAllUserPosts(authorId, offset, itemPerPage);
         List<PostRs> data = (posts != null) ? posts.stream().map(this::convertToPostRs).
                 collect(Collectors.toList()) : null;
         return new ListResponseRs<>("", offset, itemPerPage, data);
     }
 
+    public ResponseRs<PostRs> softDeletePost(int postId) {
+
+        postRepository.softDeletePostById(postId);
+        return new ResponseRs<>("", PostRs.builder().id(postId).build(),null);
+    }
+
     @Transactional
-    public ResponseRs<PostRs> deletePost(int postId) {
+    public ResponseRs<PostRs> finalDeletePost(int postId) {
 
         tagRepository.deleteTagsByPostId(postId);
         List<Integer> commentIds = commentService.initializeCommentsToPost(postId, null, null).stream().
@@ -71,17 +79,19 @@ public class PostService {
                 commentService.COMMENT_MARKER));
         likeService.deleteAllLikesByLikedObjectId(postId, POST_MARKER);
         commentService.deleteAllCommentsToPost(postId);
-        postRepository.deletePostById(postId);
+        postRepository.finalDeletePostById(postId);
         return new ResponseRs<>("", PostRs.builder().id(postId).build(),null);
     }
 
     public ResponseRs<PostRs> updatePost(int postId, String title, String postText, List<String> tags) {
+
         tagRepository.updateTagsPostId(postId, tags);
         postRepository.updatePostById(postId, title, postText);
         return new ResponseRs<>("", convertToPostRs(postRepository.findPostById(postId)),null);
     }
 
     public ResponseRs<PostRs> publishPost(Long publishDate, PostRq postRq, int authorId) {
+
         long publishDateTime = (publishDate == null) ? System.currentTimeMillis() : publishDate;
         int postId = postRepository.addPost(publishDateTime, authorId, postRq.getTitle(), postRq.getPostText());
         postRq.getTags().forEach(tag -> tagRepository.addTag(tag, postId));
@@ -89,7 +99,8 @@ public class PostService {
         return (new ResponseRs<>("", convertToPostRs(postRepository.findPostById(postId)),null));
     }
 
-    public ListResponseRs<PostRs> findPost (String text, Long dateFrom, Long dateTo, String authorName, List<String> tags,
+    public ListResponseRs<PostRs> findPost (String text, String dateFrom, String dateTo, String authorName,
+                                            List<String> tags,
                                        int offset, int itemPerPage) {
 
         List<Post> postsFound = postRepository.findPost(text, dateFrom, dateTo, authorName, tags);
@@ -100,6 +111,7 @@ public class PostService {
     }
 
     public ResponseRs<PostRs> getPost(int postId) {
+
         Post post = postRepository.findPostById(postId);
         PostRs data = (post != null) ? convertToPostRs(post) : null;
         return new ResponseRs<>("", data, null);
@@ -107,6 +119,7 @@ public class PostService {
 
     @Transactional
     public ResponseRs<PostRs> recoverPost(int postId) {
+
         postRepository.recoverPostById(postId);
         Post post = postRepository.findPostById(postId);
         PostRs data = (post != null) ? convertToPostRs(post) : null;

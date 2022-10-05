@@ -24,6 +24,7 @@ public class LikeRepository {
     private final JdbcTemplate jdbcTemplate;
 
     public Integer addLike(long time, Integer personId, Integer objectLikedId, String type) {
+
         try {
             String sql = "INSERT INTO post_like (time, person_id, post_id, type) VALUES ('" +
                     new Timestamp(time) + "', " + personId + ", " + objectLikedId + ", '" + type + "')";
@@ -36,6 +37,7 @@ public class LikeRepository {
     }
 
     public void deleteLike(String type, Integer objectLikedId, Integer personId) {
+
         try {
             if (personId != null) {
                 jdbcTemplate.update("DELETE FROM post_like WHERE post_id = ? AND type = ? AND person_id = ?",
@@ -50,6 +52,7 @@ public class LikeRepository {
     }
 
     public List<Integer> getLikedUserList(Integer objectLikedId, String type) {
+
         List<Integer> retList;
         try {
             retList = jdbcTemplate.query("SELECT person_id FROM post_like WHERE post_id = " + objectLikedId
@@ -61,6 +64,7 @@ public class LikeRepository {
     }
 
     public List<Integer> isLikedByUser(Integer userId, Integer objectLikedId, String type) {
+
         List<Integer> retList;
         try {
             retList = jdbcTemplate.query("SELECT id FROM post_like WHERE person_id = " + userId +

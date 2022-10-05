@@ -54,7 +54,7 @@ public class DialogsService {
         Integer firstPersonId = getPerson(token).getId();
         Integer secondPersonId = userIds.get(0);
 
-        if (dialogRepository.existsByPersonIds(firstPersonId, secondPersonId)) {
+        if (Boolean.TRUE.equals(dialogRepository.existsByPersonIds(firstPersonId, secondPersonId))) {
             throw new UnableCreateEntityException("dialog with person ids = " + firstPersonId +
                     " and " + secondPersonId + " already exists");
         }
@@ -82,18 +82,22 @@ public class DialogsService {
         if (!dialogList.isEmpty()) {
             for (Dialog dialog : dialogList) {
                 Integer unreadCount = messageRepository.countUnreadByDialogId(dialog.getId());
-                var lastMessage = messageRepository.findById(dialog.getLastMessageId());
-                boolean isSentByMe = getSentMessageAuthor(lastMessage, person);
-                var recipientPerson = personRepository.findById(lastMessage.getRecipientId());
+                if (dialog.getLastMessageId() != null) {
+                    var lastMessage = messageRepository.findById(dialog.getLastMessageId());
+                    boolean isSentByMe = getSentMessageAuthor(lastMessage, person);
+                    var recipientPerson = personRepository.findById(lastMessage.getRecipientId());
 
-                result.add(DialogRs.builder()
-                        .id(dialog.getId())
-                        .unreadCount(unreadCount)
-                        .lastMessage(buildLastMessageRs(lastMessage, isSentByMe, buildRecipientPerson(recipientPerson)))
-                        .authorId(lastMessage.getAuthorId())
-                        .recipientId(lastMessage.getRecipientId())
-                        .readStatus(lastMessage.getReadStatus())
-                        .build());
+                    result.add(DialogRs.builder()
+                            .id(dialog.getId())
+                            .unreadCount(unreadCount)
+                            .lastMessage(buildLastMessageRs(lastMessage, isSentByMe, buildRecipientPerson(recipientPerson)))
+                            .authorId(lastMessage.getAuthorId())
+                            .recipientId(lastMessage.getRecipientId())
+                            .readStatus(lastMessage.getReadStatus())
+                            .build());
+                } else {
+                    result.add(DialogRs.builder().id(dialog.getId()).unreadCount(unreadCount).build());
+                }
             }
         }
         return new ListResponseRs<>("", offset, itemPerPage, result);
@@ -173,7 +177,7 @@ public class DialogsService {
                 .build();
     }
 
-    public ResponseRs<MessageRs> editMessage(Integer dialogId, Integer messageId, MessageSendRequestBodyRs text) {
+    public ResponseRs<MessageRs> editMessage(Integer messageId, MessageSendRequestBodyRs text) {
 
         Message message = messageRepository.findById(messageId);
 
@@ -187,10 +191,9 @@ public class DialogsService {
         return new ResponseRs<>("", data, null);
     }
 
-    public ResponseRs<ComplexRs> markAsReadMessage(Integer dialogId, Integer messageId) {
+    public ResponseRs<ComplexRs> markAsReadMessage(Integer messageId) {
 
         Message message = messageRepository.findById(messageId);
-
         message.setReadStatus(ReadStatus.READ);
 
         messageRepository.update(message);
@@ -207,9 +210,9 @@ public class DialogsService {
         messageRepository.update(message);
 
         Dialog dialog = dialogRepository.findById(dialogId);
-        Message lastMessage = messageRepository.getLastUndeletedByDialogId(dialogId);
-        if (lastMessage != null) {
-            dialog.setLastMessageId(lastMessage.getId());
+        List<Message> lastMessage = messageRepository.getLastUndeletedByDialogId(dialogId);
+        if (!lastMessage.isEmpty()) {
+            dialog.setLastMessageId(lastMessage.get(0).getId());
         } else dialog.setLastMessageId(null);
         dialogRepository.update(dialog);
 

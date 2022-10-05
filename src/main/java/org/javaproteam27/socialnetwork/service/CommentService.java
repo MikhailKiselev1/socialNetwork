@@ -24,6 +24,7 @@ public class CommentService {
     public final String COMMENT_MARKER = "Comment";
 
     private CommentRs convertToCommentRs(Comment comment) {
+
         Person person = personService.findById(comment.getAuthorId());
         PersonRs author = PersonRs.builder().id(person.getId()).firstName(person.getFirstName()).
                 lastName(person.getLastName()).photo(person.getPhoto()).build();
@@ -36,6 +37,7 @@ public class CommentService {
     }
 
     public ResponseRs<CommentRs> addComment(int postId, String commentText, Integer parentId) {
+
         Person person = personService.getAuthorizedPerson();
         PersonRs author = PersonRs.builder().id(person.getId()).firstName(person.getFirstName()).
                 lastName(person.getLastName()).photo(person.getPhoto()).build();
@@ -52,6 +54,7 @@ public class CommentService {
     }
 
     public ResponseRs<CommentRs> editComment(int postId, int commentId, String commentText, Integer parentId){
+
         Person person = personService.getAuthorizedPerson();
         PersonRs author = PersonRs.builder().id(person.getId()).firstName(person.getFirstName()).
                 lastName(person.getLastName()).photo(person.getPhoto()).build();
@@ -63,14 +66,16 @@ public class CommentService {
     }
 
     public ListResponseRs<CommentRs> getCommentsByPostIdInResponse(int postId, int offset, int itemPerPage) {
+
         return new ListResponseRs<>("", offset, itemPerPage, initializeCommentsToPost(postId, offset, itemPerPage));
     }
 
     public void deleteAllCommentsToPost(int postId) {
+
         List<Comment> comments = commentRepository.getAllCommentsByPostId(postId);
-        if (comments.isEmpty())
-            return;
-        comments.forEach(comment -> deleteComment(postId, comment.getId()));
+        if (!comments.isEmpty()) {
+            comments.forEach(comment -> deleteComment(postId, comment.getId()));
+        }
     }
 
     public ResponseRs<CommentRs> deleteComment(int postId, int commentId) {
@@ -79,7 +84,8 @@ public class CommentService {
         return new ResponseRs<>("", CommentRs.builder().id(commentId).build(), null);
     }
 
-    public List<CommentRs> initializeCommentsToPost(Integer postId, Integer offset, Integer limit){
+    public List<CommentRs> initializeCommentsToPost(Integer postId, Integer offset, Integer limit) {
+
         List<Comment> commentList = commentRepository.getAllCommentsByPostIdAndParentId(postId, null, offset, limit);
         List<CommentRs> commentRsList = commentList.stream().map(this::convertToCommentRs).collect(Collectors.toList());
         commentRsList.forEach(commentRs -> setSubCommentsToComments(commentRs, commentRs.getId()));
@@ -87,6 +93,7 @@ public class CommentService {
     }
 
     private void setSubCommentsToComments (CommentRs commentRs, Integer parentId) {
+
         List<Comment> comments = commentRepository.getAllCommentsByPostIdAndParentId(commentRs.getPostId(),
                 parentId, null, null);
         List<CommentRs> subComments = comments.stream().map(this::convertToCommentRs).collect(Collectors.toList());

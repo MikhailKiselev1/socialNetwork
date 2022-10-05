@@ -2,6 +2,7 @@ package org.javaproteam27.socialnetwork.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.javaproteam27.socialnetwork.model.dto.request.RegisterRq;
+import org.javaproteam27.socialnetwork.model.dto.response.CaptchaRs;
 import org.javaproteam27.socialnetwork.model.dto.response.RegisterRs;
 import org.javaproteam27.socialnetwork.model.entity.Captcha;
 import org.javaproteam27.socialnetwork.model.entity.Person;
@@ -11,9 +12,11 @@ import org.javaproteam27.socialnetwork.service.CaptchaService;
 import org.junit.Test;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
@@ -24,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -45,9 +49,9 @@ public class AccountControllerTest {
     private PersonRepository personRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
-    @Autowired
+    @MockBean
     private CaptchaService captchaService;
-    @Autowired
+    @MockBean
     private CaptchaRepository captchaRepository;
     @Autowired
     private ObjectMapper objectMapper;
@@ -63,6 +67,14 @@ public class AccountControllerTest {
 
     @Test
     public void profileRegister() throws Exception {
+        CaptchaRs captchaRs = new CaptchaRs();
+        captchaRs.setCode("1234");
+        Captcha captcha = new Captcha();
+        captcha.setCode("1234");
+        captcha.setSecretCode("12345");
+
+        when(captchaService.getCaptcha()).thenReturn(captchaRs);
+        when(captchaRepository.findByCode(anyString())).thenReturn(captcha);
 
         String password = "12345678";
 

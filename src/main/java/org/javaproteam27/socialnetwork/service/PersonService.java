@@ -1,5 +1,6 @@
 package org.javaproteam27.socialnetwork.service;
 
+import com.dropbox.core.DbxException;
 import lombok.RequiredArgsConstructor;
 
 import org.javaproteam27.socialnetwork.model.dto.request.UserRq;
@@ -12,12 +13,14 @@ import org.javaproteam27.socialnetwork.model.enums.MessagesPermission;
 import org.javaproteam27.socialnetwork.repository.PersonRepository;
 import org.javaproteam27.socialnetwork.security.jwt.JwtTokenProvider;
 import org.javaproteam27.socialnetwork.security.jwt.JwtUser;
+import org.javaproteam27.socialnetwork.util.DropBox;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -32,6 +35,7 @@ public class PersonService {
     private final PersonRepository personRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
+    private final DropBox dropBox;
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     public Person findById(int id) {
@@ -93,7 +97,7 @@ public class PersonService {
                 .birthDate(person.getBirthDate())
                 .messagesPermission(person.getMessagesPermission())
                 .isBlocked(person.getIsBlocked())
-                .photo(person.getPhoto())
+                .photo(dropBox.getLinkImages(person.getPhoto()))
                 .about(person.getAbout())
                 .lastOnlineTime(person.getLastOnlineTime())
                 .build();
@@ -120,7 +124,8 @@ public class PersonService {
         return ResponseEntity.ok(response);
     }
 
-    public ResponseRs<PersonRs> getUserInfo(int userId){
+    public ResponseRs<PersonRs> getUserInfo(int userId) {
+
         return new ResponseRs<>("", initialize(userId), null);
     }
 }

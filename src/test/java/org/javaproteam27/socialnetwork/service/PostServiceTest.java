@@ -58,8 +58,8 @@ class PostServiceTest {
 
     @Test
     void findAllPosts() {
-        Integer offset = 0;
-        Integer itemPerPage = 20;
+        int offset = 0;
+        int itemPerPage = 20;
         ListResponseRs<PostRs> response = postService.findAllPosts(offset, itemPerPage);
 
         assertListResponseRs(response, offset, itemPerPage);
@@ -67,9 +67,9 @@ class PostServiceTest {
 
     @Test
     void findAllUserPosts() {
-        Integer offset = 0;
-        Integer itemPerPage = 20;
-        Integer authorId = 1;
+        int offset = 0;
+        int itemPerPage = 20;
+        int authorId = 1;
         ListResponseRs<PostRs> response = postService.findAllUserPosts(authorId, offset, itemPerPage);
 
         assertListResponseRs(response, offset, itemPerPage);
@@ -77,15 +77,15 @@ class PostServiceTest {
 
     @Test
     void deletePost() {
-        Integer postId = 1;
-        ResponseRs<PostRs> response = postService.deletePost(postId);
+        int postId = 1;
+        ResponseRs<PostRs> response = postService.softDeletePost(postId);
 
         assertResponseRs(response);
     }
 
     @Test
     void updatePost() {
-        Integer postId = 0;
+        int postId = 0;
         String title = "post title";
         String postText = "post text";
         List<String> tags = new ArrayList<>();
@@ -101,17 +101,17 @@ class PostServiceTest {
         Long dateTo = System.currentTimeMillis();
         String authorName = "author name";
         List<String> tags = new ArrayList<>();
-        Integer offset = 0;
-        Integer itemPerPage = 20;
-        ListResponseRs<PostRs> response = postService.findPost(text, dateFrom, dateTo, authorName, tags,
-                offset, itemPerPage);
+        int offset = 0;
+        int itemPerPage = 20;
+        ListResponseRs<PostRs> response = postService.findPost(text, dateFrom.toString(), dateTo.toString(),
+                authorName, tags, offset, itemPerPage);
 
         assertListResponseRs(response, offset, itemPerPage);
     }
 
     @Test
     void getPost() {
-        Integer postId = 0;
+        int postId = 0;
         ResponseRs<PostRs> response = postService.getPost(postId);
 
         assertResponseRs(response);

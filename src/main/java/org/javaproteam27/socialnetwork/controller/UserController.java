@@ -66,6 +66,7 @@ public class UserController {
 
     @GetMapping("/{id}")
     public ResponseRs<PersonRs> getUserInfo(@PathVariable(value = "id") int userId) {
+
         return personService.getUserInfo(userId);
     }
 }

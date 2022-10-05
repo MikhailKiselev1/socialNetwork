@@ -29,6 +29,7 @@ public class Person {
     private LocalDateTime lastOnlineTime;
     private Boolean isBlocked;
     private String token;
+    private String changePasswordToken;
 
     public void setBirthDate(LocalDateTime parse, int i, ZoneOffset utc) {
     }

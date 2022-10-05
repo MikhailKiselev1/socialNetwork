@@ -11,6 +11,7 @@ import org.javaproteam27.socialnetwork.model.entity.Person;
 import org.javaproteam27.socialnetwork.model.enums.FriendshipStatusCode;
 import org.javaproteam27.socialnetwork.repository.PersonRepository;
 import org.javaproteam27.socialnetwork.security.jwt.JwtTokenProvider;
+import org.javaproteam27.socialnetwork.util.DropBox;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -30,6 +31,7 @@ public class FriendsService {
 //    private final CountryService countryService;
     private final PersonRepository personRepository;
     private final JwtTokenProvider jwtTokenProvider;
+    private final DropBox dropBox;
     
     public ListResponseRs<PersonRs> getRecommendations(String token, int offset, int itemPerPage) {
 
@@ -124,7 +126,7 @@ public class FriendsService {
                         .birthDate(person.getBirthDate())
                         .email(person.getEmail())
                         .phone(person.getPhone())
-                        .photo(person.getPhoto())
+                        .photo(dropBox.getLinkImages(person.getPhoto()))
                         .about(person.getAbout())
                         .city(person.getCity())
                         .country(person.getCountry())

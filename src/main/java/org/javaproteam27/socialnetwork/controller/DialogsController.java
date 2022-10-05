@@ -55,17 +55,14 @@ public class DialogsController {
 
     @PutMapping("/{dialog_id}/messages/{message_id}")
     public ResponseRs<MessageRs> editMessage(
-            @PathVariable("dialog_id") Integer dialogId,
             @PathVariable("message_id") Integer messageId,
             @RequestBody MessageSendRequestBodyRs text) {
-        return dialogsService.editMessage(dialogId, messageId, text);
+        return dialogsService.editMessage(messageId, text);
     }
 
     @PutMapping("/{dialog_id}/messages/{message_id}/read")
-    public ResponseRs<ComplexRs> markAsReadMessage(
-            @PathVariable("dialog_id") Integer dialogId,
-            @PathVariable("message_id") Integer messageId) {
-        return dialogsService.markAsReadMessage(dialogId, messageId);
+    public ResponseRs<ComplexRs> markAsReadMessage(@PathVariable("message_id") Integer messageId) {
+        return dialogsService.markAsReadMessage(messageId);
     }
 
     @DeleteMapping("/{dialog_id}/messages/{message_id}")

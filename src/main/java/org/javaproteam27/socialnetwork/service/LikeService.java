@@ -6,7 +6,6 @@ import org.javaproteam27.socialnetwork.model.dto.response.ResponseRs;
 import org.javaproteam27.socialnetwork.repository.LikeRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -20,11 +19,9 @@ public class LikeService {
 
         long time = System.currentTimeMillis();
         Integer personId = personService.getAuthorizedPerson().getId();
-        Integer likesCount = null;
-        List<Integer> userListLiked = null;
         int likeId = likeRepository.addLike(time, personId, objectLikedId, type);
         notificationService.createPostLikeNotification(likeId, time, objectLikedId, type);
-        LikeRs data = LikeRs.builder().likes(1).users(Arrays.asList(personId)).build();
+        LikeRs data = LikeRs.builder().likes(1).users(List.of(personId)).build();
         return new ResponseRs<>("", data, null);
     }
 
@@ -50,10 +47,12 @@ public class LikeService {
     }
 
     public Integer countLikes(Integer objectLikedId, String type) {
+
         return likeRepository.getLikedUserList(objectLikedId, type).size();
     }
 
     public void deleteAllLikesByLikedObjectId(Integer objectLikedId, String type) {
+
         likeRepository.deleteLike(type, objectLikedId, null);
     }
 }

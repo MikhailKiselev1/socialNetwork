@@ -13,7 +13,9 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +26,7 @@ public class PostRepository {
     private final JdbcTemplate jdbcTemplate;
 
     public Integer addPost(long time, int authorId, String title, String postText) {
+
         Integer postId;
         try {
             String sqlQuery = "INSERT INTO post (time, author_id, title, post_text) " +
@@ -38,6 +41,7 @@ public class PostRepository {
     }
 
     public List<Post> findAllUserPosts(int authorId, int offset, int limit) {
+
         List<Post> retList;
         try {
             retList = jdbcTemplate.query("SELECT * FROM post WHERE author_id = " + authorId
@@ -48,8 +52,9 @@ public class PostRepository {
         return retList;
     }
 
-    public void deletePostById(int postId) {
-        Boolean retValue;
+    public void softDeletePostById(int postId) {
+
+        boolean retValue;
         try {
             retValue = (jdbcTemplate.update("UPDATE post SET is_deleted = true WHERE id = ?", postId) == 1);
         } catch (DataAccessException exception) {
@@ -60,8 +65,22 @@ public class PostRepository {
         }
     }
 
+    public void finalDeletePostById(int postId){
+
+        boolean retValue;
+        try {
+            retValue = (jdbcTemplate.update("DELETE FROM post WHERE id = ?", postId) == 1);
+        } catch (DataAccessException exception) {
+            throw new ErrorException(exception.getMessage());
+        }
+        if (!retValue) {
+            throw new ErrorException("Post not deleted");
+        }
+    }
+
     public void updatePostById(int postId, String title, String postText) {
-        Boolean retValue;
+
+        boolean retValue;
         try {
             retValue = (jdbcTemplate.update("UPDATE post SET title = ?, post_text = ? WHERE id = ?", title,
                     postText, postId) == 1);
@@ -74,6 +93,7 @@ public class PostRepository {
     }
 
     public Post findPostById(int postId) {
+
         Post post;
         try {
             post = jdbcTemplate.queryForObject("SELECT * FROM post WHERE id = ?"
@@ -85,6 +105,7 @@ public class PostRepository {
     }
 
     public List<Post> findAllPublishedPosts(int offset, int limit) {
+
         List<Post> retList;
         try {
             retList = jdbcTemplate.query("SELECT * FROM post WHERE time <= CURRENT_TIMESTAMP " +
@@ -98,9 +119,8 @@ public class PostRepository {
     }
 
 
-    public List<Post> findPost(String text, Long dateFrom, Long dateTo, String authorName, List<String> tags) {
+    public List<Post> findPost(String text, String dateFrom, String dateTo, String authorName, List<String> tags) {
         ArrayList<String> queryParts = new ArrayList<>();
-        DateTimeFormatter formatter = DateTimeFormatter.BASIC_ISO_DATE;
         StringBuilder query = new StringBuilder();
 
         if (authorName != null) {
@@ -112,12 +132,14 @@ public class PostRepository {
         }
 
         if (dateFrom != null) {
-            LocalDateTime dateFromParsed = LocalDateTime.parse(dateFrom.toString(), formatter);
+            LocalDateTime dateFromParsed = Instant.ofEpochMilli(Long.parseLong(dateFrom))
+                    .atZone(ZoneId.systemDefault()).toLocalDateTime();
             queryParts.add("p.time > '" + dateFromParsed + "'::date");
         }
 
         if (dateTo != null) {
-            LocalDateTime dateToParsed = LocalDateTime.parse(dateTo.toString(), formatter);
+            LocalDateTime dateToParsed = Instant.ofEpochMilli(Long.parseLong(dateTo))
+                    .atZone(ZoneId.systemDefault()).toLocalDateTime();
             queryParts.add("p.time < '" + dateToParsed + "'::date");
         }
 
@@ -138,11 +160,13 @@ public class PostRepository {
     }
 
     public Integer getCount() {
+
         String sql = "select count(*) from post";
         return jdbcTemplate.queryForObject(sql, Integer.class);
     }
 
     public Integer getPersonalCount(int id) {
+
         try {
             String sql = "select count(*) from post where author_id = ?";
             return jdbcTemplate.queryForObject(sql, Integer.class, id);
@@ -152,6 +176,7 @@ public class PostRepository {
     }
 
     private String buildQueryTags(List<String> tags) {
+
         List<String> buildQueryTags = new ArrayList<>();
         StringBuilder sb = new StringBuilder("(");
 
@@ -163,7 +188,8 @@ public class PostRepository {
     }
 
     public void recoverPostById(int postId) {
-        Boolean retValue;
+
+        boolean retValue;
         try {
             retValue = (jdbcTemplate.update("UPDATE post SET is_deleted = false WHERE id = ?", postId) == 1);
         } catch (DataAccessException exception) {

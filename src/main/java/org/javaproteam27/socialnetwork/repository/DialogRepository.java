@@ -60,13 +60,13 @@ public class DialogRepository {
             String sql ="select * from dialog where id = ?";
             return jdbcTemplate.queryForObject(sql, rowMapper, id);
         } catch (EmptyResultDataAccessException e) {
-            throw new EntityNotFoundException("dialog id = " + id);
+            throw new EntityNotFoundException("id = " + id);
         }
     }
     
     public List<Dialog> findByPersonId(Integer id, Integer offset, Integer limit) {
     
-        String sql = "select * from dialog where first_person_id = ? or second_person_id = ?" +
+        String sql = "select * from dialog where first_person_id = ? or second_person_id = ? " +
                 "order by last_active_time desc offset ? limit ?";
         
         try {

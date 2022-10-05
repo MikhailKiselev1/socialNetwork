@@ -25,6 +25,7 @@ public class DropBox {
     private static String dropboxAppSecret = "dguh74c9giceow7";
     private static String refreshToken = "ZdM_cscUFxQAAAAAAAAAAaYgNW47F-G6ZADxwhWouthi_NbOtYP0h68pY9V3FIOu";
     private static String dropboxPath = "dropbox/javaproteams_27";
+    private String photo = "";
 
     public static String getRefreshToken() throws DbxException, IOException {
         try {
@@ -57,8 +58,14 @@ public class DropBox {
         return imageName;
     }
 
-    public String getLinkImages(String imageName) throws IOException, DbxException {
-        return getClient().files().getTemporaryLink(imageName).getLink();
+    public String getLinkImages(String imageName)  {
+        try {
+            photo = getClient().files().getTemporaryLink(imageName).getLink();
+        }
+        catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return photo;
     }
 
     public static DbxClientV2 getClient() throws IOException, DbxException {
