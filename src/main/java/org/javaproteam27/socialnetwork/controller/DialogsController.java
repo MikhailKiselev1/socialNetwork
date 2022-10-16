@@ -1,8 +1,12 @@
 package org.javaproteam27.socialnetwork.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.javaproteam27.socialnetwork.model.dto.request.WebSocketMessageRq;
 import org.javaproteam27.socialnetwork.model.dto.response.*;
 import org.javaproteam27.socialnetwork.service.DialogsService;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -11,6 +15,13 @@ import org.springframework.web.bind.annotation.*;
 public class DialogsController {
 
     private final DialogsService dialogsService;
+
+
+    @MessageMapping("/dialogs/chat")
+    @SendTo("/topic/activity")
+    public ResponseRs<MessageRs> webSocket(@Payload WebSocketMessageRq webSocketMessageRq) {
+        return dialogsService.sendMessage(webSocketMessageRq);
+    }
 
     @PostMapping
     public ResponseRs<ComplexRs> createDialogs(
@@ -37,13 +48,13 @@ public class DialogsController {
         return dialogsService.deleteDialog(id);
     }
 
-    @PostMapping("/{id}/messages")
-    public ResponseRs<MessageRs> sendMessage(
-            @RequestHeader("Authorization") String token,
-            @PathVariable Integer id,
-            @RequestBody MessageSendRequestBodyRs text) {
-        return dialogsService.sendMessage(token, id, text);
-    }
+//    @PostMapping("/{id}/messages")
+//    public ResponseRs<MessageRs> sendMessage(
+//            @RequestHeader("Authorization") String token,
+//            @PathVariable Integer id,
+//            @RequestBody MessageSendRequestBodyRs text) {
+//        return dialogsService.sendMessage(token, id, text);
+//    }
 
     @GetMapping("/{id}/messages")
     public ListResponseRs<MessageRs> getMessagesByDialog(

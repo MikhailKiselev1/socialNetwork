@@ -30,6 +30,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements WebM
     private static final String PASSWORD_RECOVERY_ENDPOINT = "/api/v1/account/password/recovery";
     private static final String CAPTCHA_ENDPOINT = "/api/v1/auth/captcha";
     private static final String GRAFANA_ENDPOINT = "/actuator/**";
+    private static final String WEBSOCKET_ENDPOINT = "/api/v1/ws/**";
 
 
     @Bean
@@ -50,7 +51,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements WebM
                 .and()
                 .authorizeRequests()
                 .antMatchers(MAIN_ENDPOINT,STATIC_ENDPOINT,LOGIN_ENDPOINT,REGISTER_ENDPOINT,PASSWORD_RECOVERY_ENDPOINT,
-                        CAPTCHA_ENDPOINT, GRAFANA_ENDPOINT).permitAll()
+                        CAPTCHA_ENDPOINT, GRAFANA_ENDPOINT, WEBSOCKET_ENDPOINT).permitAll()
 //                .antMatchers(ADMIN_ENDPOINT).hasRole("ADMIN")
                 .anyRequest().authenticated()
                 .and()

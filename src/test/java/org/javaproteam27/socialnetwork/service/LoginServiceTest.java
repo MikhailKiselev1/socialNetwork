@@ -1,6 +1,7 @@
 package org.javaproteam27.socialnetwork.service;
 
 import com.dropbox.core.DbxException;
+import org.javaproteam27.socialnetwork.config.RedisConfig;
 import org.javaproteam27.socialnetwork.handler.exception.InvalidRequestException;
 import org.javaproteam27.socialnetwork.model.dto.request.LoginRq;
 import org.javaproteam27.socialnetwork.model.dto.response.PersonRs;
@@ -41,17 +42,17 @@ public class LoginServiceTest {
     private PasswordEncoder passwordEncoder;
 
     @Mock
-    private DropBox dropBox;
+    private RedisConfig redis;
 
     private LoginService loginService;
 
     @Before
     public void setUp() {
-        loginService = new LoginService(jwtTokenProvider, personRepository, passwordEncoder, dropBox);
+        loginService = new LoginService(jwtTokenProvider, personRepository, passwordEncoder, redis);
     }
 
     @Test
-    public void profileResponseAuthorizedRqAllDataIsOk() throws IOException, DbxException {
+    public void profileResponseAuthorizedRqAllDataIsOk() throws IOException {
         String token = "token";
 
         Person person = new Person();
@@ -75,7 +76,7 @@ public class LoginServiceTest {
     }
 
     @Test
-    public void loginCorrectRqAllDataIsOk() throws IOException, DbxException {
+    public void loginCorrectRqAllDataIsOk() throws IOException {
         var password = passwordEncoder.encode("test1234");
         LoginRq loginRq = new LoginRq();
         loginRq.setEmail("test@mail.ru");

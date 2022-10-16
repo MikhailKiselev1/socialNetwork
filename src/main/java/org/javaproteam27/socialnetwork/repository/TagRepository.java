@@ -37,6 +37,7 @@ public class TagRepository {
     }
 
     private List<Integer> getTagIdsByPostId(int postId) throws DataAccessException {
+
         return jdbcTemplate.query("SELECT tag_id FROM post2tag WHERE post_id = " + postId,
                 (rs, rowNum) -> rs.getInt("tag_id"));
     }
@@ -55,27 +56,21 @@ public class TagRepository {
         return retList;
     }
 
-    public Boolean deleteTagsByPostId(int postId) {
-        boolean retValue;
+    public void deleteTagsByPostId(int postId) {
         try {
             List<Integer> tagIds = getTagIdsByPostId(postId);
             tagIds.forEach(tagId -> {
                 jdbcTemplate.update("DELETE FROM post2tag WHERE tag_id = ?", tagId);
                 jdbcTemplate.update("DELETE FROM tag WHERE id = ?", tagId);
             });
-            retValue = true;
         } catch (DataAccessException exception){
             throw new ErrorException(exception.getMessage());
         }
-        return retValue;
     }
 
-    public Boolean updateTagsPostId(int postId, List<String> tags) {
-        Boolean retValue = null;
-        if (Boolean.TRUE.equals(deleteTagsByPostId(postId))) {
-            tags.forEach(tag -> addTag(tag, postId));
-            retValue = true;
-        }
-        return retValue;
+    public void updateTagsPostId(int postId, List<String> tags) {
+
+        deleteTagsByPostId(postId);
+        tags.forEach(tag -> addTag(tag, postId));
     }
 }

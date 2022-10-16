@@ -3,15 +3,18 @@ package org.javaproteam27.socialnetwork.service;
 import lombok.RequiredArgsConstructor;
 import org.javaproteam27.socialnetwork.aop.DebugLogger;
 import org.javaproteam27.socialnetwork.handler.exception.InvalidRequestException;
+import org.javaproteam27.socialnetwork.model.dto.request.WebSocketNotificationRq;
 import org.javaproteam27.socialnetwork.model.dto.response.ListResponseRs;
 import org.javaproteam27.socialnetwork.model.dto.response.NotificationBaseRs;
 import org.javaproteam27.socialnetwork.model.dto.response.PersonRs;
+import org.javaproteam27.socialnetwork.model.dto.response.ResponseRs;
 import org.javaproteam27.socialnetwork.model.entity.Friendship;
 import org.javaproteam27.socialnetwork.model.entity.Notification;
 import org.javaproteam27.socialnetwork.model.entity.Person;
 import org.javaproteam27.socialnetwork.model.enums.NotificationType;
 import org.javaproteam27.socialnetwork.repository.*;
 import org.javaproteam27.socialnetwork.security.jwt.JwtTokenProvider;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -37,6 +40,7 @@ public class NotificationService {
     private final CommentRepository commentRepository;
     private final LikeRepository likeRepository;
     private final MessageRepository messageRepository;
+//    private final SimpMessagingTemplate simpMessagingTemplate;
 
 
     public ListResponseRs<NotificationBaseRs> getNotifications(String token, int offset, int itemPerPage) {
@@ -131,8 +135,9 @@ public class NotificationService {
         }
     }
 
-    public void createMessageNotification(int messageId, Long sentTime, int recipientId) {
-        int messageAuthor = personService.getAuthorizedPerson().getId();
+    public void createMessageNotification(int messageId, Long sentTime, int recipientId, String token) {
+        var email = jwtTokenProvider.getUsername(token);
+        var messageAuthor = personRepository.findByEmail(email).getId();
         if (messageAuthor != recipientId) {
             createNotification(recipientId, MESSAGE, messageId, sentTime);
         }
@@ -154,6 +159,14 @@ public class NotificationService {
             }
         }
     }
+
+//    public ResponseRs<NotificationBaseRs> sendNotification(WebSocketNotificationRq rq) {
+//        switch (rq.getType()) {
+//            case "POST":
+//
+//        }
+//        simpMessagingTemplate.convertAndSendToUser(rq.getUserId(), "/topic/notifications", );
+//    }
 
     private void createNotification(int dstId, NotificationType notificationType, int entityId, Long sentTime) {
         Notification notification = Notification.builder()

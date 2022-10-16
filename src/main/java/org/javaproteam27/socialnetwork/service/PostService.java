@@ -9,6 +9,7 @@ import org.javaproteam27.socialnetwork.model.dto.response.ResponseRs;
 import org.javaproteam27.socialnetwork.model.entity.Post;
 import org.javaproteam27.socialnetwork.repository.PostRepository;
 import org.javaproteam27.socialnetwork.repository.TagRepository;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,7 +32,7 @@ public class PostService {
         if (post == null) return null;
         long timestamp = post.getTime();
         String type = (post.getIsDeleted()) ? "DELETED" : ((timestamp > System.currentTimeMillis()) ? "QUEUED" : "POSTED");
-        List<CommentRs> comments = commentService.initializeCommentsToPost(post.getId(), null, null);
+        List<CommentRs> comments = commentService.getAllUserCommentsToPost(post.getId(), null, null);
         return PostRs.builder()
                 .id(post.getId())
                 .time(timestamp)//.toLocalDateTime())
@@ -69,18 +70,20 @@ public class PostService {
         return new ResponseRs<>("", PostRs.builder().id(postId).build(),null);
     }
 
+    @Scheduled(cron = "0 0 0 * * *")
     @Transactional
-    public ResponseRs<PostRs> finalDeletePost(int postId) {
+    public void finalDeletePost() {
 
-        tagRepository.deleteTagsByPostId(postId);
-        List<Integer> commentIds = commentService.initializeCommentsToPost(postId, null, null).stream().
-                map(CommentRs::getId).collect(Collectors.toList());
-        commentIds.forEach(commentId -> likeService.deleteAllLikesByLikedObjectId(commentId,
-                commentService.COMMENT_MARKER));
-        likeService.deleteAllLikesByLikedObjectId(postId, POST_MARKER);
-        commentService.deleteAllCommentsToPost(postId);
-        postRepository.finalDeletePostById(postId);
-        return new ResponseRs<>("", PostRs.builder().id(postId).build(),null);
+        List<Integer> postIdListForDelete = postRepository.getDeletedPostIdsOlderThan("30 days");
+        postIdListForDelete.forEach(postId -> {
+            tagRepository.deleteTagsByPostId(postId);
+            List<Integer> commentIds = commentService.getAllCommentsToPost(postId);
+            commentIds.forEach(commentId -> likeService.deleteAllLikesByLikedObjectId(commentId,
+                    commentService.COMMENT_MARKER));
+            likeService.deleteAllLikesByLikedObjectId(postId, POST_MARKER);
+            commentService.deleteAllCommentsToPost(postId);
+            postRepository.finalDeletePostById(postId);
+        });
     }
 
     public ResponseRs<PostRs> updatePost(int postId, String title, String postText, List<String> tags) {

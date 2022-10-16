@@ -393,10 +393,11 @@ public class NotificationServiceTest {
         person.setId(1);
         Message message = Message.builder().id(2).authorId(1).recipientId(4).build();
 
-        when(personService.getAuthorizedPerson()).thenReturn(person);
+        when(jwtTokenProvider.getUsername(anyString())).thenReturn("e");
+        when(personRepository.findByEmail(anyString())).thenReturn(person);
         when(messageRepository.findById(anyInt())).thenReturn(message);
 
-        notificationService.createMessageNotification(2, System.currentTimeMillis(), 4);
+        notificationService.createMessageNotification(2, System.currentTimeMillis(), 4, "t");
 
         verify(notificationRepository, times(1)).save(any());
     }
@@ -407,10 +408,11 @@ public class NotificationServiceTest {
         person.setId(1);
         Message message = Message.builder().id(2).authorId(1).recipientId(1).build();
 
-        when(personService.getAuthorizedPerson()).thenReturn(person);
+        when(jwtTokenProvider.getUsername(anyString())).thenReturn("e");
+        when(personRepository.findByEmail(anyString())).thenReturn(person);
         when(messageRepository.findById(anyInt())).thenReturn(message);
 
-        notificationService.createMessageNotification(2, System.currentTimeMillis(), 1);
+        notificationService.createMessageNotification(2, System.currentTimeMillis(), 1, "t");
 
         verify(notificationRepository, times(0)).save(any());
     }

@@ -14,43 +14,54 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class FriendshipService {
-    
+
     private final FriendshipRepository friendshipRepository;
     private final NotificationService notificationService;
-    
-    
+
+
     public void save(Friendship friendship) {
         friendshipRepository.save(friendship);
     }
-    
+
     public List<Friendship> findByPersonId(int id) {
         return friendshipRepository.findByPersonId(id);
     }
-    
+
     public List<Friendship> findByPersonIdAndStatus(Integer id, FriendshipStatusCode statusCode) {
         return friendshipRepository.findByPersonIdAndStatus(id, statusCode);
     }
+
+    public List<Friendship> requestVerification(int id, int srcPersonId) {
+        return friendshipRepository.getStatus(id, srcPersonId);
+    }
+
     public FriendshipRs addFriendShip(int id, int friendshipStatusId, int srcPersonId){
-
+        HashMap<String, String> messageMap = new HashMap<>();
         LocalDateTime localDateTime = LocalDateTime.now();
+        if (friendshipStatusId != -1) {
+            Friendship friendship = new Friendship();
+            friendship.setStatusId(friendshipStatusId);
+            friendship.setSentTime(localDateTime);
+            friendship.setSrcPersonId(srcPersonId);
+            friendship.setDstPersonId(id);
 
-        Friendship friendship = new Friendship();
-        friendship.setStatusId(friendshipStatusId);
-        friendship.setSentTime(localDateTime);
-        friendship.setSrcPersonId(srcPersonId);
-        friendship.setDstPersonId(id);
+            friendshipRepository.save(friendship);
+            notificationService.createFriendshipNotification(id, friendshipStatusId, srcPersonId);
 
-        friendshipRepository.save(friendship);
-        notificationService.createFriendshipNotification(id, friendshipStatusId, srcPersonId);
 
-        String error = "";
-        HashMap<String,String> messageMap= new HashMap<>();
-        messageMap.put("message","ok");
+            messageMap.put("message", "ok");
 
-        return new FriendshipRs(
-                error,
-                localDateTime,
-                messageMap);
+            return new FriendshipRs(
+                    "",
+                    localDateTime,
+                    messageMap);
+        }else {
+            messageMap.put("message", "Запрос уже отправлен");
+            return new FriendshipRs(
+                    "",
+                    localDateTime,
+                    messageMap);
+        }
     }
 
 
@@ -66,4 +77,6 @@ public class FriendshipService {
     public List<Friendship> findByFriendShip(int srcPersonId, int dstPersonId){
         return friendshipRepository.findByFriendShip(srcPersonId, dstPersonId);
     }
+
+
 }

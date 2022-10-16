@@ -1,6 +1,7 @@
 package org.javaproteam27.socialnetwork.service;
 
 import org.javaproteam27.socialnetwork.handler.exception.UnableCreateEntityException;
+import org.javaproteam27.socialnetwork.model.dto.request.WebSocketMessageRq;
 import org.javaproteam27.socialnetwork.model.dto.response.MessageSendRequestBodyRs;
 import org.javaproteam27.socialnetwork.model.entity.Dialog;
 import org.javaproteam27.socialnetwork.model.entity.Message;
@@ -121,7 +122,7 @@ public class DialogsServiceTest {
         Person person2 = new Person();
         person2.setId(2);
         person2.setIsBlocked(false);
-        Dialog dialog = Dialog.builder().id(1).firstPersonId(1).secondPersonId(2).lastMessageId(null).build();
+        Dialog dialog = Dialog.builder().id(1).firstPersonId(1).secondPersonId(2).lastMessageId(0).build();
 
         when(jwtTokenProvider.getUsername(anyString())).thenReturn(email);
         when(personRepository.findByEmail(anyString())).thenReturn(person);
@@ -132,7 +133,8 @@ public class DialogsServiceTest {
         var rq = dialogsService.getDialogs("token", 0, 10);
         int total = rq.getTotal();
         assertEquals(1, total);
-        assertNull(rq.getData().get(0).getLastMessage());
+        assertNotNull(rq.getData().get(0).getLastMessage().getRecipient());
+        assertNull(rq.getData().get(0).getLastMessage().getAuthorId());
     }
 
     @Test
@@ -169,14 +171,16 @@ public class DialogsServiceTest {
         Person person = new Person();
         person.setId(1);
         Dialog dialog = Dialog.builder().id(1).firstPersonId(1).secondPersonId(2).lastMessageId(1).build();
-        MessageSendRequestBodyRs messageSendRequestBodyRs = new MessageSendRequestBodyRs();
-        messageSendRequestBodyRs.setMessageText("text");
+        WebSocketMessageRq webSocketMessageRq = new WebSocketMessageRq();
+        webSocketMessageRq.setMessageText("text");
+        webSocketMessageRq.setDialogId(1);
+        webSocketMessageRq.setToken("t");
 
         when(jwtTokenProvider.getUsername(anyString())).thenReturn(email);
         when(personRepository.findByEmail(anyString())).thenReturn(person);
         when(dialogRepository.findById(anyInt())).thenReturn(dialog);
 
-        var rq = dialogsService.sendMessage("token", 1, messageSendRequestBodyRs);
+        var rq = dialogsService.sendMessage(webSocketMessageRq);
         int authorId = rq.getData().getAuthorId();
         int recipientId = rq.getData().getRecipientId();
 
@@ -187,7 +191,7 @@ public class DialogsServiceTest {
         verify(messageRepository, times(1)).save(any());
         verify(dialogRepository, times(1)).update(any());
         verify(notificationService, times(1))
-                .createMessageNotification(anyInt(), anyLong(), anyInt());
+                .createMessageNotification(anyInt(), anyLong(), anyInt(), anyString());
     }
 
     @Test

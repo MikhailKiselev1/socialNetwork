@@ -26,6 +26,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -69,9 +70,12 @@ public class AccountControllerTest {
     public void profileRegister() throws Exception {
         CaptchaRs captchaRs = new CaptchaRs();
         captchaRs.setCode("1234");
-        Captcha captcha = new Captcha();
-        captcha.setCode("1234");
-        captcha.setSecretCode("12345");
+        Captcha captcha = Captcha.builder()
+                .id(1)
+                .time(LocalDateTime.now())
+                .code("1234")
+                .secretCode("12345")
+                .build();
 
         when(captchaService.getCaptcha()).thenReturn(captchaRs);
         when(captchaRepository.findByCode(anyString())).thenReturn(captcha);

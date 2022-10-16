@@ -67,7 +67,7 @@ public class PersonRepository {
     }
 
     public Integer getCount() {
-        
+
         String sql = "select count(*) from person";
         return jdbcTemplate.queryForObject(sql, Integer.class);
     }
@@ -132,20 +132,13 @@ public class PersonRepository {
     public List<Person> getFriendsPersonById(String name, Integer id) {
         try {
             String sql;
-            if (name != null && name.length() != 0) {
-                sql = "SELECT * FROM person p \n" +
-                        "join friendship f on f.dst_person_id = p.id\n" +
-                        "join friendship_status fs on fs.id = f.status_id\n" +
-                        "where fs.code = 'FRIEND' and src_person_id = ?" +
-                        "and first_name like '%" + name + "%'";
-            } else {
-                sql = "SELECT * FROM person p \n" +
-                        "join friendship f on f.dst_person_id = p.id\n" +
-                        "join friendship_status fs on fs.id = f.status_id\n" +
-                        "where fs.code = 'FRIEND' and src_person_id = ?";
-            }
+            sql = "SELECT * FROM person p \n" +
+                    "join friendship f on f.dst_person_id = p.id\n" +
+                    "join friendship_status fs on fs.id = f.status_id\n" +
+                    "where fs.code = 'FRIEND' and src_person_id = ? or dst_person_id = ?";
 
-            return jdbcTemplate.query(sql, rowMapper, id);
+
+            return jdbcTemplate.query(sql, rowMapper, id,id);
         } catch (EmptyResultDataAccessException e) {
             throw new EntityNotFoundException("person id = " + id);
         }
@@ -154,18 +147,11 @@ public class PersonRepository {
     public List<Person> getApplicationsFriendsPersonById(String name, Integer id) {
         try {
             String sql;
-            if (name != null && name.length() != 0) {
-                sql = "SELECT * FROM person p \n" +
-                        "join friendship f on f.dst_person_id = p.id\n" +
-                        "join friendship_status fs on fs.id = f.status_id\n" +
-                        "where fs.code = 'REQUEST' and src_person_id = ?" +
-                        "and first_name like '%" + name + "%'";
-            } else {
-                sql = "SELECT * FROM person p \n" +
-                        "join friendship f on f.dst_person_id = p.id\n" +
-                        "join friendship_status fs on fs.id = f.status_id\n" +
-                        "where fs.code = 'REQUEST' and src_person_id = ?";
-            }
+            sql = "SELECT * FROM person p \n" +
+                    "join friendship f on f.dst_person_id = p.id\n" +
+                    "join friendship_status fs on fs.id = f.status_id\n" +
+                    "where fs.code = 'REQUEST' and src_person_id = ?";
+
             return jdbcTemplate.query(sql, rowMapper, id);
         } catch (EmptyResultDataAccessException e) {
             throw new EntityNotFoundException("person id = " + id);
@@ -176,8 +162,8 @@ public class PersonRepository {
         Boolean retValue;
         try {
             retValue = (jdbcTemplate.update("UPDATE person SET first_name = ?, last_name = ?, " +
-                    "birth_date = ?, phone = ?, about = ?, city = ?, country = ?, messages_permission = ? " +
-                    "WHERE id = ?", person.getFirstName(), person.getLastName(), person.getBirthDate(),
+                            "birth_date = ?, phone = ?, about = ?, city = ?, country = ?, messages_permission = ? " +
+                            "WHERE id = ?", person.getFirstName(), person.getLastName(), person.getBirthDate(),
                     person.getPhone(), person.getAbout(), person.getCity(), person.getCountry(),
                     person.getMessagesPermission().toString(), person.getId()) == 1);
         } catch (DataAccessException exception) {

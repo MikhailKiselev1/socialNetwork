@@ -67,7 +67,7 @@ public class CommentService {
 
     public ListResponseRs<CommentRs> getCommentsByPostIdInResponse(int postId, int offset, int itemPerPage) {
 
-        return new ListResponseRs<>("", offset, itemPerPage, initializeCommentsToPost(postId, offset, itemPerPage));
+        return new ListResponseRs<>("", offset, itemPerPage, getAllUserCommentsToPost(postId, offset, itemPerPage));
     }
 
     public void deleteAllCommentsToPost(int postId) {
@@ -84,7 +84,7 @@ public class CommentService {
         return new ResponseRs<>("", CommentRs.builder().id(commentId).build(), null);
     }
 
-    public List<CommentRs> initializeCommentsToPost(Integer postId, Integer offset, Integer limit) {
+    public List<CommentRs> getAllUserCommentsToPost(Integer postId, Integer offset, Integer limit) {
 
         List<Comment> commentList = commentRepository.getAllCommentsByPostIdAndParentId(postId, null, offset, limit);
         List<CommentRs> commentRsList = commentList.stream().map(this::convertToCommentRs).collect(Collectors.toList());
@@ -99,5 +99,10 @@ public class CommentService {
         List<CommentRs> subComments = comments.stream().map(this::convertToCommentRs).collect(Collectors.toList());
         commentRs.setSubComments(subComments);
         commentRs.getSubComments().forEach(commentRs1 -> setSubCommentsToComments(commentRs1, commentRs1.getId()));
+    }
+
+    public List<Integer> getAllCommentsToPost(Integer postId) {
+        return commentRepository.getAllCommentsByPostId(postId).stream().map(Comment::getId)
+                .collect(Collectors.toList());
     }
 }

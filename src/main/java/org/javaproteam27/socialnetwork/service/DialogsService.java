@@ -2,6 +2,7 @@ package org.javaproteam27.socialnetwork.service;
 
 import lombok.RequiredArgsConstructor;
 import org.javaproteam27.socialnetwork.handler.exception.UnableCreateEntityException;
+import org.javaproteam27.socialnetwork.model.dto.request.WebSocketMessageRq;
 import org.javaproteam27.socialnetwork.model.dto.response.*;
 import org.javaproteam27.socialnetwork.model.entity.Dialog;
 import org.javaproteam27.socialnetwork.model.entity.Message;
@@ -29,7 +30,6 @@ public class DialogsService {
     private final PersonRepository personRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final NotificationService notificationService;
-
 
     private static MessageRs buildMessageRs(Message message) {
         return MessageRs.builder()
@@ -60,8 +60,8 @@ public class DialogsService {
         }
 
         Dialog newDialog = Dialog.builder()
-                .firstPersonId(getPerson(token).getId())
-                .secondPersonId(userIds.get(0))
+                .firstPersonId(firstPersonId)
+                .secondPersonId(secondPersonId)
                 .lastActiveTime(LocalDateTime.now())
                 .build();
 
@@ -82,7 +82,10 @@ public class DialogsService {
         if (!dialogList.isEmpty()) {
             for (Dialog dialog : dialogList) {
                 Integer unreadCount = messageRepository.countUnreadByDialogId(dialog.getId());
-                if (dialog.getLastMessageId() != null) {
+                Integer recipientId = dialog.getFirstPersonId().equals(personId) ?
+                        dialog.getSecondPersonId() :
+                        dialog.getFirstPersonId();
+                if (dialog.getLastMessageId() != 0) {
                     var lastMessage = messageRepository.findById(dialog.getLastMessageId());
                     boolean isSentByMe = getSentMessageAuthor(lastMessage, person);
                     var recipientPerson = personRepository.findById(lastMessage.getRecipientId());
@@ -91,12 +94,19 @@ public class DialogsService {
                             .id(dialog.getId())
                             .unreadCount(unreadCount)
                             .lastMessage(buildLastMessageRs(lastMessage, isSentByMe, buildRecipientPerson(recipientPerson)))
-                            .authorId(lastMessage.getAuthorId())
-                            .recipientId(lastMessage.getRecipientId())
+                            .authorId(personId)
+                            .recipientId(recipientId)
                             .readStatus(lastMessage.getReadStatus())
                             .build());
                 } else {
-                    result.add(DialogRs.builder().id(dialog.getId()).unreadCount(unreadCount).build());
+                    var recipientPerson = personRepository.findById(recipientId);
+                    result.add(DialogRs.builder()
+                            .id(dialog.getId())
+                            .unreadCount(unreadCount)
+                            .lastMessage(MessageRs.builder().recipient(buildRecipientPerson(recipientPerson)).build())
+                            .authorId(personId)
+                            .recipientId(recipientId)
+                            .build());
                 }
             }
         }
@@ -126,10 +136,11 @@ public class DialogsService {
         return new ResponseRs<>("", data, null);
     }
 
-    public ResponseRs<MessageRs> sendMessage(String token, Integer dialogId, MessageSendRequestBodyRs text) {
-
-        Integer authorId = getPerson(token).getId();
-        Dialog dialog = dialogRepository.findById(dialogId);
+    public ResponseRs<MessageRs> sendMessage(WebSocketMessageRq messageRq) {
+        var token = messageRq.getToken();
+        Person person = getPerson(token);
+        Integer authorId = person.getId();
+        Dialog dialog = dialogRepository.findById(messageRq.getDialogId());
         Integer recipientId = dialog.getFirstPersonId().equals(authorId) ?
                 dialog.getSecondPersonId() :
                 dialog.getFirstPersonId();
@@ -138,9 +149,9 @@ public class DialogsService {
                 .time(LocalDateTime.now())
                 .authorId(authorId)
                 .recipientId(recipientId)
-                .messageText(text.getMessageText())
+                .messageText(messageRq.getMessageText())
                 .readStatus(ReadStatus.SENT)
-                .dialogId(dialogId)
+                .dialogId(messageRq.getDialogId())
                 .build();
 
         Integer savedId = messageRepository.save(message);
@@ -151,7 +162,7 @@ public class DialogsService {
         dialogRepository.update(dialog);
 
         MessageRs data = buildMessageRs(message);
-        notificationService.createMessageNotification(savedId, System.currentTimeMillis(), recipientId);
+        notificationService.createMessageNotification(savedId, System.currentTimeMillis(), recipientId, token);
 
         return new ResponseRs<>("", data, null);
     }

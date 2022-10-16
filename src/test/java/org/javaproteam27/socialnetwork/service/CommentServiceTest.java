@@ -1,6 +1,8 @@
 package org.javaproteam27.socialnetwork.service;
 
-import org.javaproteam27.socialnetwork.model.dto.response.*;
+import org.javaproteam27.socialnetwork.model.dto.response.CommentRs;
+import org.javaproteam27.socialnetwork.model.dto.response.ListResponseRs;
+import org.javaproteam27.socialnetwork.model.dto.response.ResponseRs;
 import org.javaproteam27.socialnetwork.model.entity.Person;
 import org.javaproteam27.socialnetwork.repository.CommentRepository;
 import org.junit.jupiter.api.Test;
@@ -14,7 +16,6 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest
@@ -52,7 +53,7 @@ class CommentServiceTest {
     @Test
     void addComment() {
 
-        Integer postId = 0;
+        int postId = 0;
         String commentText = "comment text";
         Integer parentId = 0;
         Person person = new Person();
@@ -69,8 +70,8 @@ class CommentServiceTest {
     @Test
     void editComment() {
 
-        Integer postId = 0;
-        Integer commentId = 0;
+        int postId = 0;
+        int commentId = 0;
         String commentText = "comment text";
         Integer parentId = 0;
         Person person = new Person();
@@ -87,9 +88,9 @@ class CommentServiceTest {
     @Test
     void getCommentsByPostIdInResponse() {
 
-        Integer postId = 0;
-        Integer offset = 0;
-        Integer itemPerPage = 20;
+        int postId = 0;
+        int offset = 0;
+        int itemPerPage = 20;
         ListResponseRs<CommentRs> response = commentService.getCommentsByPostIdInResponse(postId, offset, itemPerPage);
 
         assertListResponseRs(response, offset, itemPerPage);
@@ -98,7 +99,7 @@ class CommentServiceTest {
     @Test
     void deleteAllCommentsToPost() {
 
-        Integer postId = 0;
+        int postId = 0;
         commentService.deleteAllCommentsToPost(postId);
 
         verify(commentRepository, times(1)).getAllCommentsByPostId(postId);
@@ -107,8 +108,8 @@ class CommentServiceTest {
     @Test
     void deleteComment() {
 
-        Integer postId = 0;
-        Integer commentId = 0;
+        int postId = 0;
+        int commentId = 0;
         ResponseRs<CommentRs> response = commentService.deleteComment(postId, commentId);
 
         assertResponseRs(response);
@@ -120,7 +121,7 @@ class CommentServiceTest {
         Integer postId = 0;
         Integer offset = 0;
         Integer limit = 20;
-        List<CommentRs> commentRsList = commentService.initializeCommentsToPost(postId, offset, limit);
+        List<CommentRs> commentRsList = commentService.getAllUserCommentsToPost(postId, offset, limit);
 
         assertNotNull(commentRsList);
         verify(commentRepository, times(1)).getAllCommentsByPostIdAndParentId(postId,

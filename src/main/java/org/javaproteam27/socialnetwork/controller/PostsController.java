@@ -42,7 +42,7 @@ public class PostsController {
             @RequestParam(value = "date_from", required = false) String dateFrom,
             @RequestParam(value = "date_to", required = false) String dateTo,
             @RequestParam(value = "author", required = false) String authorName,
-            @RequestParam(value = "tag", required = false) List<String> tags,
+            @RequestParam(value = "tags", required = false) List<String> tags,
             @RequestParam(value = "offset", required = false, defaultValue = "0") int offset,
             @RequestParam(value = "perPage", required = false, defaultValue = "20") int itemPerPage) {
 

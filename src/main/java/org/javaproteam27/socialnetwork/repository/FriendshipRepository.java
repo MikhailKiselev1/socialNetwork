@@ -19,6 +19,13 @@ public class FriendshipRepository {
     private final RowMapper<Friendship> rowMapper = new FriendshipMapper();
     private final JdbcTemplate jdbcTemplate;
 
+    public List<Friendship> getStatus(int id, int srcPersonId) {
+        String sql = "SELECT * FROM public.friendship f\n" +
+                "join friendship_status fs on f.status_id = fs.id\n" +
+                "where (fs.code = 'REQUEST' or fs.code = 'FRIEND') and f.src_person_id = ? and f.dst_person_id = ? " +
+                "or (fs.code = 'REQUEST' or fs.code = 'FRIEND') and f.src_person_id = ? and f.dst_person_id = ? ";
+        return jdbcTemplate.query(sql, rowMapper, id, srcPersonId,srcPersonId,id);
+    }
 
     public void save(Friendship friendship) {
 
@@ -96,4 +103,6 @@ public class FriendshipRepository {
             throw new EntityNotFoundException("id = " + id);
         }
     }
+
+
 }

@@ -1,8 +1,12 @@
 package org.javaproteam27.socialnetwork.repository;
 
 import lombok.RequiredArgsConstructor;
+import org.javaproteam27.socialnetwork.handler.exception.ErrorException;
+import org.javaproteam27.socialnetwork.mapper.CaptchaMapper;
+import org.javaproteam27.socialnetwork.mapper.PostMapper;
 import org.javaproteam27.socialnetwork.model.entity.Captcha;
 import org.javaproteam27.socialnetwork.model.entity.Person;
+import org.javaproteam27.socialnetwork.model.entity.Post;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -18,17 +22,6 @@ public class CaptchaRepository {
 
     private final JdbcTemplate jdbcTemplate;
 
-    private final RowMapper<Captcha> rowMapper = (rs, rowNum) -> {
-
-        Captcha captcha = new Captcha();
-
-        captcha.setId(rs.getInt("id"));
-        captcha.setTime(rs.getTimestamp("time").toLocalDateTime());
-        captcha.setCode(rs.getString("code"));
-        captcha.setSecretCode(rs.getString("secret_code"));
-
-        return captcha;
-    };
 
     public int addCaptcha(long time, String code, String secretCode) {
 
@@ -51,17 +44,30 @@ public class CaptchaRepository {
     public Captcha findByCode(String code) {
         Captcha captcha;
         captcha = jdbcTemplate.queryForObject("SELECT * FROM captcha WHERE code = ?", new Object[]{code},
-                rowMapper);
+                new CaptchaMapper());
         return captcha;
     }
 
     public List<Captcha> findAll() {
-        return jdbcTemplate.queryForList(
-                "SELECT * FROM captcha", Captcha.class);
+        List<Captcha> retList;
+        try {
+            retList = jdbcTemplate.query("SELECT * FROM captcha", new CaptchaMapper());
+        } catch (DataAccessException exception) {
+            throw new ErrorException(exception.getMessage());
+        }
+        return retList;
+
     }
 
-    public void deleteProfileById(int id) {
-        jdbcTemplate.update("DELETE FROM captcha WHERE id = ?");
+    public boolean deleteCaptcha(Captcha captcha) {
+
+        boolean retValue;
+        try {
+            retValue = (jdbcTemplate.update("DELETE FROM captcha WHERE id = ?", captcha.getId()) == 1);
+        } catch (DataAccessException exception) {
+            throw new ErrorException(exception.getMessage());
+        }
+        return retValue;
     }
 
     public void save(Captcha captcha) {

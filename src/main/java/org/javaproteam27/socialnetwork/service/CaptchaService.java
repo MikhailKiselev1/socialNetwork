@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.javaproteam27.socialnetwork.model.dto.response.CaptchaRs;
 import org.javaproteam27.socialnetwork.model.entity.Captcha;
 import org.javaproteam27.socialnetwork.repository.CaptchaRepository;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.xml.bind.DatatypeConverter;
@@ -46,5 +48,13 @@ public class CaptchaService {
         response.setImage(image.toString());
         response.setCode(captchaCode);
         return response;
+    }
+
+    @Scheduled(fixedDelayString = "PT1H")
+    @Async
+    public void deleteCaptcha() {
+        captchaRepository.findAll().stream()
+                .filter(captcha -> captcha.getTime().isBefore(LocalDateTime.now().minusMinutes(20)))
+                .forEach(captchaRepository::deleteCaptcha);
     }
 }
