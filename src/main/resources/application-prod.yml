@@ -18,6 +18,9 @@ yandexprofile:
     login: javaproteams27@yandex.ru
     token: y0_AgAAAABkHWYcAAhcJAAAAADNMMSQdTIhTbQjRfCCNvyw30mWw_U7WIY
 
+redis:
+  url: redis://195.133.48.174:6379
+
 logsupload:
     enabled: false
 

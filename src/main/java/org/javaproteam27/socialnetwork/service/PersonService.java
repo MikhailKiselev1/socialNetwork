@@ -2,7 +2,7 @@ package org.javaproteam27.socialnetwork.service;
 
 import lombok.RequiredArgsConstructor;
 
-import org.javaproteam27.socialnetwork.config.RedisConfig;
+import org.javaproteam27.socialnetwork.util.Redis;
 import org.javaproteam27.socialnetwork.model.dto.request.UserRq;
 import org.javaproteam27.socialnetwork.model.dto.response.ListResponseRs;
 import org.javaproteam27.socialnetwork.model.dto.response.PersonRs;
@@ -19,7 +19,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -34,7 +33,7 @@ public class PersonService {
     private final PersonRepository personRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
-    private final RedisConfig redis;
+    private final Redis redis;
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     public Person findById(int id) {

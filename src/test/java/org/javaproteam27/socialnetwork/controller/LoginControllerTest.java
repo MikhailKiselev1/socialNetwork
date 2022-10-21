@@ -1,6 +1,7 @@
 package org.javaproteam27.socialnetwork.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.javaproteam27.socialnetwork.util.Redis;
 import org.javaproteam27.socialnetwork.handler.exception.EntityNotFoundException;
 import org.javaproteam27.socialnetwork.handler.exception.InvalidRequestException;
 import org.javaproteam27.socialnetwork.model.dto.request.LoginRq;
@@ -10,6 +11,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithUserDetails;
@@ -19,6 +21,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.authenticated;
 import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.unauthenticated;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -41,6 +45,8 @@ public class LoginControllerTest {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private PersonRepository personRepository;
+    @MockBean
+    private Redis redis;
 
     private final String loginUrl = "/api/v1/auth/login";
     private final String logoutUrl = "/api/v1/auth/logout";
@@ -59,6 +65,7 @@ public class LoginControllerTest {
         LoginRq rq = new LoginRq();
         rq.setEmail("test@mail.ru");
         rq.setPassword("test1234");
+        when(redis.getUrl(anyInt())).thenReturn("test");
         this.mockMvc.perform(post(loginUrl).content(objectMapper.writeValueAsString(rq))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())

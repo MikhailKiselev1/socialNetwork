@@ -1,7 +1,6 @@
 package org.javaproteam27.socialnetwork.service;
 
-import com.dropbox.core.DbxException;
-import org.javaproteam27.socialnetwork.config.RedisConfig;
+import org.javaproteam27.socialnetwork.util.Redis;
 import org.javaproteam27.socialnetwork.handler.exception.InvalidRequestException;
 import org.javaproteam27.socialnetwork.model.dto.request.LoginRq;
 import org.javaproteam27.socialnetwork.model.dto.response.PersonRs;
@@ -9,14 +8,12 @@ import org.javaproteam27.socialnetwork.model.dto.response.ResponseRs;
 import org.javaproteam27.socialnetwork.model.entity.Person;
 import org.javaproteam27.socialnetwork.repository.PersonRepository;
 import org.javaproteam27.socialnetwork.security.jwt.JwtTokenProvider;
-import org.javaproteam27.socialnetwork.util.DropBox;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -42,7 +39,7 @@ public class LoginServiceTest {
     private PasswordEncoder passwordEncoder;
 
     @Mock
-    private RedisConfig redis;
+    private Redis redis;
 
     private LoginService loginService;
 

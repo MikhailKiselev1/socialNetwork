@@ -2,7 +2,7 @@ package org.javaproteam27.socialnetwork.service;
 
 import lombok.RequiredArgsConstructor;
 import org.javaproteam27.socialnetwork.aop.DebugLogger;
-import org.javaproteam27.socialnetwork.config.RedisConfig;
+import org.javaproteam27.socialnetwork.util.Redis;
 import org.javaproteam27.socialnetwork.handler.exception.InvalidRequestException;
 import org.javaproteam27.socialnetwork.model.dto.request.LoginRq;
 import org.javaproteam27.socialnetwork.model.dto.response.PersonRs;
@@ -24,7 +24,7 @@ public class LoginService {
     private final JwtTokenProvider jwtTokenProvider;
     private final PersonRepository personRepository;
     private final PasswordEncoder passwordEncoder;
-    private final RedisConfig redis;
+    private final Redis redis;
 
     public ResponseRs<PersonRs> profileResponse(String token) throws IOException {
         String email = jwtTokenProvider.getUsername(token);

@@ -1,7 +1,7 @@
 package org.javaproteam27.socialnetwork.service;
 
 import lombok.RequiredArgsConstructor;
-import org.javaproteam27.socialnetwork.config.RedisConfig;
+import org.javaproteam27.socialnetwork.util.Redis;
 import org.javaproteam27.socialnetwork.handler.exception.EntityNotFoundException;
 import org.javaproteam27.socialnetwork.model.dto.response.ListResponseRs;
 import org.javaproteam27.socialnetwork.model.dto.response.PersonRs;
@@ -26,7 +26,7 @@ public class FriendsService {
     private final FriendshipService friendshipService;
     private final PersonRepository personRepository;
     private final JwtTokenProvider jwtTokenProvider;
-    private final RedisConfig redis;
+    private final Redis redis;
 
     public ListResponseRs<PersonRs> getRecommendations(String token, int offset, int itemPerPage) {
 
