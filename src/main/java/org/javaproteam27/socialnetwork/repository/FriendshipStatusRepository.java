@@ -20,11 +20,11 @@ import java.util.Optional;
 @Repository
 @RequiredArgsConstructor
 public class FriendshipStatusRepository {
-    
+
     private final RowMapper<FriendshipStatus> rowMapper = new FriendshipStatusMapper();
     private final JdbcTemplate jdbcTemplate;
-    
-    
+
+
     public FriendshipStatus findById(int id) {
         try {
             String sql = "select * from friendship_status where id = ?";
@@ -42,7 +42,7 @@ public class FriendshipStatusRepository {
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(sql, new String[] { "id" });
+            PreparedStatement ps = connection.prepareStatement(sql, new String[]{"id"});
             ps.setTimestamp(1, Timestamp.valueOf(friendshipStatus.getTime()));
             ps.setString(2, friendshipStatus.getName());
             ps.setString(3, friendshipStatus.getCode().name());
@@ -53,12 +53,12 @@ public class FriendshipStatusRepository {
         return key.get().intValue();
     }
 
-    public List<FriendshipStatus> getApplicationsFriendshipStatus(Integer srcPersonId, Integer id){
+    public List<FriendshipStatus> getApplicationsFriendshipStatus(Integer srcPersonId, Integer id) {
         try {
             String sql = "SELECT * FROM friendship_status fs\n" +
-                    "join friendship f  on fs.id= f.status_id\n" +
+                    "join friendship f on fs.id= f.status_id\n" +
                     "where fs.code = 'REQUEST' and src_person_id = ? and dst_person_id = ?";
-            return jdbcTemplate.query(sql, rowMapper,srcPersonId, id);
+            return jdbcTemplate.query(sql, rowMapper, srcPersonId, id);
         } catch (EmptyResultDataAccessException e) {
             throw new EntityNotFoundException("person id = " + id + " or " + srcPersonId);
         }
@@ -67,7 +67,7 @@ public class FriendshipStatusRepository {
     public void updateCode(Integer id, FriendshipStatusCode friendshipStatusCode) {
 
         String sql = "UPDATE friendship_status SET code = ? where id = ?";
-        jdbcTemplate.update(sql,friendshipStatusCode.name(),id);
+        jdbcTemplate.update(sql, friendshipStatusCode.name(), id);
     }
 
     public void delete(FriendshipStatus friendshipStatus) {
@@ -75,5 +75,10 @@ public class FriendshipStatusRepository {
         jdbcTemplate.update(sql);
     }
 
+    public List<FriendshipStatus> findByPersonId(Integer dstId, Integer srcId) {
+        String sql = "select fs.* from friendship_status fs join friendship f on fs.id = f.status_id " +
+                "where f.src_person_id = ? and f.dst_person_id = ?";
+        return jdbcTemplate.query(sql, rowMapper, srcId, dstId);
+    }
 
 }

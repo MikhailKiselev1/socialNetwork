@@ -12,5 +12,7 @@ public class City {
     private int id;
     private String title;
     private int countryId;
+    private String temp;
+    private String clouds;
 
 }

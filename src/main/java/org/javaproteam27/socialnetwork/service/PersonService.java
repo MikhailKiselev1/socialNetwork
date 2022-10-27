@@ -1,29 +1,26 @@
 package org.javaproteam27.socialnetwork.service;
 
 import lombok.RequiredArgsConstructor;
-
-import org.javaproteam27.socialnetwork.util.Redis;
 import org.javaproteam27.socialnetwork.model.dto.request.UserRq;
-import org.javaproteam27.socialnetwork.model.dto.response.ListResponseRs;
-import org.javaproteam27.socialnetwork.model.dto.response.PersonRs;
-import org.javaproteam27.socialnetwork.model.dto.response.ResponseRs;
-import org.javaproteam27.socialnetwork.model.dto.response.UserRs;
+import org.javaproteam27.socialnetwork.model.dto.response.*;
 import org.javaproteam27.socialnetwork.model.entity.Person;
+import org.javaproteam27.socialnetwork.model.enums.FriendshipStatusCode;
 import org.javaproteam27.socialnetwork.model.enums.MessagesPermission;
+import org.javaproteam27.socialnetwork.repository.FriendshipStatusRepository;
 import org.javaproteam27.socialnetwork.repository.PersonRepository;
 import org.javaproteam27.socialnetwork.security.jwt.JwtTokenProvider;
 import org.javaproteam27.socialnetwork.security.jwt.JwtUser;
+import org.javaproteam27.socialnetwork.util.Redis;
+import org.javaproteam27.socialnetwork.util.WeatherService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,8 +29,9 @@ public class PersonService {
 
     private final PersonRepository personRepository;
     private final JwtTokenProvider jwtTokenProvider;
-    private final PasswordEncoder passwordEncoder;
     private final Redis redis;
+    private final FriendshipStatusRepository friendshipStatusRepository;
+    private final WeatherService weatherService;
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     public Person findById(int id) {
@@ -66,7 +64,7 @@ public class PersonService {
                         .id(person.getId())
                         .firstName(person.getFirstName())
                         .lastName(person.getLastName())
-                        .photo(person.getPhoto())
+                        .photo(redis.getUrl(person.getId()))
                         .birthDate(person.getBirthDate())
                         .about(person.getAbout())
                         .phone(person.getPhone())
@@ -81,9 +79,8 @@ public class PersonService {
         return new ListResponseRs<>("", offset, itemPerPage, data);
     }
 
-    public PersonRs initialize(Integer personId){
+    public PersonRs getPersonRs(Person person){
 
-        Person person = findById(personId);
         return PersonRs.builder()
                 .id(person.getId())
                 .email(person.getEmail())
@@ -97,9 +94,18 @@ public class PersonService {
                 .messagesPermission(person.getMessagesPermission())
                 .isBlocked(person.getIsBlocked())
                 .photo(redis.getUrl(person.getId()))
+                .weather(getWeather(person))
                 .about(person.getAbout())
                 .lastOnlineTime(person.getLastOnlineTime())
+                .friendshipStatusCode(getFriendshipStatus(person.getId()))
+                .online(Objects.equals(person.getOnlineStatus(), "ONLINE"))
                 .build();
+    }
+
+    public PersonRs initialize(Integer personId){
+
+        Person person = findById(personId);
+        return getPersonRs(person);
     }
 
     public ResponseEntity<UserRs> editUser(UserRq request, String token) {
@@ -111,7 +117,7 @@ public class PersonService {
         String birthDate = request.getBirthDate().split("T")[0];
         LocalDate date = LocalDate.parse(birthDate, formatter);
 
-        person.setBirthDate(LocalDateTime.of(date, LocalTime.of(0,0,0,0)));
+        person.setBirthDate(date.toEpochDay());
         person.setPhone(request.getPhone());
         person.setAbout(request.getAbout());
         person.setCity(request.getCity());
@@ -123,8 +129,31 @@ public class PersonService {
         return ResponseEntity.ok(response);
     }
 
+    private FriendshipStatusCode getFriendshipStatus(Integer dstId) {
+        var srcId = getAuthorizedPerson().getId();
+        var friendStatus = friendshipStatusRepository.findByPersonId(dstId, srcId);
+        if (!friendStatus.isEmpty()) {
+            return friendStatus.get(0).getCode();
+        } else return FriendshipStatusCode.UNKNOWN;
+    }
+
     public ResponseRs<PersonRs> getUserInfo(int userId) {
 
         return new ResponseRs<>("", initialize(userId), null);
+    }
+
+    public Person getPersonByToken(String token) {
+        String email = jwtTokenProvider.getUsername(token);
+        return personRepository.findByEmail(email);
+    }
+
+    private WeatherRs getWeather(Person person) {
+        WeatherRs weatherRs;
+        if (person.getCity() != null) {
+            weatherRs = weatherService.getWeather(person.getCity());
+        } else {
+            weatherRs = weatherService.getWeather("Москва");
+        }
+        return weatherRs;
     }
 }

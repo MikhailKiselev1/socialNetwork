@@ -15,11 +15,11 @@ import java.util.List;
 @Repository
 @RequiredArgsConstructor
 public class NotificationRepository {
-    
+
     private final RowMapper<Notification> rowMapper = new NotificationMapper();
     private final JdbcTemplate jdbcTemplate;
-    
-    
+
+
     public Notification findById(int id) {
         try {
             String sql = "select * from notification where id = ?";
@@ -28,13 +28,13 @@ public class NotificationRepository {
             throw new EntityNotFoundException("notification id = " + id);
         }
     }
-    
+
     public List<Notification> findByPersonId(int personId) {
         try {
             String sql = "select * from notification where person_id = ?";
             return jdbcTemplate.query(sql, rowMapper, personId);
         } catch (EmptyResultDataAccessException e) {
-            throw new EntityNotFoundException("notification for person_id = " + personId);
+            throw new EntityNotFoundException("person_id = " + personId);
         }
     }
 
@@ -51,5 +51,4 @@ public class NotificationRepository {
                 notification.getPersonId(), notification.getEntityId(),
                 notification.getContact(), notification.isRead());
     }
-    
 }

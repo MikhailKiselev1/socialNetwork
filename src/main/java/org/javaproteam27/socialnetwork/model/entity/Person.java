@@ -4,18 +4,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.javaproteam27.socialnetwork.model.enums.MessagesPermission;
 
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-
 @Data
 @NoArgsConstructor
 public class Person {
 
-    private int id;
+    private Integer id;
     private String firstName;
     private String lastName;
-    private LocalDateTime regDate;
-    private LocalDateTime birthDate;
+    private Long regDate;
+    private Long birthDate;
     private String email;
     private String phone;
     private String password;
@@ -26,11 +23,10 @@ public class Person {
     private Integer confirmationCode;
     private Boolean isApproved;
     private MessagesPermission messagesPermission;
-    private LocalDateTime lastOnlineTime;
+    private Long lastOnlineTime;
     private Boolean isBlocked;
     private String token;
     private String changePasswordToken;
-
-    public void setBirthDate(LocalDateTime parse, int i, ZoneOffset utc) {
-    }
+    private String notificationsSessionId;
+    private String onlineStatus;
 }

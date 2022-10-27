@@ -3,11 +3,13 @@ package org.javaproteam27.socialnetwork.controller;
 import org.javaproteam27.socialnetwork.security.jwt.JwtTokenProvider;
 import org.javaproteam27.socialnetwork.security.jwt.JwtUser;
 import org.javaproteam27.socialnetwork.service.LoginService;
+import org.javaproteam27.socialnetwork.util.Redis;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,6 +20,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -40,6 +44,8 @@ public class NotificationControllerTest {
     private LoginService loginService;
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
+    @MockBean
+    private Redis redis;
 
     private final String notificationUrl = "/api/v1/notifications";
 
@@ -47,6 +53,9 @@ public class NotificationControllerTest {
     @Test
     @WithUserDetails("test@mail.ru")
     public void getNotificationsAuthorizedPersonIsOkResponseWithJsonContent() throws Exception {
+
+        when(redis.getUrl(anyInt())).thenReturn("test");
+
         this.mockMvc.perform(get(notificationUrl).header("Authorization", getTokenAuthorization()))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -56,6 +65,9 @@ public class NotificationControllerTest {
     @Test
     @WithUserDetails("test@mail.ru")
     public void markAsReadNotificationsAuthorizedPersonWithAllTrueIsOkResponseWithJsonContent() throws Exception {
+
+        when(redis.getUrl(anyInt())).thenReturn("test");
+
         this.mockMvc.perform(put(notificationUrl).header("Authorization", getTokenAuthorization())
                         .param("all", "true"))
                 .andDo(print())

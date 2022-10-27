@@ -9,30 +9,40 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @Repository
 @RequiredArgsConstructor
 public class PersonRepository {
 
+    public static final String PERSON_ID = "person id = ";
     private final RowMapper<Person> rowMapper = new PersonMapper();
     private final JdbcTemplate jdbcTemplate;
 
 
-    public void save(Person person) {
+    public Integer save(Person person) {
+        String sql = "insert into person(first_name, last_name, reg_date, email, " +
+                "password, photo, is_approved, last_online_time)" +
+                "values ('%s','%s','%s','%s','%s','%s','%b','%s')";
+        String sqlFormat = String.format(sql,
+                person.getFirstName(),
+                person.getLastName(),
+                new Timestamp(person.getRegDate()),
+                person.getEmail(),
+                person.getPassword(),
+                person.getPhoto(),
+                person.getIsApproved(),
+                new Timestamp(person.getLastOnlineTime()));
+        KeyHolder keyHolder = new GeneratedKeyHolder();
 
-        String sql = "insert into person(first_name, last_name, reg_date, birth_date, email, phone, " +
-                "password, photo, about, city, country, confirmation_code, is_approved, messages_permission, " +
-                "last_online_time, is_blocked) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-        jdbcTemplate.update(sql, person.getFirstName(), person.getLastName(), person.getRegDate(),
-                person.getBirthDate(), person.getEmail(), person.getPhone(), person.getPassword(),
-                person.getPhoto(), person.getAbout(), person.getCity(), person.getCountry(), person.getConfirmationCode(),
-                person.getIsApproved(), person.getMessagesPermission(), person.getLastOnlineTime(),
-                person.getIsBlocked());
+        jdbcTemplate.update(connection -> connection.prepareStatement(sqlFormat, new String[]{"id"}), keyHolder);
+        return (Integer) keyHolder.getKey();
     }
 
     public Person findById(int id) {
@@ -40,7 +50,7 @@ public class PersonRepository {
             String sql = "select * from person where id = ?";
             return jdbcTemplate.queryForObject(sql, rowMapper, id);
         } catch (EmptyResultDataAccessException e) {
-            throw new EntityNotFoundException("person id = " + id);
+            throw new EntityNotFoundException(PERSON_ID + id);
         }
     }
 
@@ -52,7 +62,7 @@ public class PersonRepository {
                     "where fs.code = 'FRIEND' and src_person_id = ?";
             return jdbcTemplate.query(sql, rowMapper, id);
         } catch (EmptyResultDataAccessException e) {
-            throw new EntityNotFoundException("person id = " + id);
+            throw new EntityNotFoundException(PERSON_ID + id);
         }
     }
 
@@ -108,9 +118,7 @@ public class PersonRepository {
         String buildQuery = "SELECT * FROM person WHERE id != " + authorizedPerson.getId() + " AND "
                 + String.join(" AND ", queryParts) + ";";
 
-        List<Person> filtered = filterBlockedPeople(jdbcTemplate.query(buildQuery, rowMapper), authorizedPerson.getId());
-
-        return filtered;
+        return filterBlockedPeople(jdbcTemplate.query(buildQuery, rowMapper), authorizedPerson.getId());
     }
 
     private List<Person> filterBlockedPeople(List<Person> peopleFound, int authorizedPersonId) {
@@ -138,9 +146,9 @@ public class PersonRepository {
                     "where fs.code = 'FRIEND' and src_person_id = ? or dst_person_id = ?";
 
 
-            return jdbcTemplate.query(sql, rowMapper, id,id);
+            return jdbcTemplate.query(sql, rowMapper, id, id);
         } catch (EmptyResultDataAccessException e) {
-            throw new EntityNotFoundException("person id = " + id);
+            throw new EntityNotFoundException(PERSON_ID + id);
         }
     }
 
@@ -148,13 +156,13 @@ public class PersonRepository {
         try {
             String sql;
             sql = "SELECT * FROM person p \n" +
-                    "join friendship f on f.dst_person_id = p.id\n" +
+                    "join friendship f on f.src_person_id = p.id\n" +
                     "join friendship_status fs on fs.id = f.status_id\n" +
-                    "where fs.code = 'REQUEST' and src_person_id = ?";
+                    "where fs.code = 'REQUEST' and dst_person_id = ?";
 
             return jdbcTemplate.query(sql, rowMapper, id);
         } catch (EmptyResultDataAccessException e) {
-            throw new EntityNotFoundException("person id = " + id);
+            throw new EntityNotFoundException(PERSON_ID + id);
         }
     }
 
@@ -163,7 +171,8 @@ public class PersonRepository {
         try {
             retValue = (jdbcTemplate.update("UPDATE person SET first_name = ?, last_name = ?, " +
                             "birth_date = ?, phone = ?, about = ?, city = ?, country = ?, messages_permission = ? " +
-                            "WHERE id = ?", person.getFirstName(), person.getLastName(), person.getBirthDate(),
+                            "WHERE id = ?", person.getFirstName(), person.getLastName(),
+                    new Timestamp(person.getBirthDate()),
                     person.getPhone(), person.getAbout(), person.getCity(), person.getCountry(),
                     person.getMessagesPermission().toString(), person.getId()) == 1);
         } catch (DataAccessException exception) {
@@ -218,5 +227,29 @@ public class PersonRepository {
         } catch (DataAccessException exception) {
             throw new ErrorException(exception.getMessage());
         }
+    }
+
+    public void updateNotificationsSessionId(Person person) {
+        String sql = "update person set notifications_session_id = ?, online_status = ?, last_online_time = ? " +
+                "where id = ?";
+        jdbcTemplate.update(sql, person.getNotificationsSessionId(),
+                person.getOnlineStatus(), new Timestamp(person.getLastOnlineTime()), person.getId());
+    }
+
+    public List<Person> findBySessionId(String sessionId) {
+        String sql = "select * from person where notifications_session_id = ?";
+        return jdbcTemplate.query(sql, rowMapper, sessionId);
+    }
+
+    public void deleteSessionId(Person person) {
+        String sql = "update person set notifications_session_id = null, online_status = 'OFFLINE', " +
+                "last_online_time = ? where id = ?";
+        jdbcTemplate.update(sql, new Timestamp(person.getLastOnlineTime()), person.getId());
+    }
+
+    public boolean checkEmailExists(String email) {
+        String sql = "select * from person where email = ?";
+        var rs = jdbcTemplate.query(sql, rowMapper, email);
+        return !rs.isEmpty();
     }
 }

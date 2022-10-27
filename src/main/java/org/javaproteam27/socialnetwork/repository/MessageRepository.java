@@ -80,8 +80,8 @@ public class MessageRepository {
 
     public List<Message> findByDialogId(Integer dialogId, Integer offset, Integer limit) {
 
-        String sql = "select * from message where dialog_id = ? " +
-                "order by time desc offset ? limit ?";
+        String sql = "select * from message where dialog_id = ? order by time desc";
+        sql = ((offset != null)&&(limit != null)) ? sql + " offset ? limit ?" : sql;
 
         try {
             return jdbcTemplate.query(sql, rowMapper, dialogId, offset, limit);
@@ -102,10 +102,11 @@ public class MessageRepository {
         return jdbcTemplate.queryForObject(sql, Integer.class, dialogId);
     }
 
-    public Integer countUnreadByDialogId(Integer dialogId) {
+    public Integer countUnreadByDialogIdAndRecipientId(Integer dialogId, Integer recipientId) {
 
-        String sql = "select count(*) from message where dialog_id = ? and read_status like 'SENT'";
-        return jdbcTemplate.queryForObject(sql, Integer.class, dialogId);
+        String sql = "select count(*) from message where dialog_id = ? and recipient_id = ? " +
+                "and read_status like 'SENT'";
+        return jdbcTemplate.queryForObject(sql, Integer.class, dialogId, recipientId);
     }
 
     public void deleteByDialogId(Integer dialogId) {
@@ -119,7 +120,7 @@ public class MessageRepository {
         }
     }
 
-    public void deleteById(Integer messageId) {
+    /*public void deleteById(Integer messageId) {
 
         String sql = "delete from message where id = ?";
 
@@ -128,7 +129,7 @@ public class MessageRepository {
         } catch (DataAccessException e) {
             throw new UnableUpdateEntityException("id = " + messageId);
         }
-    }
+    }*/
 
     public Integer getPersonalCount(int id) {
         try {

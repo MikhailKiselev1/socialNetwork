@@ -8,10 +8,11 @@ import org.javaproteam27.socialnetwork.model.entity.Dialog;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.Comparator;
+import java.sql.Timestamp;
 import java.util.List;
 
 @Repository
@@ -22,25 +23,23 @@ public class DialogRepository {
     private final JdbcTemplate jdbcTemplate;
     
     
-    private static List<Integer> sortIds(Integer firstPersonId, Integer secondPersonId) {
+    /*private static List<Integer> sortIds(Integer firstPersonId, Integer secondPersonId) {
         List<Integer> ids = new ArrayList<>();
         ids.add(firstPersonId);
         ids.add(secondPersonId);
         ids.sort(Comparator.naturalOrder());
         return ids;
-    }
+    }*/
     
     
-    public void save(Dialog dialog) {
-        
-        Integer firstPersonId = dialog.getFirstPersonId();
-        Integer secondPersonId = dialog.getSecondPersonId();
-    
-        List<Integer> sortedIds = sortIds(firstPersonId, secondPersonId);
-        String sql = "insert into dialog (first_person_id, second_person_id, last_message_id, last_active_time)" +
-                " values (?,?,?,?)";
-        jdbcTemplate.update(sql, sortedIds.get(0), sortedIds.get(1),
-                dialog.getLastMessageId(), dialog.getLastActiveTime());
+    public Integer save(Dialog dialog) {
+
+        String sqlQuery = "insert into dialog (first_person_id, second_person_id, last_message_id, last_active_time) " +
+                "values (" + dialog.getFirstPersonId() + ", " + dialog.getSecondPersonId() + ", " +
+                dialog.getLastMessageId() + ", '" + Timestamp.valueOf(dialog.getLastActiveTime()) + "')";
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        jdbcTemplate.update(connection -> connection.prepareStatement(sqlQuery, new String[]{"id"}), keyHolder);
+        return (Integer) keyHolder.getKey();
     }
     
     public void update(Dialog dialog) {
@@ -78,14 +77,16 @@ public class DialogRepository {
     
     public Dialog findByPersonIds(Integer firstPersonId, Integer secondPersonId) {
     
-        List<Integer> sortedIds = sortIds(firstPersonId, secondPersonId);
+//        List<Integer> sortedIds = sortIds(firstPersonId, secondPersonId);
     
-        String sql = "select * from dialog where first_person_id = ? and second_person_id = ?";
+//        String sql = "select * from dialog where first_person_id = ? and second_person_id = ?";
         
         try {
-            return jdbcTemplate.queryForObject(sql, rowMapper, sortedIds.get(0), sortedIds.get(1));
+            return jdbcTemplate.queryForObject("select * from dialog where first_person_id = ? and second_person_id = ?",
+                    rowMapper, firstPersonId, secondPersonId);
         } catch (EmptyResultDataAccessException e) {
-            throw new EntityNotFoundException("dialog with person ids = " + firstPersonId + " and " + secondPersonId);
+            return null;
+//            throw new EntityNotFoundException("dialog with person ids = " + firstPersonId + " and " + secondPersonId);
         }
     }
     
@@ -98,18 +99,18 @@ public class DialogRepository {
         }
     }
     
-    public Integer countByPersonId(Integer personId) {
+    /*public Integer countByPersonId(Integer personId) {
         
         String sql = "select count(*) from dialog where first_person_id = ? or second_person_id = ?";
         return jdbcTemplate.queryForObject(sql, Integer.class, personId, personId);
-    }
+    }*/
     
-    public Integer countByPersonIds(Integer firstPersonId, Integer secondPersonId) {
+    /*public Integer countByPersonIds(Integer firstPersonId, Integer secondPersonId) {
     
         List<Integer> sortedIds = sortIds(firstPersonId, secondPersonId);
         String sql = "select count(*) from dialog where first_person_id = ? and second_person_id = ?";
         return jdbcTemplate.queryForObject(sql, Integer.class, sortedIds.get(0), sortedIds.get(1));
-    }
+    }*/
     
     public void deleteById(Integer id) {
     

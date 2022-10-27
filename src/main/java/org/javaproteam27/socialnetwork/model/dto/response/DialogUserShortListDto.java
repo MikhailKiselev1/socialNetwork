@@ -8,7 +8,7 @@ import java.util.List;
 @Data
 public class DialogUserShortListDto {
     
-    @JsonProperty("users_ids")
+    @JsonProperty("user_ids")
     private List<Integer> userIds;
     
 }

@@ -5,6 +5,7 @@ import lombok.Data;
 
 @Data
 public class WebSocketMessageRq {
+//    private String text;
     @JsonProperty("dialog_id")
     private Integer dialogId;
     @JsonProperty("message_text")

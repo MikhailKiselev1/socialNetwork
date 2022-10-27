@@ -1,5 +1,8 @@
 package org.javaproteam27.socialnetwork.service;
 
+import org.javaproteam27.socialnetwork.model.dto.response.CurrencyRateRs;
+import org.javaproteam27.socialnetwork.model.entity.Currency;
+import org.javaproteam27.socialnetwork.repository.CurrencyRepository;
 import org.javaproteam27.socialnetwork.util.Redis;
 import org.javaproteam27.socialnetwork.handler.exception.InvalidRequestException;
 import org.javaproteam27.socialnetwork.model.dto.request.LoginRq;
@@ -8,6 +11,7 @@ import org.javaproteam27.socialnetwork.model.dto.response.ResponseRs;
 import org.javaproteam27.socialnetwork.model.entity.Person;
 import org.javaproteam27.socialnetwork.repository.PersonRepository;
 import org.javaproteam27.socialnetwork.security.jwt.JwtTokenProvider;
+import org.javaproteam27.socialnetwork.util.WeatherService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,29 +43,38 @@ public class LoginServiceTest {
     private PasswordEncoder passwordEncoder;
 
     @Mock
+    private WeatherService weatherService;
+
+    @Mock
     private Redis redis;
+
+    @Mock
+    private CurrencyRepository currencyRepository;
 
     private LoginService loginService;
 
     @Before
     public void setUp() {
-        loginService = new LoginService(jwtTokenProvider, personRepository, passwordEncoder, redis);
+        loginService = new LoginService(jwtTokenProvider, personRepository, passwordEncoder, weatherService,
+                redis, currencyRepository);
     }
 
     @Test
-    public void profileResponseAuthorizedRqAllDataIsOk() throws IOException {
+    public void profileResponseAuthorizedRqAllDataIsOk() {
         String token = "token";
 
         Person person = new Person();
         person.setEmail("email");
         person.setPassword("pass");
         person.setIsBlocked(false);
+        Currency currency = Currency.builder().build();
 
         Integer expectedOffset = 0;
         Integer expectedPerPage = 20;
 
         when(jwtTokenProvider.getUsername(token)).thenReturn("email");
         when(personRepository.findByEmail("email")).thenReturn(person);
+        when(currencyRepository.findByName(anyString())).thenReturn(currency);
 
         var response = loginService.profileResponse(token);
 
@@ -73,7 +86,7 @@ public class LoginServiceTest {
     }
 
     @Test
-    public void loginCorrectRqAllDataIsOk() throws IOException {
+    public void loginCorrectRqAllDataIsOk() {
         var password = passwordEncoder.encode("test1234");
         LoginRq loginRq = new LoginRq();
         loginRq.setEmail("test@mail.ru");
@@ -133,4 +146,6 @@ public class LoginServiceTest {
         assertNotNull(response.getData());
         assertEquals(expectedData, response.getData());
     }
+
+
 }

@@ -5,11 +5,12 @@ import org.javaproteam27.socialnetwork.model.dto.response.ListResponseRs;
 import org.javaproteam27.socialnetwork.model.dto.response.ResponseRs;
 import org.javaproteam27.socialnetwork.model.entity.Person;
 import org.javaproteam27.socialnetwork.repository.CommentRepository;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.List;
@@ -20,7 +21,8 @@ import static org.mockito.Mockito.*;
 
 @SpringBootTest
 @RunWith(SpringRunner.class)
-class CommentServiceTest {
+@ActiveProfiles("test")
+public class CommentServiceTest {
 
     @MockBean
     PersonService personService;
@@ -51,7 +53,7 @@ class CommentServiceTest {
     }
 
     @Test
-    void addComment() {
+    public void addComment() {
 
         int postId = 0;
         String commentText = "comment text";
@@ -68,7 +70,7 @@ class CommentServiceTest {
     }
 
     @Test
-    void editComment() {
+    public void editComment() {
 
         int postId = 0;
         int commentId = 0;
@@ -86,7 +88,7 @@ class CommentServiceTest {
     }
 
     @Test
-    void getCommentsByPostIdInResponse() {
+    public void getCommentsByPostIdInResponse() {
 
         int postId = 0;
         int offset = 0;
@@ -97,7 +99,7 @@ class CommentServiceTest {
     }
 
     @Test
-    void deleteAllCommentsToPost() {
+    public void deleteAllCommentsToPost() {
 
         int postId = 0;
         commentService.deleteAllCommentsToPost(postId);
@@ -106,7 +108,7 @@ class CommentServiceTest {
     }
 
     @Test
-    void deleteComment() {
+    public void deleteComment() {
 
         int postId = 0;
         int commentId = 0;
@@ -116,7 +118,7 @@ class CommentServiceTest {
     }
 
     @Test
-    void initializeCommentsToPost() {
+    public void initializeCommentsToPost() {
 
         Integer postId = 0;
         Integer offset = 0;

@@ -2,7 +2,7 @@ package org.javaproteam27.socialnetwork.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.javaproteam27.socialnetwork.model.dto.request.LikeRq;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -27,10 +27,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 @Sql(scripts = {"classpath:sql/person/insert-person.sql",
         "classpath:sql/post/insert-post.sql",
-        "classpath:sql/post/insert-like.sql"})
+        "classpath:sql/post/insert-like.sql",
+        "classpath:sql/person/insert-person-settings.sql"})
 @Transactional
 @WithUserDetails("test@mail.ru")
-class LikesControllerTest {
+public class LikesControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -40,7 +41,7 @@ class LikesControllerTest {
     private final String likesToPostUrl = "/api/v1/likes";
 
     @Test
-    void putLike() throws Exception {
+    public void putLike() throws Exception {
 
         LikeRq rq = LikeRq.builder().type("Post").itemId(1).build();
         this.mockMvc.perform(put(likesToPostUrl).content(objectMapper.writeValueAsString(rq))
@@ -50,7 +51,7 @@ class LikesControllerTest {
     }
 
     @Test
-    void deleteLike() throws Exception {
+    public void deleteLike() throws Exception {
 
         this.mockMvc.perform(delete(likesToPostUrl).param("item_id", "1").param("type", "Post"))
                 .andDo(print()).andExpect(status().isOk())
@@ -58,7 +59,7 @@ class LikesControllerTest {
     }
 
     @Test
-    void getLikeList() throws Exception {
+    public void getLikeList() throws Exception {
 
         this.mockMvc.perform(get(likesToPostUrl).param("item_id", "1").param("type", "Post"))
                 .andDo(print()).andExpect(status().isOk())

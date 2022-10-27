@@ -1,13 +1,15 @@
 package org.javaproteam27.socialnetwork.util;
 
-import com.lambdaworks.redis.RedisClient;
-import com.lambdaworks.redis.RedisConnection;
-import com.lambdaworks.redis.RedisURI;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.javaproteam27.socialnetwork.config.RedisConfig;
 import org.javaproteam27.socialnetwork.repository.PersonRepository;
-import org.javaproteam27.socialnetwork.util.DropBox;
+import org.redisson.Redisson;
+import org.redisson.api.RMap;
+import org.redisson.api.RedissonClient;
+import org.redisson.client.RedisConnectionException;
+import org.redisson.client.codec.Codec;
+import org.redisson.config.Config;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -18,30 +20,43 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class Redis {
 
-    private RedisClient redisClient;
-    private RedisConnection<String, String> connection;
+    // Объект для работы с Redis
+    private RedissonClient redisson;
+    //хэшмеп для фоток
+    private RMap<String, String> usersPhoto;
+    private final String name = "USER_PHOTO";
     private final PersonRepository personRepository;
     private final DropBox dropBox;
     private final RedisConfig redisConfig;
 
     private void init() {
-            redisClient = new RedisClient(
-                    RedisURI.create(redisConfig.getUrl()));
-            connection = redisClient.connect();
+        Config config = new Config();
+        config.useSingleServer().setAddress(redisConfig.getUrl());
+        try {
+            redisson = Redisson.create(config);
+        } catch (RedisConnectionException Exc) {
+            System.out.println("Не удалось подключиться к Redis");
+            System.out.println(Exc.getMessage());
+        }
+        usersPhoto = redisson.getMap(name);
     }
 
     public void add(Integer id, String url) {
-        connection.set(String.valueOf(id), dropBox.getLinkImages(url));
+        String currentUrl = dropBox.getLinkImages(url);
+        if (usersPhoto.containsKey(String.valueOf(id))) {
+            usersPhoto.fastRemove(String.valueOf(id));
+        }
+        usersPhoto.fastPut(String.valueOf(id), currentUrl);
     }
 
     public String getUrl(Integer id) {
-        return connection.get(String.valueOf(id));
+        return usersPhoto.get(String.valueOf(id));
     }
 
     @Scheduled(initialDelay = 6000, fixedDelayString = "PT24H")
     @Async
     private void updateUrl() {
-        if (connection == null) {
+        if (redisson == null) {
             init();
         }
         personRepository.findAll().forEach(person ->
@@ -49,8 +64,7 @@ public class Redis {
     }
 
     public void shutdown() {
-        connection.close();
-        redisClient.shutdown();
+        redisson.shutdown();
     }
 
 }

@@ -70,7 +70,8 @@ public class JwtTokenProvider {
         try {
             Jws<Claims> claims = Jwts.parser().setSigningKey(secret).parseClaimsJws(token);
 
-            if (claims.getBody().getExpiration().before(new Date())) {
+            if (claims.getBody().getExpiration().before(new Date()) ||
+            claims.getBody().isEmpty()) {
                 return false;
             }
 

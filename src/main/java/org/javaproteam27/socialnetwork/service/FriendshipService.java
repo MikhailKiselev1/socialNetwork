@@ -1,6 +1,7 @@
 package org.javaproteam27.socialnetwork.service;
 
 import lombok.RequiredArgsConstructor;
+import org.javaproteam27.socialnetwork.handler.exception.InvalidRequestException;
 import org.javaproteam27.socialnetwork.model.dto.response.FriendshipRs;
 import org.javaproteam27.socialnetwork.model.entity.Friendship;
 import org.javaproteam27.socialnetwork.model.enums.FriendshipStatusCode;
@@ -35,7 +36,7 @@ public class FriendshipService {
         return friendshipRepository.getStatus(id, srcPersonId);
     }
 
-    public FriendshipRs addFriendShip(int id, int friendshipStatusId, int srcPersonId){
+    public FriendshipRs addFriendShip(int id, int friendshipStatusId, int srcPersonId) {
         HashMap<String, String> messageMap = new HashMap<>();
         LocalDateTime localDateTime = LocalDateTime.now();
         if (friendshipStatusId != -1) {
@@ -55,26 +56,20 @@ public class FriendshipService {
                     "",
                     localDateTime,
                     messageMap);
-        }else {
-            messageMap.put("message", "Запрос уже отправлен");
-            return new FriendshipRs(
-                    "",
-                    localDateTime,
-                    messageMap);
+        } else {
+            throw new InvalidRequestException("Friend request already exists");
         }
     }
 
 
-
-
-    public void deleteFriendShip(int srcPersonId, int dstPersonId){
+    public void deleteFriendShip(int srcPersonId, int dstPersonId) {
         Friendship friendship = new Friendship();
         friendship.setSrcPersonId(srcPersonId);
         friendship.setDstPersonId(dstPersonId);
         friendshipRepository.delete(friendship);
     }
 
-    public List<Friendship> findByFriendShip(int srcPersonId, int dstPersonId){
+    public List<Friendship> findByFriendShip(int srcPersonId, int dstPersonId) {
         return friendshipRepository.findByFriendShip(srcPersonId, dstPersonId);
     }
 

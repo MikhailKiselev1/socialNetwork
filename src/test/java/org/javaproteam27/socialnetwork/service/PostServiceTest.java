@@ -6,7 +6,7 @@ import org.javaproteam27.socialnetwork.model.dto.response.PostRs;
 import org.javaproteam27.socialnetwork.model.dto.response.ResponseRs;
 import org.javaproteam27.socialnetwork.repository.PostRepository;
 import org.javaproteam27.socialnetwork.repository.TagRepository;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -22,7 +22,7 @@ import static org.junit.Assert.*;
 @SpringBootTest
 @RunWith(SpringRunner.class)
 @ActiveProfiles("test")
-class PostServiceTest {
+public class PostServiceTest {
     @MockBean
     private PostRepository postRepository;
     @MockBean
@@ -48,7 +48,7 @@ class PostServiceTest {
     }
 
     @Test
-    void publishPost() {
+    public void publishPost() {
         PostRq testPost = PostRq.builder().postText("Test post").tags(List.of("test_post")).title("Test post").build();
         ResponseRs<PostRs> response = postService.publishPost(System.currentTimeMillis(), testPost, 1);
 
@@ -57,7 +57,7 @@ class PostServiceTest {
 
 
     @Test
-    void findAllPosts() {
+    public void findAllPosts() {
         int offset = 0;
         int itemPerPage = 20;
         ListResponseRs<PostRs> response = postService.findAllPosts(offset, itemPerPage);
@@ -66,7 +66,7 @@ class PostServiceTest {
     }
 
     @Test
-    void findAllUserPosts() {
+    public void findAllUserPosts() {
         int offset = 0;
         int itemPerPage = 20;
         int authorId = 1;
@@ -76,7 +76,7 @@ class PostServiceTest {
     }
 
     @Test
-    void deletePost() {
+    public void deletePost() {
         int postId = 1;
         ResponseRs<PostRs> response = postService.softDeletePost(postId);
 
@@ -84,7 +84,7 @@ class PostServiceTest {
     }
 
     @Test
-    void updatePost() {
+    public void updatePost() {
         int postId = 0;
         String title = "post title";
         String postText = "post text";
@@ -95,7 +95,7 @@ class PostServiceTest {
     }
 
     @Test
-    void findPost() {
+    public void findPost() {
         String text = "post text";
         Long dateFrom = System.currentTimeMillis() - 100_000;
         Long dateTo = System.currentTimeMillis();
@@ -110,7 +110,7 @@ class PostServiceTest {
     }
 
     @Test
-    void getPost() {
+    public void getPost() {
         int postId = 0;
         ResponseRs<PostRs> response = postService.getPost(postId);
 

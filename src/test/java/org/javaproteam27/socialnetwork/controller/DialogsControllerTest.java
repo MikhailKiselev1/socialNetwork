@@ -2,10 +2,8 @@ package org.javaproteam27.socialnetwork.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.javaproteam27.socialnetwork.handler.exception.EntityNotFoundException;
-import org.javaproteam27.socialnetwork.handler.exception.UnableCreateEntityException;
-import org.javaproteam27.socialnetwork.model.dto.request.WebSocketMessageRq;
+import org.javaproteam27.socialnetwork.model.dto.request.MessageRq;
 import org.javaproteam27.socialnetwork.model.dto.response.DialogUserShortListDto;
-import org.javaproteam27.socialnetwork.model.dto.response.MessageSendRequestBodyRs;
 import org.javaproteam27.socialnetwork.security.jwt.JwtTokenProvider;
 import org.javaproteam27.socialnetwork.security.jwt.JwtUser;
 import org.junit.Test;
@@ -69,15 +67,14 @@ public class DialogsControllerTest {
 
     @Test
     @WithUserDetails("test@mail.ru")
-    public void createDialogsWithExistsDataUnableCreateException() throws Exception {
+    public void createDialogsWithExistsData() throws Exception {
         DialogUserShortListDto rq = new DialogUserShortListDto();
         rq.setUserIds(List.of(2));
 
         this.mockMvc.perform(post(url).content(objectMapper.writeValueAsString(rq))
                         .contentType(MediaType.APPLICATION_JSON).header("Authorization", getTokenAuthorization()))
-                .andDo(print()).andExpect(status().is4xxClientError())
-                .andExpect(mvcResult ->
-                        mvcResult.getResolvedException().getClass().equals(UnableCreateEntityException.class));
+                .andDo(print()).andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 
     @Test
@@ -121,7 +118,7 @@ public class DialogsControllerTest {
     @Test
     @WithUserDetails("test@mail.ru")
     public void editMessageWithCorrectDataIsOkResponse() throws Exception {
-        var rq = new MessageSendRequestBodyRs();
+        var rq = new MessageRq();
         rq.setMessageText("Text");
 
         this.mockMvc.perform(put(url + "/1/messages/1").content(objectMapper.writeValueAsString(rq))

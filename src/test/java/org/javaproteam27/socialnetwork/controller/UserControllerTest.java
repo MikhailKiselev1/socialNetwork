@@ -39,7 +39,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringRunner.class)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@Sql(scripts = {"classpath:sql/person/insert-person.sql", "classpath:sql/post/insert-post.sql"})
+@Sql(scripts = {"classpath:sql/person/insert-person.sql",
+                "classpath:sql/post/insert-post.sql",
+                "classpath:sql/city/insert-city.sql",
+                "classpath:sql/currency/insert-currency.sql"})
 @Transactional
 public class UserControllerTest {
 
@@ -56,7 +59,6 @@ public class UserControllerTest {
 
     private final static String meUrl = "/api/v1/users/me";
     private final static String userUrl = "/api/v1/users";
-    private final Long dayInMillis = 86_400_000L;
 
 
     private String getTokenAuthorization() {
@@ -108,8 +110,9 @@ public class UserControllerTest {
     public void publishPost() throws Exception {
 
         PostRq rq = PostRq.builder().postText("New post from test").tags(List.of()).title("Test post").build();
-        Long pubDate = System.currentTimeMillis() + dayInMillis;
-        this.mockMvc.perform(post(userUrl + "/1/wall").param("publish_date", pubDate.toString())
+        long dayInMillis = 86_400_000L;
+        long pubDate = System.currentTimeMillis() + dayInMillis;
+        this.mockMvc.perform(post(userUrl + "/1/wall").param("publish_date", Long.toString(pubDate))
                 .content(objectMapper.writeValueAsString(rq))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())

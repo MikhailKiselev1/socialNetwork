@@ -40,7 +40,7 @@ public class UserController {
     }
 
     @GetMapping("me")
-    public ResponseRs<PersonRs> profileResponse(@RequestHeader("Authorization") String token) throws IOException, DbxException {
+    public ResponseRs<PersonRs> profileResponse(@RequestHeader("Authorization") String token) throws IOException {
         return loginService.profileResponse(token);
     }
 

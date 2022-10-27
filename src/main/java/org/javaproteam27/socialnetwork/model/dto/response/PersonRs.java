@@ -5,9 +5,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import org.javaproteam27.socialnetwork.model.enums.FriendshipStatusCode;
 import org.javaproteam27.socialnetwork.model.enums.MessagesPermission;
-
-import java.time.LocalDateTime;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 
@@ -23,9 +22,9 @@ public class PersonRs {
     @JsonProperty("last_name")
     private String lastName;
     @JsonProperty("reg_date")
-    private LocalDateTime regDate;
+    private Long regDate;
     @JsonProperty("birth_date")
-    private LocalDateTime birthDate;
+    private Long birthDate;
     private String email;
     private String phone;
     private String photo;
@@ -35,9 +34,14 @@ public class PersonRs {
     @JsonProperty("messages_permission")
     private MessagesPermission messagesPermission;
     @JsonProperty("last_online_time")
-    private LocalDateTime lastOnlineTime;
+    private Long lastOnlineTime;
     @JsonProperty("is_blocked")
     private boolean isBlocked;
     private String token;
+    @JsonProperty("friend_status")
+    private FriendshipStatusCode friendshipStatusCode;
+    private WeatherRs weather;
+    private CurrencyRateRs currency;
+    private boolean online;
 }
 

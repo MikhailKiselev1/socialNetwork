@@ -16,11 +16,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FriendshipRepository {
 
+    public static final String PERSON_ID = "person id = ";
     private final RowMapper<Friendship> rowMapper = new FriendshipMapper();
     private final JdbcTemplate jdbcTemplate;
 
     public List<Friendship> getStatus(int id, int srcPersonId) {
-        String sql = "SELECT * FROM public.friendship f\n" +
+        String sql = "SELECT f.* FROM public.friendship f\n" +
                 "join friendship_status fs on f.status_id = fs.id\n" +
                 "where (fs.code = 'REQUEST' or fs.code = 'FRIEND') and f.src_person_id = ? and f.dst_person_id = ? " +
                 "or (fs.code = 'REQUEST' or fs.code = 'FRIEND') and f.src_person_id = ? and f.dst_person_id = ? ";
@@ -40,7 +41,7 @@ public class FriendshipRepository {
             String sql = "select * from friendship where src_person_id = ? or dst_person_id = ?";
             return jdbcTemplate.query(sql, rowMapper, id, id);
         } catch (EmptyResultDataAccessException e) {
-            throw new EntityNotFoundException("person id = " + id);
+            throw new EntityNotFoundException(PERSON_ID + id);
         }
     }
 
@@ -51,7 +52,7 @@ public class FriendshipRepository {
                     "where (src_person_id = ? or dst_person_id = ?) and code like ?";
             return jdbcTemplate.query(sql, rowMapper, id, id, statusCode.toString());
         } catch (EmptyResultDataAccessException e) {
-            throw new EntityNotFoundException("person id = " + id + " and status = " + statusCode);
+            throw new EntityNotFoundException(PERSON_ID + id + " and status = " + statusCode);
         }
     }
 
@@ -61,7 +62,7 @@ public class FriendshipRepository {
             String sql = "delete from friendship where src_person_id = " + friendship.getSrcPersonId() + " AND  dst_person_id = " + friendship.getDstPersonId();
             jdbcTemplate.update(sql);
         } catch (EmptyResultDataAccessException e) {
-            throw new EntityNotFoundException("person id = " + friendship.getSrcPersonId() + " or " + friendship.getDstPersonId());
+            throw new EntityNotFoundException(PERSON_ID + friendship.getSrcPersonId() + " or " + friendship.getDstPersonId());
         }
 
     }
@@ -71,7 +72,7 @@ public class FriendshipRepository {
             String sql = "select * from friendship where src_person_id = ? and dst_person_id = ?";
             return jdbcTemplate.query(sql, rowMapper, srcPersonId, dstPersonId);
         } catch (EmptyResultDataAccessException e) {
-            throw new EntityNotFoundException("person id = " + srcPersonId + " or " + dstPersonId);
+            throw new EntityNotFoundException(PERSON_ID + srcPersonId + " or " + dstPersonId);
         }
     }
 
@@ -80,7 +81,7 @@ public class FriendshipRepository {
             String sql = "select * from friendship where src_person_id = ? and dst_person_id = ? and status_id = ?";
             return jdbcTemplate.queryForObject(sql, rowMapper, srcPersonId, dstPersonId, statusId);
         } catch (EmptyResultDataAccessException e) {
-            throw new EntityNotFoundException("person id = " + srcPersonId + " or " + dstPersonId + " or " + statusId);
+            throw new EntityNotFoundException(PERSON_ID + srcPersonId + " or " + dstPersonId + " or " + statusId);
         }
     }
 
@@ -91,7 +92,7 @@ public class FriendshipRepository {
                     "where (src_person_id = ?) and code like 'FRIEND'";
             return jdbcTemplate.query(sql, rowMapper, id);
         } catch (EmptyResultDataAccessException e) {
-            throw new EntityNotFoundException("person id = " + id);
+            throw new EntityNotFoundException(PERSON_ID + id);
         }
     }
 

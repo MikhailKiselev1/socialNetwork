@@ -5,11 +5,13 @@ import org.javaproteam27.socialnetwork.model.entity.*;
 import org.javaproteam27.socialnetwork.model.enums.NotificationType;
 import org.javaproteam27.socialnetwork.repository.*;
 import org.javaproteam27.socialnetwork.security.jwt.JwtTokenProvider;
+import org.javaproteam27.socialnetwork.util.Redis;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -43,6 +45,12 @@ public class NotificationServiceTest {
     private LikeRepository likeRepository;
     @Mock
     private MessageRepository messageRepository;
+    @Mock
+    private SimpMessagingTemplate simpMessagingTemplate;
+    @Mock
+    private PersonSettingsRepository personSettingsRepository;
+    @Mock
+    private Redis redis;
 
     private NotificationService notificationService;
 
@@ -50,7 +58,19 @@ public class NotificationServiceTest {
     public void setUp() {
         notificationService = new NotificationService(personService, personRepository, jwtTokenProvider,
                 notificationRepository, friendshipRepository, postRepository, commentRepository,
-                likeRepository, messageRepository);
+                likeRepository, messageRepository, simpMessagingTemplate, personSettingsRepository, redis);
+
+        var ps = PersonSettings.builder()
+                .postNotification(true)
+                .postCommentNotification(true)
+                .commentCommentNotification(true)
+                .friendRequestNotification(true)
+                .likeNotification(true)
+                .friendBirthdayNotification(true)
+                .messageNotification(true)
+                .build();
+
+        when(personSettingsRepository.findByPersonId(anyInt())).thenReturn(ps);
     }
 
     @Test
@@ -61,6 +81,7 @@ public class NotificationServiceTest {
 
         Post post = Post.builder().authorId(1).title("title").build();
         Person person = new Person();
+        person.setId(1);
         person.setFirstName("Test");
         person.setLastName("Testov");
         person.setPhoto("photo");
@@ -116,13 +137,17 @@ public class NotificationServiceTest {
         String token = "token";
         int offset = 0;
         int perPage = 20;
+        Person person = new Person();
+        person.setId(1);
+        person.setFirstName("Test");
+        person.setLastName("Testov");
 
         List<Notification> expectedList = new ArrayList<>();
         expectedList.add(generateNotification(POST));
         expectedList.get(0).setRead(true);
 
         when(jwtTokenProvider.getUsername(token)).thenReturn("email");
-        when(personRepository.findByEmail("email")).thenReturn(new Person());
+        when(personRepository.findByEmail("email")).thenReturn(person);
         when(notificationRepository.findByPersonId(anyInt())).thenReturn(expectedList);
 
         var response = notificationService.getNotifications(token, offset, perPage);
@@ -138,6 +163,7 @@ public class NotificationServiceTest {
 
         Comment comment = Comment.builder().authorId(1).build();
         Person person = new Person();
+        person.setId(1);
         person.setFirstName("Test");
         person.setLastName("Testov");
         person.setPhoto("photo");
@@ -204,10 +230,13 @@ public class NotificationServiceTest {
     @Test
     public void markAsReadNotificationBadPersonIdRqNotificationsNotFoundThrown() {
         String token = "token";
+        Person person = new Person();
+        person.setId(1);
 
         when(jwtTokenProvider.getUsername(token)).thenReturn("email");
-        when(personRepository.findByEmail("email")).thenReturn(new Person());
+        when(personRepository.findByEmail("email")).thenReturn(person);
         when(notificationRepository.findByPersonId(anyInt())).thenReturn(new ArrayList<>());
+        when(personRepository.findById(anyInt())).thenReturn(person);
 
         InvalidRequestException thrown = assertThrows(InvalidRequestException.class,
                 () -> notificationService.markAsReadNotification(token, 1, true));
@@ -225,10 +254,13 @@ public class NotificationServiceTest {
         Post post = Post.builder().id(0).authorId(1).build();
         Person person = new Person();
         person.setId(5);
+        person.setFirstName("test");
+        person.setLastName("test");
         Comment comment = Comment.builder().id(2).authorId(3).parentId(4).build();
 
         when(postRepository.findPostById(anyInt())).thenReturn(post);
         when(personService.getAuthorizedPerson()).thenReturn(person);
+        when(personRepository.findById(anyInt())).thenReturn(person);
         when(commentRepository.getCommentById(anyInt())).thenReturn(comment);
 
         notificationService.createCommentNotification(post.getId(), System.currentTimeMillis(), comment.getId(),
@@ -246,6 +278,7 @@ public class NotificationServiceTest {
 
         when(postRepository.findPostById(anyInt())).thenReturn(post);
         when(personService.getAuthorizedPerson()).thenReturn(person);
+        when(personRepository.findById(anyInt())).thenReturn(person);
         when(commentRepository.getCommentById(anyInt())).thenReturn(comment);
 
         notificationService.createCommentNotification(post.getId(), System.currentTimeMillis(), comment.getId(),
@@ -296,6 +329,8 @@ public class NotificationServiceTest {
 
         when(commentRepository.getCommentById(anyInt())).thenReturn(comment);
         when(personService.getAuthorizedPerson()).thenReturn(person);
+        when(personRepository.findById(anyInt())).thenReturn(person);
+
 
         notificationService.createSubCommentNotification(comment.getParentId(), System.currentTimeMillis(),
                 comment.getId());
@@ -322,8 +357,14 @@ public class NotificationServiceTest {
     public void createFriendshipNotificationWithCorrectDataSaveOnceTimes() {
         Friendship friendship = new Friendship();
         friendship.setId(1);
+        friendship.setSrcPersonId(2);
+        Person person = new Person();
+        person.setId(1);
 
         when(friendshipRepository.findOneByIdAndFriendshipStatus(anyInt(), anyInt(), anyInt())).thenReturn(friendship);
+        when(personRepository.findById(anyInt())).thenReturn(person);
+        when(friendshipRepository.findById(anyInt())).thenReturn(friendship);
+
 
         notificationService.createFriendshipNotification(1, 2, 3);
 
@@ -334,10 +375,14 @@ public class NotificationServiceTest {
     public void createPostNotificationWithCorrectDataSaveOnceTimes() {
         Friendship friendship = new Friendship();
         friendship.setDstPersonId(1);
-
         List<Friendship> expectedList = List.of(friendship);
+        Person person = new Person();
+        person.setId(1);
+        Post post = Post.builder().title("title").build();
 
         when(friendshipRepository.findAllFriendsByPersonId(anyInt())).thenReturn(expectedList);
+        when(personRepository.findById(anyInt())).thenReturn(person);
+        when(postRepository.findPostById(anyInt())).thenReturn(post);
 
         notificationService.createPostNotification(1, System.currentTimeMillis(), 2);
 
@@ -349,9 +394,13 @@ public class NotificationServiceTest {
         Person person = new Person();
         person.setId(1);
         Post post = Post.builder().id(2).authorId(3).build();
+        PostLike postLike = PostLike.builder().personId(1).build();
 
         when(personService.getAuthorizedPerson()).thenReturn(person);
         when(postRepository.findPostById(anyInt())).thenReturn(post);
+        when(personRepository.findById(anyInt())).thenReturn(person);
+        when(likeRepository.findById(anyInt())).thenReturn(postLike);
+
 
         notificationService.createPostLikeNotification(1, System.currentTimeMillis(), post.getId(), "Post");
 
@@ -377,9 +426,13 @@ public class NotificationServiceTest {
         Person person = new Person();
         person.setId(1);
         Comment comment = Comment.builder().id(2).authorId(3).build();
+        PostLike postLike = PostLike.builder().personId(1).build();
 
         when(personService.getAuthorizedPerson()).thenReturn(person);
         when(commentRepository.getCommentById(anyInt())).thenReturn(comment);
+        when(personRepository.findById(anyInt())).thenReturn(person);
+        when(likeRepository.findById(anyInt())).thenReturn(postLike);
+
 
         notificationService.createPostLikeNotification(1, System.currentTimeMillis(), comment.getId(),
                 "Comment");
@@ -396,6 +449,8 @@ public class NotificationServiceTest {
         when(jwtTokenProvider.getUsername(anyString())).thenReturn("e");
         when(personRepository.findByEmail(anyString())).thenReturn(person);
         when(messageRepository.findById(anyInt())).thenReturn(message);
+        when(personRepository.findById(anyInt())).thenReturn(person);
+
 
         notificationService.createMessageNotification(2, System.currentTimeMillis(), 4, "t");
 
@@ -445,6 +500,8 @@ public class NotificationServiceTest {
 
         when(personRepository.getByBirthDay(anyString())).thenReturn(personList);
         when(friendshipRepository.findAllFriendsByPersonId(anyInt())).thenReturn(friendShipList);
+        when(personRepository.findById(anyInt())).thenReturn(person);
+
 
         notificationService.createFriendBirthdayNotification();
 

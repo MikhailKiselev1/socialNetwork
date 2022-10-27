@@ -1,11 +1,14 @@
 package org.javaproteam27.socialnetwork.controller;
 
+import org.javaproteam27.socialnetwork.model.dto.response.PersonRs;
 import org.javaproteam27.socialnetwork.model.entity.Dialog;
 import org.javaproteam27.socialnetwork.model.entity.Message;
+import org.javaproteam27.socialnetwork.model.entity.Person;
 import org.javaproteam27.socialnetwork.repository.DialogRepository;
 import org.javaproteam27.socialnetwork.repository.MessageRepository;
 import org.javaproteam27.socialnetwork.security.jwt.JwtTokenProvider;
 import org.javaproteam27.socialnetwork.security.jwt.JwtUser;
+import org.javaproteam27.socialnetwork.service.PersonService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -51,6 +54,9 @@ public class DialogsControllerMockTest {
     @MockBean
     private MessageRepository messageRepository;
 
+    @MockBean
+    private PersonService personService;
+
     private final String url = "/api/v1/dialogs";
 
 
@@ -66,9 +72,13 @@ public class DialogsControllerMockTest {
         var dialog = Dialog.builder().id(1).firstPersonId(1).secondPersonId(2).lastMessageId(1).build();
         var message = Message.builder().id(1).messageText("text").authorId(1).recipientId(2)
                 .time(LocalDateTime.now()).build();
+        Person person = new Person();
+        person.setId(1);
 
         when(messageRepository.findById(anyInt())).thenReturn(message);
         when(dialogRepository.findByPersonId(anyInt(), anyInt(), anyInt())).thenReturn(List.of(dialog));
+        when(personService.getPersonRs(any())).thenReturn(PersonRs.builder().id(2).build());
+        when(personService.getPersonByToken(anyString())).thenReturn(person);
 
         this.mockMvc.perform(get(url).header("Authorization", getTokenAuthorization()))
                 .andDo(print()).andExpect(status().isOk())
@@ -79,7 +89,10 @@ public class DialogsControllerMockTest {
     @WithUserDetails("test@mail.ru")
     public void getMessagesByDialogWithCorrectDataIsOkResponse() throws Exception {
         var message = Message.builder().id(1).messageText("text").authorId(1).recipientId(2).build();
+        Person person = new Person();
+        person.setId(1);
         when(messageRepository.findByDialogId(anyInt(), anyInt(), anyInt())).thenReturn(List.of(message));
+        when(personService.getAuthorizedPerson()).thenReturn(person);
 
         this.mockMvc.perform(get(url + "/1/messages").header("Authorization", getTokenAuthorization()))
                 .andDo(print()).andExpect(status().isOk())

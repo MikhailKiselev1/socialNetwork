@@ -4,11 +4,12 @@ import org.javaproteam27.socialnetwork.model.dto.response.LikeRs;
 import org.javaproteam27.socialnetwork.model.dto.response.ResponseRs;
 import org.javaproteam27.socialnetwork.model.entity.Person;
 import org.javaproteam27.socialnetwork.repository.LikeRepository;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.junit.Assert.assertEquals;
@@ -17,7 +18,8 @@ import static org.mockito.Mockito.*;
 
 @SpringBootTest
 @RunWith(SpringRunner.class)
-class LikeServiceTest {
+@ActiveProfiles("test")
+public class LikeServiceTest {
 
     @MockBean
     PersonService personService;
@@ -39,7 +41,7 @@ class LikeServiceTest {
     }
 
     @Test
-    void addLike() {
+    public void addLike() {
 
         String type = "POST";
         Integer objectLikedId = 1;
@@ -52,7 +54,7 @@ class LikeServiceTest {
     }
 
     @Test
-    void deleteLike() {
+    public void deleteLike() {
 
         String type = "POST";
         Integer objectLikedId = 1;
@@ -65,7 +67,7 @@ class LikeServiceTest {
     }
 
     @Test
-    void getLikeList() {
+    public void getLikeList() {
 
         String type = "POST";
         Integer objectLikedId = 1;
@@ -75,7 +77,7 @@ class LikeServiceTest {
     }
 
     @Test
-    void isLikedByUser() {
+    public void isLikedByUser() {
 
         Integer userId = 1;
         Integer objectLikedId = 1;
@@ -86,7 +88,7 @@ class LikeServiceTest {
     }
 
     @Test
-    void countLikes() {
+    public void countLikes() {
 
         Integer objectLikedId = 1;
         String type = "POST";
@@ -96,7 +98,7 @@ class LikeServiceTest {
     }
 
     @Test
-    void deleteAllLikesByLikedObjectId() {
+    public void deleteAllLikesByLikedObjectId() {
 
         Integer objectLikedId = 1;
         String type = "POST";

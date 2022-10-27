@@ -19,10 +19,10 @@ yandexprofile:
     token: y0_AgAAAABkHWYcAAhcJAAAAADNMMSQdTIhTbQjRfCCNvyw30mWw_U7WIY
 
 redis:
-  url: redis://195.133.48.174:6379
+  url: redis://127.0.0.1:6379
 
 logsupload:
-    enabled: false
+    enabled: true
 
 management:
   endpoints:

@@ -1,0 +1,1 @@
+ALTER TABLE IF EXISTS post ADD COLUMN time_delete timestamp DEFAULT NULL;

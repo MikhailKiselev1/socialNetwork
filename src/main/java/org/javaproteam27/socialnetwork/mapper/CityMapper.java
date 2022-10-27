@@ -2,7 +2,6 @@ package org.javaproteam27.socialnetwork.mapper;
 
 import org.javaproteam27.socialnetwork.model.entity.City;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.stereotype.Component;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -17,6 +16,8 @@ public class CityMapper implements RowMapper<City> {
         city.setId(rs.getInt("id"));
         city.setTitle(rs.getString("title"));
         city.setCountryId(rs.getInt("country_id"));
+        city.setClouds(rs.getString("clouds"));
+        city.setTemp(rs.getString("temp"));
     
         return city;
     }

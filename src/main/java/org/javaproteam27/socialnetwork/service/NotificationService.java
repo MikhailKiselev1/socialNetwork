@@ -1,19 +1,17 @@
 package org.javaproteam27.socialnetwork.service;
 
 import lombok.RequiredArgsConstructor;
-import org.javaproteam27.socialnetwork.aop.DebugLogger;
 import org.javaproteam27.socialnetwork.handler.exception.InvalidRequestException;
-import org.javaproteam27.socialnetwork.model.dto.request.WebSocketNotificationRq;
 import org.javaproteam27.socialnetwork.model.dto.response.ListResponseRs;
 import org.javaproteam27.socialnetwork.model.dto.response.NotificationBaseRs;
 import org.javaproteam27.socialnetwork.model.dto.response.PersonRs;
-import org.javaproteam27.socialnetwork.model.dto.response.ResponseRs;
 import org.javaproteam27.socialnetwork.model.entity.Friendship;
 import org.javaproteam27.socialnetwork.model.entity.Notification;
 import org.javaproteam27.socialnetwork.model.entity.Person;
 import org.javaproteam27.socialnetwork.model.enums.NotificationType;
 import org.javaproteam27.socialnetwork.repository.*;
 import org.javaproteam27.socialnetwork.security.jwt.JwtTokenProvider;
+import org.javaproteam27.socialnetwork.util.Redis;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -28,7 +26,6 @@ import static org.javaproteam27.socialnetwork.model.enums.NotificationType.*;
 
 @Service
 @RequiredArgsConstructor
-@DebugLogger
 public class NotificationService {
 
     private final PersonService personService;
@@ -40,7 +37,9 @@ public class NotificationService {
     private final CommentRepository commentRepository;
     private final LikeRepository likeRepository;
     private final MessageRepository messageRepository;
-//    private final SimpMessagingTemplate simpMessagingTemplate;
+    private final SimpMessagingTemplate simpMessagingTemplate;
+    private final PersonSettingsRepository personSettingsRepository;
+    private final Redis redis;
 
 
     public ListResponseRs<NotificationBaseRs> getNotifications(String token, int offset, int itemPerPage) {
@@ -85,37 +84,49 @@ public class NotificationService {
 
     public void createCommentNotification(int postId, Long sentTime, int commentId, Integer parentId) {
         var postAuthor = postRepository.findPostById(postId).getAuthorId();
-        var personId = personService.getAuthorizedPerson().getId();
-        if (parentId != null) {
-            var commentAuthor = commentRepository.getCommentById(parentId).getAuthorId();
-            if (!Objects.equals(commentAuthor, postAuthor) && postAuthor != personId) {
+        var ps = personSettingsRepository.findByPersonId(postAuthor);
+        if (Boolean.TRUE.equals(ps.getPostCommentNotification())) {
+            var personId = personService.getAuthorizedPerson().getId();
+            if (parentId != null) {
+                var commentAuthor = commentRepository.getCommentById(parentId).getAuthorId();
+                if (!Objects.equals(commentAuthor, postAuthor) && !Objects.equals(postAuthor, personId)) {
+                    createNotification(postAuthor, POST_COMMENT, commentId, sentTime);
+                }
+            } else if (!Objects.equals(postAuthor, personId)) {
                 createNotification(postAuthor, POST_COMMENT, commentId, sentTime);
             }
-        } else if (postAuthor != personId) {
-            createNotification(postAuthor, POST_COMMENT, commentId, sentTime);
         }
     }
 
     public void createSubCommentNotification(int parentId, Long sentTime, int commentId) {
         var commentAuthor = commentRepository.getCommentById(parentId).getAuthorId();
-        var personId = personService.getAuthorizedPerson().getId();
-        if (commentAuthor != personId) {
-            createNotification(commentAuthor, COMMENT_COMMENT, commentId, sentTime);
+        var ps = personSettingsRepository.findByPersonId(commentAuthor);
+        if (Boolean.TRUE.equals(ps.getCommentCommentNotification())) {
+            var personId = personService.getAuthorizedPerson().getId();
+            if (!Objects.equals(commentAuthor, personId)) {
+                createNotification(commentAuthor, COMMENT_COMMENT, commentId, sentTime);
+            }
         }
     }
 
     public void createFriendshipNotification(int dstId, int friendshipStatusId, int srcId) {
-        var friendship = friendshipRepository.findOneByIdAndFriendshipStatus(srcId,
-                dstId, friendshipStatusId);
-        var sentTime = System.currentTimeMillis();
-        createNotification(dstId, FRIEND_REQUEST, friendship.getId(), sentTime);
+        var ps = personSettingsRepository.findByPersonId(dstId);
+        if (Boolean.TRUE.equals(ps.getFriendRequestNotification())) {
+            var friendship = friendshipRepository.findOneByIdAndFriendshipStatus(srcId,
+                    dstId, friendshipStatusId);
+            var sentTime = System.currentTimeMillis();
+            createNotification(dstId, FRIEND_REQUEST, friendship.getId(), sentTime);
+        }
     }
 
     public void createPostNotification(int authorId, Long publishDate, int postId) {
         var friendList = friendshipRepository.findAllFriendsByPersonId(authorId);
         for (Friendship friendship : friendList) {
             var friendId = friendship.getDstPersonId();
-            createNotification(friendId, POST, postId, publishDate);
+            var ps = personSettingsRepository.findByPersonId(friendId);
+            if (Boolean.TRUE.equals(ps.getPostNotification())) {
+                createNotification(friendId, POST, postId, publishDate);
+            }
         }
     }
 
@@ -123,28 +134,33 @@ public class NotificationService {
         Integer personId = personService.getAuthorizedPerson().getId();
         if (Objects.equals(type, "Post")) {
             Integer authorId = postRepository.findPostById(postId).getAuthorId();
-            if (!authorId.equals(personId)) {
+            var ps = personSettingsRepository.findByPersonId(authorId);
+            if (!authorId.equals(personId) && Boolean.TRUE.equals(ps.getLikeNotification())) {
                 createNotification(authorId, POST_LIKE, likeId, sentTime);
             }
         }
         if (Objects.equals(type, "Comment")) {
             Integer authorId = commentRepository.getCommentById(postId).getAuthorId();
-            if (!authorId.equals(personId)) {
+            var ps = personSettingsRepository.findByPersonId(authorId);
+            if (!authorId.equals(personId) && Boolean.TRUE.equals(ps.getLikeNotification())) {
                 createNotification(authorId, COMMENT_LIKE, likeId, sentTime);
             }
         }
     }
 
     public void createMessageNotification(int messageId, Long sentTime, int recipientId, String token) {
-        var email = jwtTokenProvider.getUsername(token);
-        var messageAuthor = personRepository.findByEmail(email).getId();
-        if (messageAuthor != recipientId) {
-            createNotification(recipientId, MESSAGE, messageId, sentTime);
+        var ps = personSettingsRepository.findByPersonId(recipientId);
+        if (Boolean.TRUE.equals(ps.getMessageNotification())) {
+            var email = jwtTokenProvider.getUsername(token);
+            var messageAuthor = personRepository.findByEmail(email).getId();
+            if (messageAuthor != recipientId) {
+                createNotification(recipientId, MESSAGE, messageId, sentTime);
+            }
         }
     }
 
     @Scheduled(cron = "0 0 * * * *")
-    public void createFriendBirthdayNotification(){
+    public void createFriendBirthdayNotification() {
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         String today = now.format(formatter);
@@ -154,19 +170,21 @@ public class NotificationService {
                 var friendList = friendshipRepository.findAllFriendsByPersonId(person.getId());
                 for (Friendship friendship : friendList) {
                     var friendId = friendship.getDstPersonId();
-                    createNotification(friendId, FRIEND_BIRTHDAY, person.getId(), System.currentTimeMillis());
+                    var ps = personSettingsRepository.findByPersonId(friendId);
+                    if (Boolean.TRUE.equals(ps.getFriendBirthdayNotification())) {
+                        createNotification(friendId, FRIEND_BIRTHDAY, person.getId(), System.currentTimeMillis());
+                    }
                 }
             }
         }
     }
 
-//    public ResponseRs<NotificationBaseRs> sendNotification(WebSocketNotificationRq rq) {
-//        switch (rq.getType()) {
-//            case "POST":
-//
-//        }
-//        simpMessagingTemplate.convertAndSendToUser(rq.getUserId(), "/topic/notifications", );
-//    }
+    private void notifyUser(Notification notification) {
+        var rs = List.of(getNotificationRs(notification));
+        var listRs = new ListResponseRs<>("", 0, 1, rs);
+        simpMessagingTemplate.convertAndSendToUser(notification.getPersonId().toString(),
+                "/queue/notifications", listRs);
+    }
 
     private void createNotification(int dstId, NotificationType notificationType, int entityId, Long sentTime) {
         Notification notification = Notification.builder()
@@ -178,6 +196,7 @@ public class NotificationService {
                 .isRead(false)
                 .build();
         notificationRepository.save(notification);
+        notifyUser(notification);
     }
 
     private NotificationBaseRs getNotificationRs(Notification notification) {
@@ -218,7 +237,7 @@ public class NotificationService {
         if (authorId != null) {
             var person = personRepository.findById(authorId);
             return PersonRs.builder().firstName(person.getFirstName()).lastName(person.getLastName())
-                    .photo(person.getPhoto()).build();
+                    .photo(redis.getUrl(person.getId())).build();
         }
         return null;
     }

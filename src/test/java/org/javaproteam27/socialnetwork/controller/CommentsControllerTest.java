@@ -2,11 +2,13 @@ package org.javaproteam27.socialnetwork.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.javaproteam27.socialnetwork.model.dto.request.CommentRq;
+import org.javaproteam27.socialnetwork.util.Redis;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.ActiveProfiles;
@@ -15,6 +17,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -27,13 +31,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 @Sql(scripts = {"classpath:sql/person/insert-person.sql",
                 "classpath:sql/post/insert-post.sql",
-        "classpath:sql/post/insert-comment.sql"})
+                "classpath:sql/post/insert-comment.sql",
+                "classpath:sql/person/insert-person-settings.sql"})
 @Transactional
 @WithUserDetails("test@mail.ru")
 public class CommentsControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+    @MockBean
+    private Redis redis;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -51,6 +58,8 @@ public class CommentsControllerTest {
 
     @Test
     public void getComments() throws Exception {
+
+        when(redis.getUrl(anyInt())).thenReturn("test");
 
         this.mockMvc.perform(get(commentToPostUrl).param("offset", "0").param("perPage", "10"))
                 .andDo(print()).andExpect(status().isOk())

@@ -1,8 +1,7 @@
 package org.javaproteam27.socialnetwork.service;
 
 import lombok.RequiredArgsConstructor;
-import org.javaproteam27.socialnetwork.handler.exception.UnableCreateEntityException;
-import org.javaproteam27.socialnetwork.model.dto.request.WebSocketMessageRq;
+import org.javaproteam27.socialnetwork.model.dto.request.MessageRq;
 import org.javaproteam27.socialnetwork.model.dto.response.*;
 import org.javaproteam27.socialnetwork.model.entity.Dialog;
 import org.javaproteam27.socialnetwork.model.entity.Message;
@@ -10,8 +9,6 @@ import org.javaproteam27.socialnetwork.model.entity.Person;
 import org.javaproteam27.socialnetwork.model.enums.ReadStatus;
 import org.javaproteam27.socialnetwork.repository.DialogRepository;
 import org.javaproteam27.socialnetwork.repository.MessageRepository;
-import org.javaproteam27.socialnetwork.repository.PersonRepository;
-import org.javaproteam27.socialnetwork.security.jwt.JwtTokenProvider;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
@@ -27,83 +24,62 @@ public class DialogsService {
 
     private final DialogRepository dialogRepository;
     private final MessageRepository messageRepository;
-    private final PersonRepository personRepository;
-    private final JwtTokenProvider jwtTokenProvider;
+    private final PersonService personService;
     private final NotificationService notificationService;
-
-    private static MessageRs buildMessageRs(Message message) {
-        return MessageRs.builder()
-                .id(message.getId())
-                .time(Timestamp.valueOf(message.getTime()).getTime())
-                .authorId(message.getAuthorId())
-                .recipientId(message.getRecipientId())
-                .messageText(message.getMessageText())
-                .readStatus(message.getReadStatus())
-                .build();
-    }
-
-
-    private Person getPerson(String token) {
-        String email = jwtTokenProvider.getUsername(token);
-        return personRepository.findByEmail(email);
-    }
-
 
     public ResponseRs<ComplexRs> createDialog(String token, List<Integer> userIds) {
 
-        Integer firstPersonId = getPerson(token).getId();
+        Integer firstPersonId = personService.getPersonByToken(token).getId();
         Integer secondPersonId = userIds.get(0);
-
-        if (Boolean.TRUE.equals(dialogRepository.existsByPersonIds(firstPersonId, secondPersonId))) {
-            throw new UnableCreateEntityException("dialog with person ids = " + firstPersonId +
-                    " and " + secondPersonId + " already exists");
-        }
-
-        Dialog newDialog = Dialog.builder()
-                .firstPersonId(firstPersonId)
-                .secondPersonId(secondPersonId)
-                .lastActiveTime(LocalDateTime.now())
-                .build();
-
-        dialogRepository.save(newDialog);
         Dialog dialog = dialogRepository.findByPersonIds(firstPersonId, secondPersonId);
-        ComplexRs data = ComplexRs.builder().id(dialog.getId()).build();
+        Integer dialogId;
+        if (dialog == null) {
+            Dialog newDialog = Dialog.builder()
+                    .firstPersonId(firstPersonId)
+                    .secondPersonId(secondPersonId)
+                    .lastActiveTime(LocalDateTime.now())
+                    .build();
 
-        return new ResponseRs<>(null, data, null);
+            dialogId = dialogRepository.save(newDialog);
+        } else {
+            dialogId = dialog.getId();
+        }
+        ComplexRs data = ComplexRs.builder().id(dialogId).build();
+        return new ResponseRs<>("", data, null);
     }
 
     public ListResponseRs<DialogRs> getDialogs(String token, Integer offset, Integer itemPerPage) {
 
-        Person person = getPerson(token);
+        Person person = personService.getPersonByToken(token);
         Integer personId = person.getId();
         List<Dialog> dialogList = dialogRepository.findByPersonId(personId, offset, itemPerPage);
 
         List<DialogRs> result = new ArrayList<>();
         if (!dialogList.isEmpty()) {
             for (Dialog dialog : dialogList) {
-                Integer unreadCount = messageRepository.countUnreadByDialogId(dialog.getId());
+                Integer unreadCount = messageRepository.countUnreadByDialogIdAndRecipientId(dialog.getId(), personId);
                 Integer recipientId = dialog.getFirstPersonId().equals(personId) ?
                         dialog.getSecondPersonId() :
                         dialog.getFirstPersonId();
                 if (dialog.getLastMessageId() != 0) {
                     var lastMessage = messageRepository.findById(dialog.getLastMessageId());
-                    boolean isSentByMe = getSentMessageAuthor(lastMessage, person);
-                    var recipientPerson = personRepository.findById(lastMessage.getRecipientId());
+                    boolean isSentByMe = (lastMessage.getAuthorId().equals(person.getId()));
+                    var recipientPerson = personService.findById(lastMessage.getRecipientId());
 
                     result.add(DialogRs.builder()
                             .id(dialog.getId())
                             .unreadCount(unreadCount)
-                            .lastMessage(buildLastMessageRs(lastMessage, isSentByMe, buildRecipientPerson(recipientPerson)))
+                            .lastMessage(buildLastMessageRs(lastMessage, isSentByMe, personService.getPersonRs(recipientPerson)))
                             .authorId(personId)
                             .recipientId(recipientId)
                             .readStatus(lastMessage.getReadStatus())
                             .build());
                 } else {
-                    var recipientPerson = personRepository.findById(recipientId);
+                    var recipientPerson = personService.findById(recipientId);
                     result.add(DialogRs.builder()
                             .id(dialog.getId())
                             .unreadCount(unreadCount)
-                            .lastMessage(MessageRs.builder().recipient(buildRecipientPerson(recipientPerson)).build())
+                            .lastMessage(MessageRs.builder().recipient(personService.getPersonRs(recipientPerson)).build())
                             .authorId(personId)
                             .recipientId(recipientId)
                             .build());
@@ -115,7 +91,7 @@ public class DialogsService {
 
     public ResponseRs<ComplexRs> getUnread(String token) {
 
-        Integer personId = getPerson(token).getId();
+        Integer personId = personService.getPersonByToken(token).getId();
         Integer unreadCount = messageRepository.countUnreadByRecipientId(personId);
         ComplexRs data = ComplexRs.builder().count(unreadCount).build();
 
@@ -136,11 +112,10 @@ public class DialogsService {
         return new ResponseRs<>("", data, null);
     }
 
-    public ResponseRs<MessageRs> sendMessage(WebSocketMessageRq messageRq) {
-        var token = messageRq.getToken();
-        Person person = getPerson(token);
-        Integer authorId = person.getId();
-        Dialog dialog = dialogRepository.findById(messageRq.getDialogId());
+    public ResponseRs<MessageRs> sendMessage(String token, Integer dialogId, MessageRq text) {
+
+        Integer authorId = personService.getPersonByToken(token).getId();
+        Dialog dialog = dialogRepository.findById(dialogId);
         Integer recipientId = dialog.getFirstPersonId().equals(authorId) ?
                 dialog.getSecondPersonId() :
                 dialog.getFirstPersonId();
@@ -149,9 +124,9 @@ public class DialogsService {
                 .time(LocalDateTime.now())
                 .authorId(authorId)
                 .recipientId(recipientId)
-                .messageText(messageRq.getMessageText())
+                .messageText(text.getMessageText())
                 .readStatus(ReadStatus.SENT)
-                .dialogId(messageRq.getDialogId())
+                .dialogId(dialogId)
                 .build();
 
         Integer savedId = messageRepository.save(message);
@@ -161,21 +136,25 @@ public class DialogsService {
         dialog.setLastActiveTime(LocalDateTime.now());
         dialogRepository.update(dialog);
 
-        MessageRs data = buildMessageRs(message);
-        notificationService.createMessageNotification(savedId, System.currentTimeMillis(), recipientId, token);
+        MessageRs data = getMessageRs(message);
+        data.setIsSentByMe(true);
+        notificationService.createMessageNotification(message.getId(), System.currentTimeMillis(), recipientId, token);
 
         return new ResponseRs<>("", data, null);
     }
 
-    public ListResponseRs<MessageRs> getMessagesByDialog(Integer id, Integer offset, Integer itemPerPage) {
+    public ListResponseRs<MessageRs> getMessagesByDialog(Integer id, Integer offset,
+                                                         Integer itemPerPage, Integer personId) {
 
         Integer messagesCount = messageRepository.countByDialogId(id);
         List<MessageRs> data = Collections.emptyList();
 
         if (messagesCount > 0) {
+
             data = messageRepository.findByDialogId(id, offset, itemPerPage).stream()
-                    .map(DialogsService::buildMessageRs)
+                    .map(this::getMessageRs)
                     .collect(Collectors.toList());
+            data.forEach(messageRs -> messageRs.setIsSentByMe(messageRs.getAuthorId().equals(personId)));
         }
 
         return ListResponseRs.<MessageRs>builder()
@@ -188,7 +167,7 @@ public class DialogsService {
                 .build();
     }
 
-    public ResponseRs<MessageRs> editMessage(Integer messageId, MessageSendRequestBodyRs text) {
+    public ResponseRs<MessageRs> editMessage(Integer messageId, MessageRq text) {
 
         Message message = messageRepository.findById(messageId);
 
@@ -197,7 +176,8 @@ public class DialogsService {
 
         messageRepository.update(message);
 
-        MessageRs data = buildMessageRs(message);
+        MessageRs data = getMessageRs(message);
+        data.setIsSentByMe(true);
 
         return new ResponseRs<>("", data, null);
     }
@@ -206,11 +186,9 @@ public class DialogsService {
 
         Message message = messageRepository.findById(messageId);
         message.setReadStatus(ReadStatus.READ);
-
         messageRepository.update(message);
 
         ComplexRs data = ComplexRs.builder().message("ok").build();
-
         return new ResponseRs<>("", data, null);
     }
 
@@ -242,23 +220,9 @@ public class DialogsService {
         dialog.setLastMessageId(message.getId());
         dialogRepository.update(dialog);
 
-        MessageRs data = buildMessageRs(message);
+        MessageRs data = getMessageRs(message);
 
         return new ResponseRs<>("", data, null);
-    }
-
-    private boolean getSentMessageAuthor(Message message, Person person) {
-        return message.getAuthorId() == person.getId();
-    }
-
-    private PersonRs buildRecipientPerson(Person recipientPerson) {
-        return PersonRs.builder()
-                .id(recipientPerson.getId())
-                .photo(recipientPerson.getPhoto())
-                .firstName(recipientPerson.getFirstName())
-                .lastName(recipientPerson.getLastName())
-                .isBlocked(recipientPerson.getIsBlocked())
-                .build();
     }
 
     private MessageRs buildLastMessageRs(Message lastMessage, boolean isSentByMe, PersonRs recipientPersonRs) {
@@ -269,5 +233,20 @@ public class DialogsService {
                 .recipient(recipientPersonRs)
                 .messageText(lastMessage.getMessageText())
                 .build();
+    }
+
+    private MessageRs getMessageRs(Message message) {
+        return MessageRs.builder().id(message.getId()).messageText(message.getMessageText())
+                .recipientId(message.getRecipientId()).time(Timestamp.valueOf(message.getTime()).getTime())
+                .authorId(message.getAuthorId()).readStatus(message.getReadStatus())
+                .build();
+    }
+
+    public ResponseRs<ComplexRs> markDialogAsReadMessage(Integer dialogId) {
+
+        List<Message> messages = messageRepository.findByDialogId(dialogId, null, null);
+        messages.forEach(message -> markAsReadMessage(message.getId()));
+        ComplexRs data = ComplexRs.builder().message("ok").build();
+        return new ResponseRs<>("", data, null);
     }
 }

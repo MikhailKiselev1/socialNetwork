@@ -65,6 +65,7 @@ public class DropBox {
         catch (Exception ex) {
             ex.printStackTrace();
         }
+
         return photo;
     }
 

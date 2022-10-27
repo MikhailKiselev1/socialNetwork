@@ -3,8 +3,8 @@ package org.javaproteam27.socialnetwork.repository;
 import lombok.RequiredArgsConstructor;
 import org.javaproteam27.socialnetwork.handler.exception.EntityNotFoundException;
 import org.javaproteam27.socialnetwork.handler.exception.ErrorException;
-import org.javaproteam27.socialnetwork.model.entity.Post;
 import org.javaproteam27.socialnetwork.mapper.PostMapper;
+import org.javaproteam27.socialnetwork.model.entity.Post;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -16,7 +16,6 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,7 +55,8 @@ public class PostRepository {
 
         boolean retValue;
         try {
-            retValue = (jdbcTemplate.update("UPDATE post SET is_deleted = true WHERE id = ?", postId) == 1);
+            retValue = (jdbcTemplate.update("UPDATE post SET is_deleted = true, time_delete = current_timestamp " +
+                    "WHERE id = ?", postId) == 1);
         } catch (DataAccessException exception) {
             throw new ErrorException(exception.getMessage());
         }
@@ -190,7 +190,8 @@ public class PostRepository {
 
         boolean retValue;
         try {
-            retValue = (jdbcTemplate.update("UPDATE post SET is_deleted = false WHERE id = ?", postId) == 1);
+            retValue = (jdbcTemplate.update("UPDATE post SET is_deleted = false, time_delete = NULL " +
+                    "WHERE id = ?", postId) == 1);
         } catch (DataAccessException exception) {
             throw new ErrorException(exception.getMessage());
         }
@@ -202,8 +203,8 @@ public class PostRepository {
     public List<Integer> getDeletedPostIdsOlderThan(String interval) {
 
         try {
-            return jdbcTemplate.query("SELECT * FROM post WHERE is_deleted = true AND time < now() - interval '" +
-                            interval +"'", (rs, rowNum) -> rs.getInt("id"));
+            return jdbcTemplate.query("SELECT * FROM post WHERE is_deleted = true AND " +
+                    "post.time_delete < now() - interval '" + interval +"'", (rs, rowNum) -> rs.getInt("id"));
         } catch (DataAccessException exception) {
             throw new ErrorException(exception.getMessage());
         }

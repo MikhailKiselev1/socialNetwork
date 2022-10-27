@@ -27,7 +27,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 //@TestPropertySource("/application-test.yml")
 @ActiveProfiles("test")
-@Sql(scripts = {"classpath:sql/person/insert-person.sql", "classpath:sql/post/insert-post.sql"})
+@Sql(scripts = {"classpath:sql/person/insert-person.sql", "classpath:sql/post/insert-post.sql",
+        "classpath:sql/currency/insert-currency.sql"})
 @Transactional
 @WithUserDetails("test@mail.ru")
 public class FeedsControllerTest {

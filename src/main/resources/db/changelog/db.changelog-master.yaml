@@ -41,3 +41,17 @@ databaseChangeLog:
       file: /db/changelog/migrations/020-edit-message.sql
   - include:
       file: /db/changelog/migrations/021-edit-person.sql
+  - include:
+      file: /db/changelog/migrations/022-edit-post.sql
+  - include:
+      file: /db/changelog/migrations/022-edit-person.sql
+  - include:
+      file: /db/changelog/migrations/023-edit-city.sql
+  - include:
+      file: /db/changelog/migrations/024-create-person-settings.sql
+  - include:
+      file: /db/changelog/migrations/025-create-currency.sql
+  - include:
+      file: /db/changelog/migrations/026-edit-person.sql
+  - include:
+      file: /db/changelog/migrations/027-edit-person.sql

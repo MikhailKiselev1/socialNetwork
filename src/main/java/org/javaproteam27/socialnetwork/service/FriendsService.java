@@ -11,10 +11,7 @@ import org.javaproteam27.socialnetwork.repository.PersonRepository;
 import org.javaproteam27.socialnetwork.security.jwt.JwtTokenProvider;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -105,7 +102,7 @@ public class FriendsService {
                 })
                 .filter(Optional::isPresent)
                 .map(Optional::get)
-                .map(optional -> (Person) optional)
+                .map(Person.class::cast)
                 .collect(Collectors.toList());
     }
 
@@ -128,6 +125,7 @@ public class FriendsService {
                         .messagesPermission(person.getMessagesPermission())
                         .lastOnlineTime(person.getLastOnlineTime())
                         .isBlocked(person.getIsBlocked())
+                        .online(Objects.equals(person.getOnlineStatus(), "ONLINE"))
                         .build())
                 .collect(Collectors.toList());
 
@@ -142,19 +140,20 @@ public class FriendsService {
     }
 
     public ListResponseRs<PersonRs> getListFriends(String name, Integer offset, Integer itemPerPage) {
-
-        List<Person> person = personRepository.getFriendsPersonById(name,personService.getAuthorizedPerson().getId());
-        for (int i = 0; i < person.size(); i++ ){
-            if (person.get(i).getId() == personService.getAuthorizedPerson().getId()){
-                person.remove(i);
+        var person = personService.getAuthorizedPerson();
+        List<Person> personList = personRepository.getFriendsPersonById(name, person.getId());
+        List<Person> result = new ArrayList<>();
+        for (Person p : personList) {
+            if (!Objects.equals(p.getId(), person.getId())) {
+                result.add(p);
             }
         }
-        return getResultJson(person, 0, offset, itemPerPage);
+        return getResultJson(result, 0, offset, itemPerPage);
     }
 
     public ListResponseRs<PersonRs> getListApplicationsFriends(String name, Integer offset, Integer itemPerPage) {
 
-        List<Person> personList = personRepository.getApplicationsFriendsPersonById(name,personService.getAuthorizedPerson().getId());
+        List<Person> personList = personRepository.getApplicationsFriendsPersonById(name, personService.getAuthorizedPerson().getId());
         return getResultJson(personList, 0, offset, itemPerPage);
     }
 

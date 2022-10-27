@@ -15,34 +15,35 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class FriendshipStatusService {
-    
+
     private final FriendshipStatusRepository friendshipStatusRepository;
     private final FriendshipService friendshipService;
-    
+
     public FriendshipStatus findById(int id) {
         return friendshipStatusRepository.findById(id);
     }
-    public int addStatus(){
+
+    public int addStatus() {
         LocalDateTime localDateTime = LocalDateTime.now();
 
         FriendshipStatus friendshipStatus = new FriendshipStatus();
         friendshipStatus.setTime(localDateTime);
-//        friendshipStatus.setName(FriendshipStatusCode.REQUEST.name());
         friendshipStatus.setCode(FriendshipStatusCode.REQUEST);
         return friendshipStatusRepository.save(friendshipStatus);
     }
 
-    public FriendshipRs updateStatus(Integer srcPersonId, Integer id, FriendshipStatusCode friendshipStatusCode){
+    public FriendshipRs updateStatus(Integer srcPersonId, Integer id, FriendshipStatusCode friendshipStatusCode) {
 
         List<FriendshipStatus> friendshipStatusList = friendshipStatusRepository.getApplicationsFriendshipStatus(srcPersonId, id);
 
         for (FriendshipStatus friendshipStatus : friendshipStatusList) {
-            friendshipStatusRepository.updateCode(friendshipStatus.getId(),friendshipStatusCode);
+            friendshipStatusRepository.updateCode(friendshipStatus.getId(), friendshipStatusCode);
+            friendshipService.addFriendShip(srcPersonId, friendshipStatus.getId(), id);
         }
 
         String error = "";
-        HashMap<String,String> messageMap = new HashMap<>();
-        messageMap.put("message","ok");
+        HashMap<String, String> messageMap = new HashMap<>();
+        messageMap.put("message", "ok");
         LocalDateTime localDateTime = LocalDateTime.now();
 
         return new FriendshipRs(
@@ -52,23 +53,21 @@ public class FriendshipStatusService {
     }
 
 
-
-    public FriendshipRs deleteStatus(List<Friendship> friendshipList){
-        for (Friendship friendship : friendshipList){
+    public FriendshipRs deleteStatus(List<Friendship> friendshipList) {
+        for (Friendship friendship : friendshipList) {
             FriendshipStatus friendshipStatus = new FriendshipStatus();
             friendshipStatus.setId(friendship.getStatusId());
             friendshipStatusRepository.delete(friendshipStatus);
         }
         LocalDateTime localDateTime = LocalDateTime.now();
         String error = "string";
-        HashMap<String,String> aa= new HashMap<>();
-        aa.put("message","ok");
+        HashMap<String, String> aa = new HashMap<>();
+        aa.put("message", "ok");
 
-        FriendshipRs postsResponseDto = new FriendshipRs(
+        return new FriendshipRs(
                 error,
                 localDateTime,
                 aa);
-        return postsResponseDto;
 
     }
 }
