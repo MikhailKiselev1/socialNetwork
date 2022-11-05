@@ -3,6 +3,7 @@ package org.javaproteam27.socialnetwork.service;
 import org.javaproteam27.socialnetwork.model.dto.response.LikeRs;
 import org.javaproteam27.socialnetwork.model.dto.response.ResponseRs;
 import org.javaproteam27.socialnetwork.model.entity.Person;
+import org.javaproteam27.socialnetwork.model.entity.PostLike;
 import org.javaproteam27.socialnetwork.repository.LikeRepository;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -60,7 +61,10 @@ public class LikeServiceTest {
         Integer objectLikedId = 1;
         Person person = new Person();
         person.setId(1);
+        PostLike postLike = PostLike.builder().id(1).build();
+
         when(personService.getAuthorizedPerson()).thenReturn(person);
+        when(likeRepository.findByPostAndPersonAndType(anyInt(), anyInt(), anyString())).thenReturn(postLike);
         ResponseRs<LikeRs> response = likeService.deleteLike(type, objectLikedId);
 
         assertResponseRs(response);

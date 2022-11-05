@@ -3,7 +3,6 @@ package org.javaproteam27.socialnetwork.mapper;
 import org.javaproteam27.socialnetwork.model.entity.FriendshipStatus;
 import org.javaproteam27.socialnetwork.model.enums.FriendshipStatusCode;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.stereotype.Component;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

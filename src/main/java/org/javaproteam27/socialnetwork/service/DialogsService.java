@@ -64,7 +64,7 @@ public class DialogsService {
                 if (dialog.getLastMessageId() != 0) {
                     var lastMessage = messageRepository.findById(dialog.getLastMessageId());
                     boolean isSentByMe = (lastMessage.getAuthorId().equals(person.getId()));
-                    var recipientPerson = personService.findById(lastMessage.getRecipientId());
+                    var recipientPerson = personService.findById(recipientId);
 
                     result.add(DialogRs.builder()
                             .id(dialog.getId())
@@ -242,11 +242,14 @@ public class DialogsService {
                 .build();
     }
 
-    public ResponseRs<ComplexRs> markDialogAsReadMessage(Integer dialogId) {
+    public ResponseRs<ComplexRs> markDialogAsReadMessage(Integer dialogId, Integer recipientId) {
 
-        List<Message> messages = messageRepository.findByDialogId(dialogId, null, null);
+        recipientId = (recipientId == null) ?  personService.getAuthorizedPerson().getId() : recipientId;
+
+        List<Message> messages = messageRepository.findByDialogIdAndRecipientId(dialogId, recipientId);
         messages.forEach(message -> markAsReadMessage(message.getId()));
-        ComplexRs data = ComplexRs.builder().message("ok").build();
+        ComplexRs data = ComplexRs.builder().message("ok").
+                count(messageRepository.countUnreadByRecipientId(recipientId)).build();
         return new ResponseRs<>("", data, null);
     }
 }

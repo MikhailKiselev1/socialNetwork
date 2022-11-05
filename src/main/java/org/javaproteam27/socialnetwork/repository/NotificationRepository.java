@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.javaproteam27.socialnetwork.handler.exception.EntityNotFoundException;
 import org.javaproteam27.socialnetwork.mapper.NotificationMapper;
 import org.javaproteam27.socialnetwork.model.entity.Notification;
+import org.javaproteam27.socialnetwork.model.enums.NotificationType;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -50,5 +51,10 @@ public class NotificationRepository {
         jdbcTemplate.update(sql, notification.getNotificationType().name(), new Timestamp(notification.getSentTime()),
                 notification.getPersonId(), notification.getEntityId(),
                 notification.getContact(), notification.isRead());
+    }
+
+    public void deleteFromType(NotificationType notificationType, Integer personId, Integer entityId) {
+        String sql = "delete from notification where notification_type = ? and person_id = ? and entity_id = ?";
+        jdbcTemplate.update(sql, notificationType.name(), personId, entityId);
     }
 }

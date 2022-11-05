@@ -58,7 +58,7 @@ public class DialogsServiceTest {
 
         when(jwtTokenProvider.getUsername(anyString())).thenReturn(email);
         when(personRepository.findByEmail(anyString())).thenReturn(person);
-        when(dialogRepository.existsByPersonIds(anyInt(), anyInt())).thenReturn(false);
+//        when(dialogRepository.existsByPersonIds(anyInt(), anyInt())).thenReturn(false);
         when(dialogRepository.findByPersonIds(anyInt(), anyInt())).thenReturn(null);
         when(personService.getPersonByToken(anyString())).thenReturn(person);
         when(dialogRepository.save(any())).thenReturn(1);
@@ -80,7 +80,7 @@ public class DialogsServiceTest {
 
         when(jwtTokenProvider.getUsername(anyString())).thenReturn(email);
         when(personRepository.findByEmail(anyString())).thenReturn(person);
-        when(dialogRepository.existsByPersonIds(anyInt(), anyInt())).thenReturn(true);
+//        when(dialogRepository.existsByPersonIds(anyInt(), anyInt())).thenReturn(true);
         when(dialogRepository.findByPersonIds(anyInt(), anyInt())).thenReturn(dialog);
         when(personService.getPersonByToken(anyString())).thenReturn(person);
 

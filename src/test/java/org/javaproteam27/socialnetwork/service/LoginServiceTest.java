@@ -1,9 +1,9 @@
 package org.javaproteam27.socialnetwork.service;
 
-import org.javaproteam27.socialnetwork.model.dto.response.CurrencyRateRs;
+import org.javaproteam27.socialnetwork.model.dto.response.ComplexRs;
 import org.javaproteam27.socialnetwork.model.entity.Currency;
 import org.javaproteam27.socialnetwork.repository.CurrencyRepository;
-import org.javaproteam27.socialnetwork.util.Redis;
+import org.javaproteam27.socialnetwork.util.PhotoCloudinary;
 import org.javaproteam27.socialnetwork.handler.exception.InvalidRequestException;
 import org.javaproteam27.socialnetwork.model.dto.request.LoginRq;
 import org.javaproteam27.socialnetwork.model.dto.response.PersonRs;
@@ -21,9 +21,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
-
-import java.io.IOException;
-import java.util.HashMap;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -46,7 +43,7 @@ public class LoginServiceTest {
     private WeatherService weatherService;
 
     @Mock
-    private Redis redis;
+    private PhotoCloudinary photoCloudinary;
 
     @Mock
     private CurrencyRepository currencyRepository;
@@ -56,7 +53,7 @@ public class LoginServiceTest {
     @Before
     public void setUp() {
         loginService = new LoginService(jwtTokenProvider, personRepository, passwordEncoder, weatherService,
-                redis, currencyRepository);
+                photoCloudinary, currencyRepository);
     }
 
     @Test
@@ -67,6 +64,7 @@ public class LoginServiceTest {
         person.setEmail("email");
         person.setPassword("pass");
         person.setIsBlocked(false);
+        person.setIsDeleted(false);
         Currency currency = Currency.builder().build();
 
         Integer expectedOffset = 0;
@@ -128,17 +126,16 @@ public class LoginServiceTest {
         InvalidRequestException thrown = assertThrows(InvalidRequestException.class,
                 () -> loginService.login(loginRq));
 
-        assertEquals("Incorrect password", thrown.getMessage());
+        assertEquals("Неверный пароль.", thrown.getMessage());
 
         verify(jwtTokenProvider, times(0)).createToken(loginRq.getEmail());
     }
 
     @Test
     public void logoutAuthorizedRqAllDataIsOk() {
-        ResponseRs<Object> response = loginService.logout();
+        ResponseRs<ComplexRs> response = loginService.logout();
 
-        HashMap<String, String> expectedData = new HashMap<>();
-        expectedData.put("message", "ok");
+        var expectedData = ComplexRs.builder().message("ok").build();
 
         assertNotNull(response);
         assertEquals("", response.getError());

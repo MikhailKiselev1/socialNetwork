@@ -1,5 +1,6 @@
 package org.javaproteam27.socialnetwork.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.javaproteam27.socialnetwork.aop.InfoLogger;
 import org.javaproteam27.socialnetwork.model.dto.request.CommentRq;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RequestMapping("api/v1/post/{id}/comments")
 @InfoLogger
+@Tag(name = "comments", description = "Взаимодействие с комментариями")
 public class CommentsController {
     private final CommentService commentService;
 

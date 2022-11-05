@@ -80,11 +80,22 @@ public class MessageRepository {
 
     public List<Message> findByDialogId(Integer dialogId, Integer offset, Integer limit) {
 
-        String sql = "select * from message where dialog_id = ? order by time desc";
-        sql = ((offset != null)&&(limit != null)) ? sql + " offset ? limit ?" : sql;
+        String sql = "select * from message where dialog_id = " + dialogId + " order by time desc";
+        sql = ((offset != null)&&(limit != null)) ? sql + " offset " + offset + " limit " + limit : sql;
 
         try {
-            return jdbcTemplate.query(sql, rowMapper, dialogId, offset, limit);
+            return jdbcTemplate.query(sql, rowMapper);
+        } catch (EmptyResultDataAccessException e) {
+            throw new EntityNotFoundException("dialogs with person id = " + dialogId);
+        }
+    }
+
+    public List<Message> findByDialogId(Integer dialogId) {
+
+        String sql = "select * from message where dialog_id = ? order by time desc";
+
+        try {
+            return jdbcTemplate.query(sql, rowMapper, dialogId);
         } catch (EmptyResultDataAccessException e) {
             throw new EntityNotFoundException("dialogs with person id = " + dialogId);
         }
@@ -144,5 +155,15 @@ public class MessageRepository {
         String sql = "select * from message where id = " +
                 "(select max(id) from message where is_deleted = false and dialog_id = ?)";
         return jdbcTemplate.query(sql, rowMapper, dialogId);
+    }
+
+    public List<Message> findByDialogIdAndRecipientId(Integer dialogId, Integer recipientId) {
+
+        String sql = "SELECT * FROM message WHERE dialog_id = " + dialogId + " AND recipient_id = " + recipientId;
+        try {
+            return jdbcTemplate.query(sql, rowMapper);
+        } catch (EmptyResultDataAccessException e) {
+            throw new EntityNotFoundException("dialogs with person id = " + dialogId);
+        }
     }
 }

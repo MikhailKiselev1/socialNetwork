@@ -1,5 +1,6 @@
 package org.javaproteam27.socialnetwork.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.javaproteam27.socialnetwork.model.dto.request.LikeRq;
 import org.javaproteam27.socialnetwork.model.dto.response.LikeRs;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/likes")
 @RequiredArgsConstructor
+@Tag(name = "likes", description = "Взаимодействие с лайками")
 public class LikesController {
     private final LikeService likeService;
 

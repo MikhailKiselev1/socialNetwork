@@ -97,4 +97,9 @@ public class LikeRepository {
             throw new EntityNotFoundException("id = " + id);
         }
     }
+
+    public PostLike findByPostAndPersonAndType(Integer postId, Integer personId, String type) {
+        String sql = "select * from post_like where post_id = ? and person_id = ? and type = ?";
+        return jdbcTemplate.queryForObject(sql, rowMapper, postId, personId, type);
+    }
 }

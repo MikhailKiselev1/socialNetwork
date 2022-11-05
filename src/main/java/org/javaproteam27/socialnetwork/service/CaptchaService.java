@@ -4,7 +4,6 @@ import com.github.cage.Cage;
 import com.github.cage.GCage;
 import lombok.RequiredArgsConstructor;
 import org.javaproteam27.socialnetwork.model.dto.response.CaptchaRs;
-import org.javaproteam27.socialnetwork.model.entity.Captcha;
 import org.javaproteam27.socialnetwork.repository.CaptchaRepository;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -17,13 +16,13 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 
 @Service
 @RequiredArgsConstructor
 public class CaptchaService {
 
     private final CaptchaRepository captchaRepository;
+    private static final String CAPTCHA = "captcha.jpg";
 
     public CaptchaRs getCaptcha() throws IOException {
 
@@ -33,13 +32,13 @@ public class CaptchaService {
         String captchaCode = cage.getTokenGenerator().next();
         String secretCode = cage.getTokenGenerator().next();
 
-        OutputStream os = new FileOutputStream("captcha.jpg", false);
+        OutputStream os = new FileOutputStream(CAPTCHA, false);
         cage.draw(secretCode, os);
         os.flush();
         os.close();
 
-        byte[] captchaByte = Files.readAllBytes(Paths.get("captcha.jpg"));
-        Files.delete(Paths.get("captcha.jpg"));
+        byte[] captchaByte = Files.readAllBytes(Paths.get(CAPTCHA));
+        Files.delete(Paths.get(CAPTCHA));
         String encodedCaptcha = DatatypeConverter.printBase64Binary(captchaByte);
         image.append(encodedCaptcha);
 

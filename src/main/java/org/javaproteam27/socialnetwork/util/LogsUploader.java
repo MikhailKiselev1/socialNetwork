@@ -23,7 +23,7 @@ import java.util.Date;
 @Component
 @Slf4j
 @RequiredArgsConstructor
-@ConditionalOnProperty(prefix = "logsupload", name = "enabled")
+@ConditionalOnProperty(prefix = "logs-upload", name = "enabled")
 public class LogsUploader {
 
     private final YandexDisk yandexDisk;

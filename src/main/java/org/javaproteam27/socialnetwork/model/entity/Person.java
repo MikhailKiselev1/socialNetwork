@@ -29,4 +29,6 @@ public class Person {
     private String changePasswordToken;
     private String notificationsSessionId;
     private String onlineStatus;
+    private Boolean isDeleted;
+    private Long deletedTime;
 }

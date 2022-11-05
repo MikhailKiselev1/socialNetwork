@@ -36,6 +36,9 @@ public class PersonMapper implements RowMapper<Person> {
         person.setIsBlocked(rs.getBoolean("is_blocked"));
         person.setNotificationsSessionId(rs.getString("notifications_session_id"));
         person.setOnlineStatus(rs.getString("online_status"));
+        person.setIsDeleted(rs.getBoolean("is_deleted"));
+        person.setDeletedTime(rs.getTimestamp("deleted_time") == null ? null :
+                rs.getTimestamp("deleted_time").getTime());
     
         return person;
     }

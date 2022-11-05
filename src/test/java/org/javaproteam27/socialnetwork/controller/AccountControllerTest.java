@@ -8,6 +8,8 @@ import org.javaproteam27.socialnetwork.repository.CaptchaRepository;
 import org.javaproteam27.socialnetwork.repository.PersonRepository;
 import org.javaproteam27.socialnetwork.repository.PersonSettingsRepository;
 import org.javaproteam27.socialnetwork.service.CaptchaService;
+import org.javaproteam27.socialnetwork.service.KafkaProducerService;
+import org.javaproteam27.socialnetwork.util.PhotoCloudinary;
 import org.junit.Test;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.runner.RunWith;
@@ -53,6 +55,10 @@ public class AccountControllerTest {
     private CaptchaRepository captchaRepository;
     @MockBean
     private PersonSettingsRepository personSettingsRepository;
+    @MockBean
+    private PhotoCloudinary photoCloudinary;
+    @MockBean
+    private KafkaProducerService kafkaProducerService;
     @Autowired
     private ObjectMapper objectMapper;
 

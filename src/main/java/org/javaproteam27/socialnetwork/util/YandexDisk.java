@@ -24,7 +24,7 @@ public class YandexDisk {
         return new ProgressListener() {
             @Override
             public void updateProgress(long l, long l1) throws UnsupportedOperationException {
-
+                // Do nothing
             }
 
             @Override

@@ -1,6 +1,7 @@
 package org.javaproteam27.socialnetwork.service;
 
 import lombok.RequiredArgsConstructor;
+import org.javaproteam27.socialnetwork.model.dto.response.ComplexRs;
 import org.javaproteam27.socialnetwork.model.dto.response.FriendshipRs;
 import org.javaproteam27.socialnetwork.model.entity.Friendship;
 import org.javaproteam27.socialnetwork.model.entity.FriendshipStatus;
@@ -9,7 +10,6 @@ import org.javaproteam27.socialnetwork.repository.FriendshipStatusRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
 
 @Service
@@ -17,18 +17,26 @@ import java.util.List;
 public class FriendshipStatusService {
 
     private final FriendshipStatusRepository friendshipStatusRepository;
-    private final FriendshipService friendshipService;
 
     public FriendshipStatus findById(int id) {
         return friendshipStatusRepository.findById(id);
     }
 
-    public int addStatus() {
+    public int addRequestStatus() {
         LocalDateTime localDateTime = LocalDateTime.now();
 
         FriendshipStatus friendshipStatus = new FriendshipStatus();
         friendshipStatus.setTime(localDateTime);
         friendshipStatus.setCode(FriendshipStatusCode.REQUEST);
+        return friendshipStatusRepository.save(friendshipStatus);
+    }
+
+    public int addReceivedRequestStatus() {
+        LocalDateTime localDateTime = LocalDateTime.now();
+
+        FriendshipStatus friendshipStatus = new FriendshipStatus();
+        friendshipStatus.setTime(localDateTime);
+        friendshipStatus.setCode(FriendshipStatusCode.RECEIVED_REQUEST);
         return friendshipStatusRepository.save(friendshipStatus);
     }
 
@@ -38,36 +46,26 @@ public class FriendshipStatusService {
 
         for (FriendshipStatus friendshipStatus : friendshipStatusList) {
             friendshipStatusRepository.updateCode(friendshipStatus.getId(), friendshipStatusCode);
-            friendshipService.addFriendShip(srcPersonId, friendshipStatus.getId(), id);
         }
 
-        String error = "";
-        HashMap<String, String> messageMap = new HashMap<>();
-        messageMap.put("message", "ok");
+        var data = ComplexRs.builder().message("ok").build();
         LocalDateTime localDateTime = LocalDateTime.now();
 
-        return new FriendshipRs(
-                error,
-                localDateTime,
-                messageMap);
+        return new FriendshipRs("", localDateTime, data);
     }
 
 
     public FriendshipRs deleteStatus(List<Friendship> friendshipList) {
+
         for (Friendship friendship : friendshipList) {
             FriendshipStatus friendshipStatus = new FriendshipStatus();
             friendshipStatus.setId(friendship.getStatusId());
             friendshipStatusRepository.delete(friendshipStatus);
         }
         LocalDateTime localDateTime = LocalDateTime.now();
-        String error = "string";
-        HashMap<String, String> aa = new HashMap<>();
-        aa.put("message", "ok");
+        var data = ComplexRs.builder().message("ok").build();
 
-        return new FriendshipRs(
-                error,
-                localDateTime,
-                aa);
+        return new FriendshipRs("", localDateTime, data);
 
     }
 }

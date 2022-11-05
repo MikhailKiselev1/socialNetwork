@@ -1,14 +1,13 @@
 package org.javaproteam27.socialnetwork.service;
 
 import lombok.RequiredArgsConstructor;
+import org.javaproteam27.socialnetwork.model.dto.response.ComplexRs;
 import org.javaproteam27.socialnetwork.model.dto.response.RegisterRs;
 import org.javaproteam27.socialnetwork.model.entity.Person;
 import org.javaproteam27.socialnetwork.repository.PersonRepository;
 import org.javaproteam27.socialnetwork.security.jwt.JwtTokenProvider;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.HashMap;
 
 @Service
 @RequiredArgsConstructor
@@ -24,12 +23,11 @@ public class PasswordService {
         person.setPassword(passwordEncoder.encode(password));
         personRepository.editPassword(person);
 
-        HashMap<String, String> date = new HashMap<>();
-        date.put("message", "ok");
+        var data = ComplexRs.builder().message("ok").build();
 
         return RegisterRs.builder()
                 .error("string")
-                .data(date)
+                .data(data)
                 .build();
     }
 }

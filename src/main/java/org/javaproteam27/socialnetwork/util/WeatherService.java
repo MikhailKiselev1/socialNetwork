@@ -2,6 +2,7 @@ package org.javaproteam27.socialnetwork.util;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.javaproteam27.socialnetwork.config.ParserConfig;
 import org.javaproteam27.socialnetwork.model.dto.request.WeatherRq;
 import org.javaproteam27.socialnetwork.model.dto.response.WeatherRs;
 import org.javaproteam27.socialnetwork.model.entity.City;
@@ -26,6 +27,7 @@ public class WeatherService {
 
     private final PersonRepository personRepository;
     private final CityRepository cityRepository;
+    private final ParserConfig parserConfig;
     private static final String WEATHER_TOKEN = "b392316d11d749cca0251337222510";
 
     public WeatherRs getWeather(String city) {
@@ -73,24 +75,28 @@ public class WeatherService {
 
     @Scheduled(initialDelay = 5000, fixedRateString = "PT2H")
     @Async
-    private void refreshWeather() {
-        log.info("Requesting weather started");
-        var cityList = getAllCity();
-        for (String city : cityList) {
-            WeatherRq weatherRq;
-            if (Objects.equals(city, "Санкт-Петербург")) {
-                weatherRq = getWeatherFromSite("Sankt-Peterburg");
-            } else weatherRq = getWeatherFromSite(city);
-            if (weatherRq.getTemp() != null) {
-                City cityEntity = new City();
-                cityEntity.setTemp(weatherRq.getTemp());
-                cityEntity.setClouds(weatherRq.getClouds());
-                cityEntity.setTitle(city);
-                cityEntity.setCountryId(1);
-                cityRepository.saveOrUpdate(cityEntity);
-            } else log.info(String.format("An error occurred while getting the weather from '%s'", city));
+    public void refreshWeather() {
+        if (parserConfig.isEnabled()) {
+            log.info("Requesting weather started");
+            var cityList = getAllCity();
+            for (String city : cityList) {
+                WeatherRq weatherRq;
+                if (Objects.equals(city, "Санкт-Петербург")) {
+                    weatherRq = getWeatherFromSite("Sankt-Peterburg");
+                } else weatherRq = getWeatherFromSite(city);
+                if (weatherRq.getTemp() != null) {
+                    City cityEntity = new City();
+                    cityEntity.setTemp(weatherRq.getTemp());
+                    cityEntity.setClouds(weatherRq.getClouds());
+                    cityEntity.setTitle(city);
+                    cityEntity.setCountryId(1);
+                    cityRepository.saveOrUpdate(cityEntity);
+                } else log.info(String.format("An error occurred while getting the weather from '%s'", city));
+            }
+            log.info("Weather in cities has been updated");
+        } else {
+            log.info("Parsing disabled");
         }
-        log.info("Weather in cities has been updated");
     }
 
     private Set<String> getAllCity() {

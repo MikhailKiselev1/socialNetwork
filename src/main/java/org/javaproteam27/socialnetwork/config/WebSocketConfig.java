@@ -18,7 +18,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
-        config.enableSimpleBroker("/user");//, "/queue");
+        config.enableSimpleBroker("/user");
         config.setApplicationDestinationPrefixes("/api/v1");
         config.setUserDestinationPrefix("/user");
     }
@@ -26,7 +26,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/api/v1/ws")
-//                .setHandshakeHandler(new CustomHandshakeHandler())
                 .setAllowedOrigins("*")
                 .withSockJS();
     }

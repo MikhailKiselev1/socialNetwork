@@ -2,7 +2,6 @@ package org.javaproteam27.socialnetwork.security;
 
 import lombok.RequiredArgsConstructor;
 import org.javaproteam27.socialnetwork.model.entity.Person;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.List;
@@ -26,7 +25,7 @@ public class AvailabilityUser {
 
     public List<Person> findAllPerson() {
         String sql = "SELECT * FROM person";
-        List<Person> persons = jdbcTemplate.query(
+        return jdbcTemplate.query(
                 sql,
                 (rs, rowNum) -> {
                     Person person = new Person();
@@ -35,6 +34,5 @@ public class AvailabilityUser {
                     return person;
                 }
         );
-        return persons;
     }
 }

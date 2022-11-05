@@ -57,7 +57,7 @@ public class FriendshipStatusRepository {
         try {
             String sql = "SELECT * FROM friendship_status fs\n" +
                     "join friendship f on fs.id= f.status_id\n" +
-                    "where fs.code = 'REQUEST' and src_person_id = ? and dst_person_id = ?";
+                    "where src_person_id = ? and dst_person_id = ?";
             return jdbcTemplate.query(sql, rowMapper, srcPersonId, id);
         } catch (EmptyResultDataAccessException e) {
             throw new EntityNotFoundException("person id = " + id + " or " + srcPersonId);

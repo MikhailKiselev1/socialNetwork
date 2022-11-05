@@ -4,20 +4,15 @@ import lombok.RequiredArgsConstructor;
 import org.javaproteam27.socialnetwork.aop.DebugLogger;
 import org.javaproteam27.socialnetwork.handler.exception.InvalidRequestException;
 import org.javaproteam27.socialnetwork.model.dto.request.LoginRq;
-import org.javaproteam27.socialnetwork.model.dto.response.CurrencyRateRs;
-import org.javaproteam27.socialnetwork.model.dto.response.PersonRs;
-import org.javaproteam27.socialnetwork.model.dto.response.ResponseRs;
-import org.javaproteam27.socialnetwork.model.dto.response.WeatherRs;
+import org.javaproteam27.socialnetwork.model.dto.response.*;
 import org.javaproteam27.socialnetwork.model.entity.Person;
 import org.javaproteam27.socialnetwork.repository.CurrencyRepository;
 import org.javaproteam27.socialnetwork.repository.PersonRepository;
 import org.javaproteam27.socialnetwork.security.jwt.JwtTokenProvider;
-import org.javaproteam27.socialnetwork.util.Redis;
+import org.javaproteam27.socialnetwork.util.PhotoCloudinary;
 import org.javaproteam27.socialnetwork.util.WeatherService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.HashMap;
 
 @Service
 @RequiredArgsConstructor
@@ -28,7 +23,7 @@ public class LoginService {
     private final PersonRepository personRepository;
     private final PasswordEncoder passwordEncoder;
     private final WeatherService weatherService;
-    private final Redis redis;
+    private final PhotoCloudinary photoCloudinary;
     private final CurrencyRepository currencyRepository;
 
     public ResponseRs<PersonRs> profileResponse(String token) {
@@ -43,6 +38,7 @@ public class LoginService {
         var currencyUsd = currencyRepository.findByName("USD");
         var currencyEuro = currencyRepository.findByName("EUR");
         PersonRs personRs = getPersonRs(person, token);
+        personRs.setDeleted(person.getIsDeleted());
         personRs.setWeather(weatherRs);
         personRs.setCurrency(CurrencyRateRs.builder()
                 .usd(currencyUsd.getPrice())
@@ -63,7 +59,7 @@ public class LoginService {
             response.setError("");
             response.setTimestamp(System.currentTimeMillis());
             return response;
-        } else throw new InvalidRequestException("Incorrect password");
+        } else throw new InvalidRequestException("Неверный пароль.");
     }
 
     private PersonRs getPersonRs(Person person, String token) {
@@ -75,7 +71,7 @@ public class LoginService {
                 .birthDate(person.getBirthDate())
                 .email(person.getEmail())
                 .phone(person.getPhone())
-                .photo(redis.getUrl(person.getId()))
+                .photo(photoCloudinary.getUrl(person.getId()))
                 .about(person.getAbout())
                 .city(person.getCity())
                 .country(person.getCountry())
@@ -88,14 +84,9 @@ public class LoginService {
 
     }
 
-    public ResponseRs<Object> logout() {
-        ResponseRs<Object> response = new ResponseRs<>();
-        response.setError("");
-        response.setTimestamp(System.currentTimeMillis());
-        HashMap<String, String> data = new HashMap<>();
-        data.put("message", "ok");
-        response.setData(data);
-        return response;
+    public ResponseRs<ComplexRs> logout() {
+        var data = ComplexRs.builder().message("ok").build();
+        return new ResponseRs<>("", data, null);
     }
 
 

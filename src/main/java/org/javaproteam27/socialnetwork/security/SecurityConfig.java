@@ -53,7 +53,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements WebM
                 .and()
                 .authorizeRequests()
                 .antMatchers(MAIN_ENDPOINT,STATIC_ENDPOINT,LOGIN_ENDPOINT,REGISTER_ENDPOINT,PASSWORD_RECOVERY_ENDPOINT,
-                        CAPTCHA_ENDPOINT, GRAFANA_ENDPOINT, WEBSOCKET_ENDPOINT).permitAll()
+                        CAPTCHA_ENDPOINT, GRAFANA_ENDPOINT, WEBSOCKET_ENDPOINT, "/swagger-ui.html",
+                        "/swagger-ui/index.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
 //                .antMatchers(ADMIN_ENDPOINT).hasRole("ADMIN")
                 .anyRequest().authenticated()
                 .and()

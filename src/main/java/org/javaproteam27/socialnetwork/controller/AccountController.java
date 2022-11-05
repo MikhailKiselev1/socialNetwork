@@ -1,13 +1,12 @@
 package org.javaproteam27.socialnetwork.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.javaproteam27.socialnetwork.model.dto.request.EmailRq;
 import org.javaproteam27.socialnetwork.model.dto.request.PasswordRq;
 import org.javaproteam27.socialnetwork.model.dto.request.PersonSettingsRq;
 import org.javaproteam27.socialnetwork.model.dto.request.RegisterRq;
-import org.javaproteam27.socialnetwork.model.dto.response.ListResponseRs;
-import org.javaproteam27.socialnetwork.model.dto.response.PersonSettingsRs;
-import org.javaproteam27.socialnetwork.model.dto.response.RegisterRs;
-import org.javaproteam27.socialnetwork.model.dto.response.ResponseRs;
+import org.javaproteam27.socialnetwork.model.dto.response.*;
 import org.javaproteam27.socialnetwork.service.EmailService;
 import org.javaproteam27.socialnetwork.service.PasswordService;
 import org.javaproteam27.socialnetwork.service.PersonSettingsService;
@@ -17,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/account")
 @RequiredArgsConstructor
+@Tag(name = "account", description = "Взаимодействие с аккаунтом")
 public class AccountController {
 
     private final RegisterService registerService;
@@ -30,13 +30,17 @@ public class AccountController {
     }
 
     @PutMapping("/email/recovery")
-    public RegisterRs putEmail(@RequestHeader("Authorization") String token) {
+    public RegisterRs putRecoveryEmail(@RequestHeader("Authorization") String token) {
         return emailService.putEmail(token);
+    }
+    @PutMapping("/email")
+    public RegisterRs putEmail(@RequestHeader("Authorization") String token, @RequestBody EmailRq rq) {
+        return emailService.recoverEmail(token, rq);
     }
 
     @PutMapping("/password/recovery")
     public RegisterRs putEmailPassword(@RequestHeader("Authorization") String token) {
-        return emailService.putEmail(token);
+        return emailService.putPassword(token);
     }
 
     @PutMapping("/password/set")
@@ -51,7 +55,7 @@ public class AccountController {
     }
 
     @PutMapping("/notifications")
-    public ResponseRs<Object> editPersonSettings(@RequestBody PersonSettingsRq ps) {
+    public ResponseRs<ComplexRs> editPersonSettings(@RequestBody PersonSettingsRq ps) {
         return personSettingsService.editPersonSettings(ps);
     }
 

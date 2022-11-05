@@ -43,5 +43,7 @@ public class PersonRs {
     private WeatherRs weather;
     private CurrencyRateRs currency;
     private boolean online;
+    @JsonProperty("user_deleted")
+    private boolean isDeleted;
 }
 

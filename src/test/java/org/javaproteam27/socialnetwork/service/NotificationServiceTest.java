@@ -1,11 +1,12 @@
 package org.javaproteam27.socialnetwork.service;
 
+import lombok.SneakyThrows;
 import org.javaproteam27.socialnetwork.handler.exception.InvalidRequestException;
 import org.javaproteam27.socialnetwork.model.entity.*;
 import org.javaproteam27.socialnetwork.model.enums.NotificationType;
 import org.javaproteam27.socialnetwork.repository.*;
 import org.javaproteam27.socialnetwork.security.jwt.JwtTokenProvider;
-import org.javaproteam27.socialnetwork.util.Redis;
+import org.javaproteam27.socialnetwork.util.PhotoCloudinary;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -50,7 +51,9 @@ public class NotificationServiceTest {
     @Mock
     private PersonSettingsRepository personSettingsRepository;
     @Mock
-    private Redis redis;
+    private PhotoCloudinary photoCloudinary;
+    @Mock
+    private KafkaProducerService kafkaProducerService;
 
     private NotificationService notificationService;
 
@@ -58,7 +61,7 @@ public class NotificationServiceTest {
     public void setUp() {
         notificationService = new NotificationService(personService, personRepository, jwtTokenProvider,
                 notificationRepository, friendshipRepository, postRepository, commentRepository,
-                likeRepository, messageRepository, simpMessagingTemplate, personSettingsRepository, redis);
+                likeRepository, messageRepository, simpMessagingTemplate, personSettingsRepository, photoCloudinary, kafkaProducerService);
 
         var ps = PersonSettings.builder()
                 .postNotification(true)
@@ -250,6 +253,7 @@ public class NotificationServiceTest {
     }
 
     @Test
+    @SneakyThrows
     public void createCommentNotificationCreatingWithParentIdSaveOnceTimes() {
         Post post = Post.builder().id(0).authorId(1).build();
         Person person = new Person();
@@ -266,10 +270,11 @@ public class NotificationServiceTest {
         notificationService.createCommentNotification(post.getId(), System.currentTimeMillis(), comment.getId(),
                 comment.getParentId());
 
-        verify(notificationRepository, times(1)).save(any());
+        verify(kafkaProducerService, times(1)).sendNotificationToQueue(any());
     }
 
     @Test
+    @SneakyThrows
     public void createCommentNotificationCreatingWithoutParentIdSaveOnceTimes() {
         Post post = Post.builder().id(0).authorId(1).build();
         Person person = new Person();
@@ -284,10 +289,11 @@ public class NotificationServiceTest {
         notificationService.createCommentNotification(post.getId(), System.currentTimeMillis(), comment.getId(),
                 comment.getParentId());
 
-        verify(notificationRepository, times(1)).save(any());
+        verify(kafkaProducerService, times(1)).sendNotificationToQueue(any());
     }
 
     @Test
+    @SneakyThrows
     public void createCommentNotificationWithSamePostAuthorAndPersonDoNotSaving() {
         Post post = Post.builder().id(0).authorId(1).build();
         Person person = new Person();
@@ -301,10 +307,11 @@ public class NotificationServiceTest {
         notificationService.createCommentNotification(post.getId(), System.currentTimeMillis(), comment.getId(),
                 comment.getParentId());
 
-        verify(notificationRepository, times(0)).save(any());
+        verify(kafkaProducerService, times(0)).sendNotificationToQueue(any());
     }
 
     @Test
+    @SneakyThrows
     public void createCommentNotificationWithSameCommentAuthorAndPostAuthorDoNotSaving() {
         Post post = Post.builder().id(0).authorId(1).build();
         Person person = new Person();
@@ -318,10 +325,11 @@ public class NotificationServiceTest {
         notificationService.createCommentNotification(post.getId(), System.currentTimeMillis(), comment.getId(),
                 comment.getParentId());
 
-        verify(notificationRepository, times(0)).save(any());
+        verify(kafkaProducerService, times(0)).sendNotificationToQueue(any());
     }
 
     @Test
+    @SneakyThrows
     public void createSubCommentNotificationCreatingWithCorrectDataSaveOnceTimes() {
         Comment comment = Comment.builder().id(2).authorId(3).parentId(4).build();
         Person person = new Person();
@@ -335,7 +343,7 @@ public class NotificationServiceTest {
         notificationService.createSubCommentNotification(comment.getParentId(), System.currentTimeMillis(),
                 comment.getId());
 
-        verify(notificationRepository, times(1)).save(any());
+        verify(kafkaProducerService, times(1)).sendNotificationToQueue(any());
     }
 
     @Test
@@ -354,6 +362,7 @@ public class NotificationServiceTest {
     }
 
     @Test
+    @SneakyThrows
     public void createFriendshipNotificationWithCorrectDataSaveOnceTimes() {
         Friendship friendship = new Friendship();
         friendship.setId(1);
@@ -368,10 +377,11 @@ public class NotificationServiceTest {
 
         notificationService.createFriendshipNotification(1, 2, 3);
 
-        verify(notificationRepository, times(1)).save(any());
+        verify(kafkaProducerService, times(1)).sendNotificationToQueue(any());
     }
 
     @Test
+    @SneakyThrows
     public void createPostNotificationWithCorrectDataSaveOnceTimes() {
         Friendship friendship = new Friendship();
         friendship.setDstPersonId(1);
@@ -386,10 +396,11 @@ public class NotificationServiceTest {
 
         notificationService.createPostNotification(1, System.currentTimeMillis(), 2);
 
-        verify(notificationRepository, times(1)).save(any());
+        verify(kafkaProducerService, times(1)).sendNotificationToQueue(any());
     }
 
     @Test
+    @SneakyThrows
     public void createPostLikeNotificationWhenTypePostSaveOnceTimes() {
         Person person = new Person();
         person.setId(1);
@@ -404,7 +415,7 @@ public class NotificationServiceTest {
 
         notificationService.createPostLikeNotification(1, System.currentTimeMillis(), post.getId(), "Post");
 
-        verify(notificationRepository, times(1)).save(any());
+        verify(kafkaProducerService, times(1)).sendNotificationToQueue(any());
     }
 
     @Test
@@ -422,6 +433,7 @@ public class NotificationServiceTest {
     }
 
     @Test
+    @SneakyThrows
     public void createPostLIkeNotificationWhenTypeCommentSaveOnceTimes() {
         Person person = new Person();
         person.setId(1);
@@ -437,10 +449,11 @@ public class NotificationServiceTest {
         notificationService.createPostLikeNotification(1, System.currentTimeMillis(), comment.getId(),
                 "Comment");
 
-        verify(notificationRepository, times(1)).save(any());
+        verify(kafkaProducerService, times(1)).sendNotificationToQueue(any());
     }
 
     @Test
+    @SneakyThrows
     public void createMessageNotificationWithCorrectDataSaveOnceTimes() {
         Person person = new Person();
         person.setId(1);
@@ -454,7 +467,7 @@ public class NotificationServiceTest {
 
         notificationService.createMessageNotification(2, System.currentTimeMillis(), 4, "t");
 
-        verify(notificationRepository, times(1)).save(any());
+        verify(kafkaProducerService, times(1)).sendNotificationToQueue(any());
     }
 
     @Test
@@ -488,6 +501,7 @@ public class NotificationServiceTest {
     }
 
     @Test
+    @SneakyThrows
     public void createFriendBirthDayNotificationWithCorrectDataSaveOnceTimes() {
         Person person = new Person();
         person.setId(1);
@@ -505,7 +519,7 @@ public class NotificationServiceTest {
 
         notificationService.createFriendBirthdayNotification();
 
-        verify(notificationRepository, times(1)).save(any());
+        verify(kafkaProducerService, times(1)).sendNotificationToQueue(any());
     }
 
     @Test

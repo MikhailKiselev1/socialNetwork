@@ -3,6 +3,7 @@ package org.javaproteam27.socialnetwork.security.jwt;
 import io.jsonwebtoken.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -20,7 +21,7 @@ public class JwtTokenProvider {
 
     private String secret = "jwtapp";
 
-    private long validityInMilliseconds = 3600000;
+    private static final long VALIDITY_IN_MILLISECONDS = 3600000;
 
 
     @Autowired
@@ -28,8 +29,7 @@ public class JwtTokenProvider {
 
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
-        BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder(12);
-        return bCryptPasswordEncoder;
+        return new BCryptPasswordEncoder(12);
     }
 
     @PostConstruct
@@ -42,7 +42,7 @@ public class JwtTokenProvider {
         Claims claims = Jwts.claims().setSubject(username);
 
         Date now = new Date();
-        Date validity = new Date(now.getTime() + validityInMilliseconds);
+        Date validity = new Date(now.getTime() + VALIDITY_IN_MILLISECONDS);
 
         return Jwts.builder()//
                 .setClaims(claims)//
@@ -62,20 +62,15 @@ public class JwtTokenProvider {
     }
 
     public String resolveToken(HttpServletRequest req) {
-        String bearerToken = req.getHeader("Authorization");
-        return bearerToken;
+        return req.getHeader("Authorization");
     }
 
     public boolean validateToken(String token) {
         try {
             Jws<Claims> claims = Jwts.parser().setSigningKey(secret).parseClaimsJws(token);
 
-            if (claims.getBody().getExpiration().before(new Date()) ||
-            claims.getBody().isEmpty()) {
-                return false;
-            }
-
-            return true;
+            return !claims.getBody().getExpiration().before(new Date()) &&
+                    !claims.getBody().isEmpty();
         } catch (JwtException | IllegalArgumentException e) {
             throw new JwtAuthenticationException("JWT token is expired or invalid");
         }

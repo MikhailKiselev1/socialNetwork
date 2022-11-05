@@ -1,9 +1,7 @@
 package org.javaproteam27.socialnetwork.model.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import liquibase.pro.packaged.S;
 import lombok.Data;
-import org.javaproteam27.socialnetwork.model.enums.MessagesPermission;
 
 @Data
 public class UserRq {

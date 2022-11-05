@@ -10,14 +10,15 @@ import org.javaproteam27.socialnetwork.repository.FriendshipStatusRepository;
 import org.javaproteam27.socialnetwork.repository.PersonRepository;
 import org.javaproteam27.socialnetwork.security.jwt.JwtTokenProvider;
 import org.javaproteam27.socialnetwork.security.jwt.JwtUser;
-import org.javaproteam27.socialnetwork.util.Redis;
+import org.javaproteam27.socialnetwork.util.PhotoCloudinary;
 import org.javaproteam27.socialnetwork.util.WeatherService;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
@@ -29,9 +30,10 @@ public class PersonService {
 
     private final PersonRepository personRepository;
     private final JwtTokenProvider jwtTokenProvider;
-    private final Redis redis;
+    private final PhotoCloudinary photoCloudinary;
     private final FriendshipStatusRepository friendshipStatusRepository;
     private final WeatherService weatherService;
+
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     public Person findById(int id) {
@@ -64,22 +66,23 @@ public class PersonService {
                         .id(person.getId())
                         .firstName(person.getFirstName())
                         .lastName(person.getLastName())
-                        .photo(redis.getUrl(person.getId()))
+                        .photo(photoCloudinary.getUrl(person.getId()))
                         .birthDate(person.getBirthDate())
                         .about(person.getAbout())
                         .phone(person.getPhone())
                         .lastOnlineTime(person.getLastOnlineTime())
                         .country(person.getCountry())
                         .city(person.getCity())
+                        .friendshipStatusCode(getFriendshipStatus(person.getId()))
+                        .online(Objects.equals(person.getOnlineStatus(), "ONLINE"))
                         .build())
                 .collect(Collectors.toList());
-
 
 
         return new ListResponseRs<>("", offset, itemPerPage, data);
     }
 
-    public PersonRs getPersonRs(Person person){
+    public PersonRs getPersonRs(Person person) {
 
         return PersonRs.builder()
                 .id(person.getId())
@@ -93,22 +96,23 @@ public class PersonService {
                 .birthDate(person.getBirthDate())
                 .messagesPermission(person.getMessagesPermission())
                 .isBlocked(person.getIsBlocked())
-                .photo(redis.getUrl(person.getId()))
+                .photo(photoCloudinary.getUrl(person.getId()))
                 .weather(getWeather(person))
                 .about(person.getAbout())
                 .lastOnlineTime(person.getLastOnlineTime())
                 .friendshipStatusCode(getFriendshipStatus(person.getId()))
                 .online(Objects.equals(person.getOnlineStatus(), "ONLINE"))
+                .isDeleted(person.getIsDeleted())
                 .build();
     }
 
-    public PersonRs initialize(Integer personId){
+    public PersonRs initialize(Integer personId) {
 
         Person person = findById(personId);
         return getPersonRs(person);
     }
 
-    public ResponseEntity<UserRs> editUser(UserRq request, String token) {
+    public UserRs editUser(UserRq request, String token) {
 
         UserRs response = new UserRs();
         Person person = personRepository.findByEmail(jwtTokenProvider.getUsername(token));
@@ -117,7 +121,7 @@ public class PersonService {
         String birthDate = request.getBirthDate().split("T")[0];
         LocalDate date = LocalDate.parse(birthDate, formatter);
 
-        person.setBirthDate(date.toEpochDay());
+        person.setBirthDate(date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli());
         person.setPhone(request.getPhone());
         person.setAbout(request.getAbout());
         person.setCity(request.getCity());
@@ -126,10 +130,10 @@ public class PersonService {
                 MessagesPermission.ALL : MessagesPermission.valueOf(request.getMessagesPermission()));
         personRepository.editPerson(person);
 
-        return ResponseEntity.ok(response);
+        return response;
     }
 
-    private FriendshipStatusCode getFriendshipStatus(Integer dstId) {
+    public FriendshipStatusCode getFriendshipStatus(Integer dstId) {
         var srcId = getAuthorizedPerson().getId();
         var friendStatus = friendshipStatusRepository.findByPersonId(dstId, srcId);
         if (!friendStatus.isEmpty()) {
@@ -155,5 +159,42 @@ public class PersonService {
             weatherRs = weatherService.getWeather("Москва");
         }
         return weatherRs;
+    }
+
+    public ResponseRs<ComplexRs> deleteUser(String token) {
+        String email = jwtTokenProvider.getUsername(token);
+        Person person = personRepository.findByEmail(email);
+        person.setIsDeleted(true);
+        personRepository.setPersonIsDeleted(person);
+        var response = new ResponseRs<ComplexRs>();
+        response.setData(ComplexRs.builder().message("ok").build());
+        response.setError("");
+        response.setTimestamp(System.currentTimeMillis());
+        return response;
+    }
+
+    //    @Scheduled(fixedDelayString = "PT24H")
+//    @Async
+    public void fullDeleteUser(Person person) {
+        personRepository.findAll().stream().filter(Person::getIsBlocked)
+                .filter(person1 -> {
+                    LocalDate deletedDate = Instant.ofEpochMilli(person1.getDeletedTime())
+                            .atZone(ZoneId.systemDefault()).toLocalDate();
+                    return deletedDate.isBefore(deletedDate.plusMonths(1));
+                }).forEach(personRepository::fullDeletePerson);
+    }
+
+    public ResponseRs<ComplexRs> recoverUser(String token) {
+
+        String email = jwtTokenProvider.getUsername(token);
+        Person person = personRepository.findByEmail(email);
+        person.setIsDeleted(false);
+        personRepository.setPersonIsDeleted(person);
+
+        var response = new ResponseRs<ComplexRs>();
+        response.setData(ComplexRs.builder().message("ok").build());
+        response.setError("");
+        response.setTimestamp(System.currentTimeMillis());
+        return response;
     }
 }

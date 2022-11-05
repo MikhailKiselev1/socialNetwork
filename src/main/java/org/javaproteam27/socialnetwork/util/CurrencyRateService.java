@@ -2,12 +2,14 @@ package org.javaproteam27.socialnetwork.util;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.javaproteam27.socialnetwork.config.ParserConfig;
 import org.javaproteam27.socialnetwork.model.dto.request.CurrencyRateRq;
 import org.javaproteam27.socialnetwork.model.entity.Currency;
 import org.javaproteam27.socialnetwork.repository.CurrencyRepository;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.jsoup.Jsoup;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Component;
 public class CurrencyRateService {
 
     private final CurrencyRepository currencyRepository;
+    private final ParserConfig parserConfig;
     private static final String CURRENCY_TOKEN = "347140588eb5bf9ecc56961cf20e44af";
 
     public CurrencyRateRq getCurrencyRate() {
@@ -39,15 +42,18 @@ public class CurrencyRateService {
 
     @Scheduled(initialDelay = 3000, fixedRateString = "PT2H")
     private void updateCurrencyRate() {
-        log.info("Started updating currency rate");
-        var rate = getCurrencyRate();
-        if (rate.getEuro() != null) {
-            Currency currencyUsd = Currency.builder().name("USD").price(rate.getUsd()).build();
-            Currency currencyEuro = Currency.builder().name("EUR").price(rate.getEuro()).build();
-            currencyRepository.saveOrUpdate(currencyUsd);
-            currencyRepository.saveOrUpdate(currencyEuro);
-            log.info("Currency rate updated");
-        } else log.info("An error occurred while getting the currency rate");
+        if (parserConfig.isEnabled()) {
+            log.info("Started updating currency rate");
+            var rate = getCurrencyRate();
+            if (rate.getEuro() != null) {
+                Currency currencyUsd = Currency.builder().name("USD").price(rate.getUsd()).build();
+                Currency currencyEuro = Currency.builder().name("EUR").price(rate.getEuro()).build();
+                currencyRepository.saveOrUpdate(currencyUsd);
+                currencyRepository.saveOrUpdate(currencyEuro);
+                log.info("Currency rate updated");
+            } else log.info("An error occurred while getting the currency rate");
+        } else {
+            log.info("Parsing disabled");
+        }
     }
-
 }

@@ -3,16 +3,16 @@ package org.javaproteam27.socialnetwork.service;
 import lombok.RequiredArgsConstructor;
 import org.javaproteam27.socialnetwork.handler.exception.InvalidRequestException;
 import org.javaproteam27.socialnetwork.model.dto.request.RegisterRq;
+import org.javaproteam27.socialnetwork.model.dto.response.ComplexRs;
 import org.javaproteam27.socialnetwork.model.dto.response.RegisterRs;
 import org.javaproteam27.socialnetwork.model.entity.Person;
 import org.javaproteam27.socialnetwork.repository.CaptchaRepository;
 import org.javaproteam27.socialnetwork.repository.PersonRepository;
 import org.javaproteam27.socialnetwork.repository.PersonSettingsRepository;
-import org.javaproteam27.socialnetwork.security.jwt.JwtTokenProvider;
+import org.javaproteam27.socialnetwork.util.PhotoCloudinary;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.HashMap;
 
 @Service
 @RequiredArgsConstructor
@@ -20,22 +20,17 @@ public class RegisterService {
 
     private final PersonRepository personRepository;
     private final CaptchaRepository captchaRepository;
-    private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
     private final PersonSettingsRepository personSettingsRepository;
+    private final PhotoCloudinary photoCloudinary;
     private String captchaSecret1;
     private String captchaSecret2;
     private String password1;
     private String password2;
-    private String email;
-    private String firstName;
-    private String lastName;
-
-    private String defaultPhoto = "/c55aeb2a-6100-48e6-a006-0cec9f913b38.jpg";
-
+    @Value("${register-service.default-photo}")
+    private String defaultPhoto;
 
     public RegisterRs postRegister(RegisterRq request) {
-        HashMap<String, String> data = new HashMap<>();
 
         captchaSecret1 = captchaRepository.findByCode(request.getCode()).getSecretCode();
         captchaSecret2 = request.getCodeSecret();
@@ -44,17 +39,17 @@ public class RegisterService {
 
         // Проверка введенных данных
         if (!checkCaptcha()) {
-            throw new InvalidRequestException("Invalid captcha");
+            throw new InvalidRequestException("Неврено введена каптча.");
         }
         if (!checkPassword()) {
-            throw new InvalidRequestException("Password do not match");
+            throw new InvalidRequestException("Пароли не совпадают.");
         }
-        email = request.getEmail();
+        String email = request.getEmail();
         if (personRepository.checkEmailExists(email)) {
-            throw new InvalidRequestException("This email already exists");
+            throw new InvalidRequestException("Такой емэйл уже зарегестрирован.");
         }
-        firstName = request.getFirstName();
-        lastName = request.getLastName();
+        String firstName = request.getFirstName();
+        String lastName = request.getLastName();
 
         //Сохранение пользователя в бд
         Person person = new Person();
@@ -66,10 +61,12 @@ public class RegisterService {
         person.setPhoto(defaultPhoto);
         person.setIsApproved(true);  // добавить проверку почты
         person.setLastOnlineTime(System.currentTimeMillis());
+        person.setIsDeleted(false);
         var personId = personRepository.save(person);
+        photoCloudinary.add(personId, defaultPhoto);
         personSettingsRepository.save(personId);
         // ответ успешной регистрации
-        data.put("message", "ok");
+        var data = ComplexRs.builder().message("ok").build();
 
         return RegisterRs.builder().error("string")
                 .timestamp(System.currentTimeMillis())

@@ -3,6 +3,7 @@ package org.javaproteam27.socialnetwork.repository;
 import lombok.RequiredArgsConstructor;
 import org.javaproteam27.socialnetwork.handler.exception.EntityNotFoundException;
 import org.javaproteam27.socialnetwork.handler.exception.ErrorException;
+import org.javaproteam27.socialnetwork.handler.exception.InvalidRequestException;
 import org.javaproteam27.socialnetwork.mapper.PersonMapper;
 import org.javaproteam27.socialnetwork.model.entity.Person;
 import org.springframework.dao.DataAccessException;
@@ -14,6 +15,7 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,12 +26,19 @@ public class PersonRepository {
     public static final String PERSON_ID = "person id = ";
     private final RowMapper<Person> rowMapper = new PersonMapper();
     private final JdbcTemplate jdbcTemplate;
+    private final FriendshipRepository friendshipRepository;
+    private final DialogRepository dialogRepository;
+    private final MessageRepository messageRepository;
+    private final PersonSettingsRepository personSettingsRepository;
+    private final PostRepository postRepository;
+    private final TagRepository tagRepository;
+
 
 
     public Integer save(Person person) {
         String sql = "insert into person(first_name, last_name, reg_date, email, " +
-                "password, photo, is_approved, last_online_time)" +
-                "values ('%s','%s','%s','%s','%s','%s','%b','%s')";
+                "password, photo, is_approved, last_online_time, is_deleted)" +
+                "values ('%s','%s','%s','%s','%s','%s','%b','%s','%s')";
         String sqlFormat = String.format(sql,
                 person.getFirstName(),
                 person.getLastName(),
@@ -38,7 +47,8 @@ public class PersonRepository {
                 person.getPassword(),
                 person.getPhoto(),
                 person.getIsApproved(),
-                new Timestamp(person.getLastOnlineTime()));
+                new Timestamp(person.getLastOnlineTime()),
+                person.getIsDeleted());
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         jdbcTemplate.update(connection -> connection.prepareStatement(sqlFormat, new String[]{"id"}), keyHolder);
@@ -54,7 +64,16 @@ public class PersonRepository {
         }
     }
 
-    public List<Person> getFriendsPersonById(Integer id) {
+    public Person findNotDeletedById(int id) {
+        try {
+            String sql = "select * from person where is_deleted = false and id = ?";
+            return jdbcTemplate.queryForObject(sql, rowMapper, id);
+        } catch (EmptyResultDataAccessException e) {
+            throw new EntityNotFoundException(PERSON_ID + id);
+        }
+    }
+
+    public List<Person> getFriendsByPersonId(Integer id) {
         try {
             String sql = "SELECT * FROM friendship f\n" +
                     "join friendship_status fs on fs.id=f.status_id\n" +
@@ -72,7 +91,7 @@ public class PersonRepository {
             String sql = "select * from person where email like ?";
             return jdbcTemplate.queryForObject(sql, rowMapper, email);
         } catch (EmptyResultDataAccessException e) {
-            throw new EntityNotFoundException("person email = " + email);
+            throw new InvalidRequestException("Пользователь с почтой - " + email + " не найден.");
         }
     }
 
@@ -137,13 +156,14 @@ public class PersonRepository {
         return peopleFound;
     }
 
-    public List<Person> getFriendsPersonById(String name, Integer id) {
+    public List<Person> getFriendsPersonById(Integer id) {
         try {
             String sql;
             sql = "SELECT * FROM person p \n" +
                     "join friendship f on f.dst_person_id = p.id\n" +
                     "join friendship_status fs on fs.id = f.status_id\n" +
-                    "where fs.code = 'FRIEND' and src_person_id = ? or dst_person_id = ?";
+                    "where fs.code = 'FRIEND' and is_deleted is false " +
+                    "and src_person_id = ? or dst_person_id = ?";
 
 
             return jdbcTemplate.query(sql, rowMapper, id, id);
@@ -152,13 +172,13 @@ public class PersonRepository {
         }
     }
 
-    public List<Person> getApplicationsFriendsPersonById(String name, Integer id) {
+    public List<Person> getApplicationsFriendsPersonById(Integer id) {
         try {
             String sql;
             sql = "SELECT * FROM person p \n" +
                     "join friendship f on f.src_person_id = p.id\n" +
                     "join friendship_status fs on fs.id = f.status_id\n" +
-                    "where fs.code = 'REQUEST' and dst_person_id = ?";
+                    "where fs.code = 'REQUEST' and dst_person_id = ? and is_deleted is false";
 
             return jdbcTemplate.query(sql, rowMapper, id);
         } catch (EmptyResultDataAccessException e) {
@@ -167,7 +187,7 @@ public class PersonRepository {
     }
 
     public Boolean editPerson(Person person) {
-        Boolean retValue;
+        boolean retValue;
         try {
             retValue = (jdbcTemplate.update("UPDATE person SET first_name = ?, last_name = ?, " +
                             "birth_date = ?, phone = ?, about = ?, city = ?, country = ?, messages_permission = ? " +
@@ -190,19 +210,28 @@ public class PersonRepository {
         }
     }
 
-    public Boolean savePhoto(Person person) {
+    public void savePhoto(Person person) {
         try {
-            return (jdbcTemplate.update("UPDATE person SET photo = ? WHERE id = ?", person.getPhoto(),
-                    person.getId()) == 1);
+            jdbcTemplate.update("UPDATE person SET photo = ? WHERE id = ?", person.getPhoto(),
+                    person.getId());
         } catch (DataAccessException exception) {
             throw new ErrorException(exception.getMessage());
         }
     }
 
-    public Boolean editPasswordToken(Person person) {
+    public void updateEmail(Person person) {
         try {
-            return (jdbcTemplate.update("UPDATE person SET change_password_token = ? WHERE id = ?",
-                    person.getChangePasswordToken(), person.getId()) == 1);
+            jdbcTemplate.update("UPDATE person SET email = ? WHERE id = ?", person.getEmail(),
+                    person.getId());
+        } catch (DataAccessException exception) {
+            throw new ErrorException(exception.getMessage());
+        }
+    }
+
+    public void editPasswordToken(Person person) {
+        try {
+            jdbcTemplate.update("UPDATE person SET change_password_token = ? WHERE id = ?",
+                    person.getChangePasswordToken(), person.getId());
         } catch (DataAccessException exception) {
             throw new ErrorException(exception.getMessage());
         }
@@ -224,6 +253,26 @@ public class PersonRepository {
     public Boolean deletePerson(int id) {
         try {
             return (jdbcTemplate.update("DELETE * FROM person WHERE id = ?", id) == 1);
+        } catch (DataAccessException exception) {
+            throw new ErrorException(exception.getMessage());
+        }
+    }
+
+    public Boolean fullDeletePerson(Person person) {
+        try {
+            dialogRepository.findByPersonId(person.getId()).forEach(dialog -> {
+                messageRepository.deleteByDialogId(dialog.getId());
+                dialogRepository.deleteById(dialog.getId());
+            });
+
+            friendshipRepository.findByPersonId(person.getId()).forEach(friendshipRepository::delete);
+            personSettingsRepository.delete(person.getId());
+            postRepository.findAllUserPosts(person.getId()).forEach(post -> {
+                tagRepository.deleteTagsByPostId(post.getId());
+                postRepository.finalDeletePostById(post.getId());
+            });
+
+            return (jdbcTemplate.update("DELETE FROM person WHERE id = ?", person.getId()) == 1);
         } catch (DataAccessException exception) {
             throw new ErrorException(exception.getMessage());
         }
@@ -251,5 +300,14 @@ public class PersonRepository {
         String sql = "select * from person where email = ?";
         var rs = jdbcTemplate.query(sql, rowMapper, email);
         return !rs.isEmpty();
+    }
+
+    public boolean setPersonIsDeleted(Person person) {
+        try {
+            return (jdbcTemplate.update("UPDATE person SET is_deleted = ?, deleted_time = ? WHERE id = ?",
+                    person.getIsDeleted(), LocalDateTime.now(), person.getId()) == 1);
+        } catch (DataAccessException exception) {
+            throw new ErrorException(exception.getMessage());
+        }
     }
 }

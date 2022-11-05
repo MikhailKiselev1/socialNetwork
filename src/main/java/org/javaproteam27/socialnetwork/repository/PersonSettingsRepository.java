@@ -44,4 +44,14 @@ public class PersonSettingsRepository {
             throw new EntityNotFoundException("person_id = " + personId);
         }
     }
+
+    public void delete(Integer personId) {
+        try {
+            String sql = "delete from person_settings where person_id = " + personId;
+            jdbcTemplate.update(sql);
+        } catch (EmptyResultDataAccessException e) {
+            throw new EntityNotFoundException("person_id = " + personId);
+        }
+
+    }
 }

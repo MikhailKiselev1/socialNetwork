@@ -14,15 +14,25 @@ logging:
     level:
         root: info
 
-yandexprofile:
+yandex-profile:
     login: javaproteams27@yandex.ru
     token: y0_AgAAAABkHWYcAAhcJAAAAADNMMSQdTIhTbQjRfCCNvyw30mWw_U7WIY
 
 redis:
-  url: redis://127.0.0.1:6379
+  url: redis://195.133.48.174:6379
+  enabled: true
 
-logsupload:
+logs-upload:
     enabled: true
+
+parser:
+  enabled: true
+
+mailing-service:
+  email: javaproteams27@yandex.ru
+
+register-service:
+  default-photo: /c55aeb2a-6100-48e6-a006-0cec9f913b38.jpg
 
 management:
   endpoints:
@@ -47,3 +57,6 @@ scrape_configs:
     static_configs:
       - targets: ['195.133.48.174:8080']
 
+change-url:
+  change-password: http://195.133.48.174:8080/change-password?token=
+  change-email: http://195.133.48.174:8080/shift-email?token=

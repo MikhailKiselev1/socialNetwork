@@ -1,7 +1,7 @@
 package org.javaproteam27.socialnetwork.service;
 
 import lombok.RequiredArgsConstructor;
-import org.javaproteam27.socialnetwork.util.Redis;
+import org.javaproteam27.socialnetwork.util.PhotoCloudinary;
 import org.javaproteam27.socialnetwork.handler.exception.EntityNotFoundException;
 import org.javaproteam27.socialnetwork.model.dto.response.ListResponseRs;
 import org.javaproteam27.socialnetwork.model.dto.response.PersonRs;
@@ -23,7 +23,7 @@ public class FriendsService {
     private final FriendshipService friendshipService;
     private final PersonRepository personRepository;
     private final JwtTokenProvider jwtTokenProvider;
-    private final Redis redis;
+    private final PhotoCloudinary photoCloudinary;
 
     public ListResponseRs<PersonRs> getRecommendations(String token, int offset, int itemPerPage) {
 
@@ -34,10 +34,22 @@ public class FriendsService {
         List<Integer> friendsIdsForFriends = getFriendsIdsForFriends(myFriendsIds, myId);
         Map<Integer, Integer> recommendationsCounts = getRecommendationsCounts(friendsIdsForFriends);
         List<Integer> sortedRecommendationsByCount = getSortedRecommendationsByCount(recommendationsCounts);
-        List<Integer> limitedRecommendations = limitRecommendations(sortedRecommendationsByCount, offset, itemPerPage);
+        List<Integer> filteredFriendsIds = filterFriendsIds(sortedRecommendationsByCount, myId);
+        List<Integer> limitedRecommendations = limitRecommendations(filteredFriendsIds, offset, itemPerPage);
         List<Person> persons = getPersons(limitedRecommendations);
 
         return getResultJson(persons, friendsIdsForFriends.size(), offset, itemPerPage);
+    }
+
+    private List<Integer> filterFriendsIds(List<Integer> list, int myId) {
+        List<Integer> result = new ArrayList<>();
+        for (Integer dstId : list) {
+            var friendship = friendshipService.findByFriendShip(myId, dstId);
+            if (friendship.isEmpty()) {
+                result.add(dstId);
+            }
+        }
+        return result;
     }
 
     private List<Integer> getMyFriendsIds(Integer myId) {
@@ -95,7 +107,7 @@ public class FriendsService {
         return limitedRecommendations.stream()
                 .map(id -> {
                     try {
-                        return Optional.of(personService.findById(id));
+                        return Optional.of(personRepository.findNotDeletedById(id));
                     } catch (EntityNotFoundException e) {
                         return Optional.empty();
                     }
@@ -118,13 +130,14 @@ public class FriendsService {
                         .birthDate(person.getBirthDate())
                         .email(person.getEmail())
                         .phone(person.getPhone())
-                        .photo(redis.getUrl(person.getId()))
+                        .photo(photoCloudinary.getUrl(person.getId()))
                         .about(person.getAbout())
                         .city(person.getCity())
                         .country(person.getCountry())
                         .messagesPermission(person.getMessagesPermission())
                         .lastOnlineTime(person.getLastOnlineTime())
                         .isBlocked(person.getIsBlocked())
+                        .friendshipStatusCode(personService.getFriendshipStatus(person.getId()))
                         .online(Objects.equals(person.getOnlineStatus(), "ONLINE"))
                         .build())
                 .collect(Collectors.toList());
@@ -139,9 +152,9 @@ public class FriendsService {
                 .build();
     }
 
-    public ListResponseRs<PersonRs> getListFriends(String name, Integer offset, Integer itemPerPage) {
+    public ListResponseRs<PersonRs> getListFriends(Integer offset, Integer itemPerPage) {
         var person = personService.getAuthorizedPerson();
-        List<Person> personList = personRepository.getFriendsPersonById(name, person.getId());
+        List<Person> personList = personRepository.getFriendsPersonById(person.getId());
         List<Person> result = new ArrayList<>();
         for (Person p : personList) {
             if (!Objects.equals(p.getId(), person.getId())) {
@@ -151,10 +164,9 @@ public class FriendsService {
         return getResultJson(result, 0, offset, itemPerPage);
     }
 
-    public ListResponseRs<PersonRs> getListApplicationsFriends(String name, Integer offset, Integer itemPerPage) {
+    public ListResponseRs<PersonRs> getListApplicationsFriends(Integer offset, Integer itemPerPage) {
 
-        List<Person> personList = personRepository.getApplicationsFriendsPersonById(name, personService.getAuthorizedPerson().getId());
+        List<Person> personList = personRepository.getApplicationsFriendsPersonById(personService.getAuthorizedPerson().getId());
         return getResultJson(personList, 0, offset, itemPerPage);
     }
-
 }

@@ -1,6 +1,8 @@
 package org.javaproteam27.socialnetwork.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
+import org.javaproteam27.socialnetwork.aop.DebugLogger;
 import org.javaproteam27.socialnetwork.handler.exception.InvalidRequestException;
 import org.javaproteam27.socialnetwork.model.dto.response.ListResponseRs;
 import org.javaproteam27.socialnetwork.model.dto.response.NotificationBaseRs;
@@ -11,7 +13,7 @@ import org.javaproteam27.socialnetwork.model.entity.Person;
 import org.javaproteam27.socialnetwork.model.enums.NotificationType;
 import org.javaproteam27.socialnetwork.repository.*;
 import org.javaproteam27.socialnetwork.security.jwt.JwtTokenProvider;
-import org.javaproteam27.socialnetwork.util.Redis;
+import org.javaproteam27.socialnetwork.util.PhotoCloudinary;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,7 @@ import static org.javaproteam27.socialnetwork.model.enums.NotificationType.*;
 
 @Service
 @RequiredArgsConstructor
+@DebugLogger
 public class NotificationService {
 
     private final PersonService personService;
@@ -39,7 +42,8 @@ public class NotificationService {
     private final MessageRepository messageRepository;
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final PersonSettingsRepository personSettingsRepository;
-    private final Redis redis;
+    private final PhotoCloudinary photoCloudinary;
+    private final KafkaProducerService kafkaProducer;
 
 
     public ListResponseRs<NotificationBaseRs> getNotifications(String token, int offset, int itemPerPage) {
@@ -179,6 +183,18 @@ public class NotificationService {
         }
     }
 
+    public void deleteNotification(NotificationType notificationType, Integer personId, Integer entityId) {
+        if (notificationType != POST) {
+            notificationRepository.deleteFromType(notificationType, personId, entityId);
+        } else {
+            var post = postRepository.findPostById(entityId);
+            var friends = friendshipRepository.findAllFriendsByPersonId(post.getAuthorId());
+            for (Friendship friendship : friends) {
+                notificationRepository.deleteFromType(notificationType, friendship.getDstPersonId(), entityId);
+            }
+        }
+    }
+
     private void notifyUser(Notification notification) {
         var rs = List.of(getNotificationRs(notification));
         var listRs = new ListResponseRs<>("", 0, 1, rs);
@@ -195,8 +211,14 @@ public class NotificationService {
                 .contact("")
                 .isRead(false)
                 .build();
-        notificationRepository.save(notification);
+        //notificationRepository.save(notification);
         notifyUser(notification);
+
+        try {
+            kafkaProducer.sendNotificationToQueue(notification);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
     }
 
     private NotificationBaseRs getNotificationRs(Notification notification) {
@@ -237,7 +259,7 @@ public class NotificationService {
         if (authorId != null) {
             var person = personRepository.findById(authorId);
             return PersonRs.builder().firstName(person.getFirstName()).lastName(person.getLastName())
-                    .photo(redis.getUrl(person.getId())).build();
+                    .photo(photoCloudinary.getUrl(person.getId())).build();
         }
         return null;
     }

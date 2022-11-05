@@ -1,10 +1,9 @@
 package org.javaproteam27.socialnetwork.aop;
 
 import lombok.extern.slf4j.Slf4j;
+import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.Around;
-import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Pointcut;
+import org.aspectj.lang.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -28,6 +27,27 @@ public class LoggerAspect {
         // Do nothing because is name of log method
     }
 
+    @Before("debugLoggerMethod()")
+    public void beforeDebugLog(JoinPoint joinPoint) {
+        String args = Arrays.toString(joinPoint.getArgs());
+        logDebug.debug("Request = path: [{}], method: [{}], arguments: {} ",
+                joinPoint.getSignature().getDeclaringTypeName(),
+                joinPoint.getSignature().getName(), args);
+    }
+
+    @AfterReturning(pointcut = "debugLoggerMethod()", returning = "entity")
+    public void afterDebugLog(JoinPoint joinPoint, Object entity) {
+        logDebug.debug("Response = path: [{}], method: [{}], return: [{}] ",
+                joinPoint.getSignature().getDeclaringTypeName(),
+                joinPoint.getSignature().getName(), entity);
+    }
+
+    @AfterThrowing(pointcut = "debugLoggerMethod()", throwing = "e")
+    public void afterThrowingDebugLog(Exception e) {
+        logDebug.debug("An error has occurred", e.fillInStackTrace());
+        e.printStackTrace();
+    }
+
     @Around("infoLoggerMethod()")
     public Object infoLogger(ProceedingJoinPoint joinPoint) throws Throwable {
         log.info("Request = path: [{}], method: [{}], arguments: {} ", joinPoint.getSignature().getDeclaringTypeName(),
@@ -36,24 +56,5 @@ public class LoggerAspect {
         log.info("Response = path: [{}], method: [{}], return: [{}] ", joinPoint.getSignature().getDeclaringTypeName(),
                 joinPoint.getSignature().getName(), result);
         return result;
-    }
-
-    @Around("debugLoggerMethod()")
-    public Object debugLogger(ProceedingJoinPoint joinPoint) throws Throwable {
-        String args = Arrays.toString(joinPoint.getArgs());
-        logDebug.debug("Request = path: [{}], method: [{}], arguments: {} ",
-                joinPoint.getSignature().getDeclaringTypeName(),
-                joinPoint.getSignature().getName(), args);
-        try {
-            Object result = joinPoint.proceed();
-            logDebug.debug("Response = path: [{}], method: [{}], return: [{}] ",
-                    joinPoint.getSignature().getDeclaringTypeName(),
-                    joinPoint.getSignature().getName(), result);
-
-        } catch (Exception e) {
-            logDebug.debug("An error has occurred", e.fillInStackTrace());
-            e.printStackTrace();
-        }
-        return joinPoint.proceed();
     }
 }

@@ -6,11 +6,13 @@ import org.javaproteam27.socialnetwork.model.dto.request.MessageRq;
 import org.javaproteam27.socialnetwork.model.dto.response.DialogUserShortListDto;
 import org.javaproteam27.socialnetwork.security.jwt.JwtTokenProvider;
 import org.javaproteam27.socialnetwork.security.jwt.JwtUser;
+import org.javaproteam27.socialnetwork.service.KafkaProducerService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -41,6 +43,8 @@ public class DialogsControllerTest {
     private MockMvc mockMvc;
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
+    @MockBean
+    private KafkaProducerService kafkaProducerService;
 
 
     private final String url = "/api/v1/dialogs";

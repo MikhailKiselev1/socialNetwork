@@ -15,6 +15,18 @@ spring:
                     auth: true
                     ssl:
                         enable: true
+    kafka:
+        consumer:
+            bootstrap-servers: 195.133.48.174:9092
+            group-id: consumer
+            maxPollIntervalMs: 30000
+            maxPollRecords: 10
+            consumers.count: 3
+            pollTimeout: 5000
+        producer:
+            bootstrap-servers: 195.133.48.174:9092
+            key-serializer: org.apache.kafka.common.serialization.StringSerializer
+            value-serializer: org.apache.kafka.common.serialization.StringSerializer
 
 logging:
     level:
@@ -22,10 +34,23 @@ logging:
     profiles:
         active: prod
 
-yandexprofile:
+yandex-profile:
     login: javaproteams27@yandex.ru
     token: y0_AgAAAABkHWYcAAhcJAAAAADNMMSQdTIhTbQjRfCCNvyw30mWw_U7WIY
 
-logsupload:
+parser:
+    enabled: true
+
+logs-upload:
     enabled: false
+
+mailing-service:
+    email: javaproteams27@yandex.ru
+
+register-service:
+    default-photo: /c55aeb2a-6100-48e6-a006-0cec9f913b38.jpg
+
+redis:
+    url: redis://195.133.48.174:6379
+    enabled: true
 

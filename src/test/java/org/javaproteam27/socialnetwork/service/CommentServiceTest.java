@@ -3,6 +3,7 @@ package org.javaproteam27.socialnetwork.service;
 import org.javaproteam27.socialnetwork.model.dto.response.CommentRs;
 import org.javaproteam27.socialnetwork.model.dto.response.ListResponseRs;
 import org.javaproteam27.socialnetwork.model.dto.response.ResponseRs;
+import org.javaproteam27.socialnetwork.model.entity.Comment;
 import org.javaproteam27.socialnetwork.model.entity.Person;
 import org.javaproteam27.socialnetwork.repository.CommentRepository;
 import org.junit.Test;
@@ -112,6 +113,11 @@ public class CommentServiceTest {
 
         int postId = 0;
         int commentId = 0;
+
+        Comment comment = Comment.builder().parentId(1).build();
+
+        when(commentRepository.getCommentById(anyInt())).thenReturn(comment);
+
         ResponseRs<CommentRs> response = commentService.deleteComment(postId, commentId);
 
         assertResponseRs(response);

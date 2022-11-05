@@ -3,6 +3,7 @@ package org.javaproteam27.socialnetwork.service;
 import lombok.RequiredArgsConstructor;
 import org.javaproteam27.socialnetwork.handler.exception.InvalidRequestException;
 import org.javaproteam27.socialnetwork.model.dto.request.PersonSettingsRq;
+import org.javaproteam27.socialnetwork.model.dto.response.ComplexRs;
 import org.javaproteam27.socialnetwork.model.dto.response.ListResponseRs;
 import org.javaproteam27.socialnetwork.model.dto.response.PersonSettingsRs;
 import org.javaproteam27.socialnetwork.model.dto.response.ResponseRs;
@@ -11,7 +12,6 @@ import org.javaproteam27.socialnetwork.repository.PersonSettingsRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import static org.javaproteam27.socialnetwork.model.enums.NotificationType.*;
@@ -38,7 +38,7 @@ public class PersonSettingsService {
         return new ListResponseRs<>("", 0, 20, data);
     }
 
-    public ResponseRs<Object> editPersonSettings(PersonSettingsRq rq) {
+    public ResponseRs<ComplexRs> editPersonSettings(PersonSettingsRq rq) {
         var personId = personService.getAuthorizedPerson().getId();
         var ps = personSettingsRepository.findByPersonId(personId);
         switch (rq.getType()) {
@@ -67,8 +67,7 @@ public class PersonSettingsService {
                 throw new InvalidRequestException("Request with - " + rq.getType() + " not found");
         }
         personSettingsRepository.update(ps);
-        HashMap<String, String> data = new HashMap<>();
-        data.put("message", "ok");
+        var data = ComplexRs.builder().message("ok").build();
         return new ResponseRs<>("", data, null);
     }
 

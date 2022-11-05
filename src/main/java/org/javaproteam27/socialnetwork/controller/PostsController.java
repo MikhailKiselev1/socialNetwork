@@ -1,5 +1,6 @@
 package org.javaproteam27.socialnetwork.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.javaproteam27.socialnetwork.model.dto.request.PostRq;
 import org.javaproteam27.socialnetwork.model.dto.response.ListResponseRs;
@@ -13,6 +14,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("api/v1/post")
+@Tag(name = "posts", description = "Взаимодействие с постами")
 public class PostsController {
     private final PostService postService;
 

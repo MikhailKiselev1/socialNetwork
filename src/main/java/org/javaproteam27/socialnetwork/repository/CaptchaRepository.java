@@ -3,14 +3,9 @@ package org.javaproteam27.socialnetwork.repository;
 import lombok.RequiredArgsConstructor;
 import org.javaproteam27.socialnetwork.handler.exception.ErrorException;
 import org.javaproteam27.socialnetwork.mapper.CaptchaMapper;
-import org.javaproteam27.socialnetwork.mapper.PostMapper;
 import org.javaproteam27.socialnetwork.model.entity.Captcha;
-import org.javaproteam27.socialnetwork.model.entity.Person;
-import org.javaproteam27.socialnetwork.model.entity.Post;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Timestamp;

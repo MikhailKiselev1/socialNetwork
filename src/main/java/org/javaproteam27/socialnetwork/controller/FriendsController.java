@@ -1,98 +1,71 @@
 package org.javaproteam27.socialnetwork.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.javaproteam27.socialnetwork.aop.InfoLogger;
 import org.javaproteam27.socialnetwork.model.dto.response.FriendshipRs;
 import org.javaproteam27.socialnetwork.model.dto.response.ListResponseRs;
 import org.javaproteam27.socialnetwork.model.dto.response.PersonRs;
-import org.javaproteam27.socialnetwork.model.entity.Friendship;
-import org.javaproteam27.socialnetwork.model.entity.Person;
-import org.javaproteam27.socialnetwork.model.enums.FriendshipStatusCode;
-import org.javaproteam27.socialnetwork.service.*;
-import org.springframework.http.ResponseEntity;
+import org.javaproteam27.socialnetwork.service.FriendsService;
+import org.javaproteam27.socialnetwork.service.FriendshipService;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/friends")
 @RequiredArgsConstructor
+@InfoLogger
+@Tag(name = "friends", description = "Взаимодействие с друзьями")
 public class FriendsController {
 
     private final FriendsService friendsService;
-    private final FriendshipStatusService friendshipStatusService;
     private final FriendshipService friendshipService;
-    private final PersonService personService;
 
     @GetMapping("/recommendations")
-    public ResponseEntity<ListResponseRs<PersonRs>> getRecommendations(
+    public ListResponseRs<PersonRs> getRecommendations(
             @RequestHeader("Authorization") String token,
             @RequestParam(value = "offset", defaultValue = "0") int offset,
             @RequestParam(value = "perPage", defaultValue = "10") int itemPerPage) {
 
-        ListResponseRs<PersonRs> recommendations = friendsService.getRecommendations(token, offset, itemPerPage);
-        return ResponseEntity.ok(recommendations);
+        return friendsService.getRecommendations(token, offset, itemPerPage);
     }
 
     @GetMapping
-    public ResponseEntity<ListResponseRs<PersonRs>> getListFriends(
-            @RequestParam(value = "name", required = false) String name,
+    public ListResponseRs<PersonRs> getListFriends(
             @RequestParam(value = "offset", required = false, defaultValue = "0") int offset,
             @RequestParam(value = "perPage", required = false, defaultValue = "20") int itemPerPage) {
 
-        ListResponseRs<PersonRs> listFriends = friendsService.getListFriends(name, offset, itemPerPage);
-
-        return ResponseEntity.ok(listFriends);
+        return friendsService.getListFriends(offset, itemPerPage);
     }
 
     @PostMapping("/{id}")
-    public ResponseEntity<FriendshipRs> addFriends(@PathVariable int id) {
-        Person person = personService.getAuthorizedPerson();
-        int friendshipStatusId;
-        if (friendshipService.requestVerification(id, person.getId()).isEmpty() && person.getId() != id) {
-            friendshipStatusId = friendshipStatusService.addStatus();
-            return ResponseEntity.ok(friendshipService.addFriendShip(id, friendshipStatusId, person.getId()));
-        } else {
-            friendshipStatusId = -1;
-        }
+    public FriendshipRs addFriends(@PathVariable int id) {
 
-        return ResponseEntity.ok(friendshipService.addFriendShip(id, friendshipStatusId, person.getId()));
+        return friendshipService.addFriendShip(id);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<FriendshipRs> deleteFriends(@PathVariable int id) {
+    public FriendshipRs deleteFriends(@PathVariable int id) {
 
-        Person person = personService.getAuthorizedPerson();
-        int srcPersonId = person.getId();
-
-        List<Friendship> friendshipList = friendshipService.findByFriendShip(srcPersonId, id);
-        friendshipService.deleteFriendShip(srcPersonId, id);
-        friendshipService.deleteFriendShip(id, srcPersonId);
-
-        return ResponseEntity.ok(friendshipStatusService.deleteStatus(friendshipList));
+        return friendshipService.deleteFriend(id);
     }
 
     @GetMapping("/request")
-    public ResponseEntity<ListResponseRs<PersonRs>> getListApplicationsFriends(
-            @RequestParam(value = "name", required = false) String name,
+    public ListResponseRs<PersonRs> getListApplicationsFriends(
             @RequestParam(value = "offset", required = false, defaultValue = "0") int offset,
             @RequestParam(value = "perPage", required = false, defaultValue = "20") int itemPerPage) {
 
-        ListResponseRs<PersonRs> listFriends = friendsService.getListApplicationsFriends(name, offset, itemPerPage);
-
-        return ResponseEntity.ok(listFriends);
+        return friendsService.getListApplicationsFriends(offset, itemPerPage);
     }
 
     @PostMapping("/request/{id}")
-    public ResponseEntity<FriendshipRs> addApplicationsFriends(@PathVariable int id) {
+    public FriendshipRs addApplicationsFriends(@PathVariable int id) {
 
-        Person person = personService.getAuthorizedPerson();
-        return ResponseEntity.ok(friendshipStatusService.updateStatus(id, person.getId(), FriendshipStatusCode.FRIEND));
+        return friendshipService.addApplicationsFriends(id);
     }
 
     @DeleteMapping("/request/{id}")
-    public ResponseEntity<FriendshipRs> deleteApplicationsFriends(@PathVariable int id) {
+    public FriendshipRs deleteApplicationsFriends(@PathVariable int id) {
 
-        Person person = personService.getAuthorizedPerson();
-        return ResponseEntity.ok(friendshipStatusService.updateStatus(id, person.getId(), FriendshipStatusCode.DECLINED));
+        return friendshipService.deleteApplicationsFriends(id);
     }
 }

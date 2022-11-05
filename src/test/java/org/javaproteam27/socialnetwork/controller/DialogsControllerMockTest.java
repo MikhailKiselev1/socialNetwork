@@ -8,6 +8,7 @@ import org.javaproteam27.socialnetwork.repository.DialogRepository;
 import org.javaproteam27.socialnetwork.repository.MessageRepository;
 import org.javaproteam27.socialnetwork.security.jwt.JwtTokenProvider;
 import org.javaproteam27.socialnetwork.security.jwt.JwtUser;
+import org.javaproteam27.socialnetwork.service.KafkaProducerService;
 import org.javaproteam27.socialnetwork.service.PersonService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -53,6 +54,8 @@ public class DialogsControllerMockTest {
     private DialogRepository dialogRepository;
     @MockBean
     private MessageRepository messageRepository;
+    @MockBean
+    private KafkaProducerService kafkaProducerService;
 
     @MockBean
     private PersonService personService;

@@ -1,6 +1,7 @@
 package org.javaproteam27.socialnetwork.controller;
 
-import org.javaproteam27.socialnetwork.util.Redis;
+import org.javaproteam27.socialnetwork.service.KafkaProducerService;
+import org.javaproteam27.socialnetwork.util.PhotoCloudinary;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,13 +37,15 @@ public class FeedsControllerTest {
     @Autowired
     private MockMvc mockMvc;
     @MockBean
-    private Redis redis;
+    private PhotoCloudinary photoCloudinary;
+    @MockBean
+    private KafkaProducerService kafkaProducerService;
 
     private static final String feedsUrl = "/api/v1/feeds";
 
     @Test
     public void getAllPost() throws Exception {
-        when(redis.getUrl(anyInt())).thenReturn("test");
+        when(photoCloudinary.getUrl(anyInt())).thenReturn("test");
         this.mockMvc.perform(get(feedsUrl).param("offset", "0").param("perPage", "10"))
                 .andDo(print())
                 .andExpect(status().isOk())

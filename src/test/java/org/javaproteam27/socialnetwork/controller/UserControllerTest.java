@@ -1,7 +1,8 @@
 package org.javaproteam27.socialnetwork.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.javaproteam27.socialnetwork.util.Redis;
+import org.javaproteam27.socialnetwork.service.KafkaProducerService;
+import org.javaproteam27.socialnetwork.util.PhotoCloudinary;
 import org.javaproteam27.socialnetwork.model.dto.request.UserRq;
 import org.javaproteam27.socialnetwork.model.dto.request.PostRq;
 import org.javaproteam27.socialnetwork.security.jwt.JwtTokenProvider;
@@ -55,7 +56,9 @@ public class UserControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
     @MockBean
-    private Redis redis;
+    private PhotoCloudinary photoCloudinary;
+    @MockBean
+    private KafkaProducerService kafkaProducerService;
 
     private final static String meUrl = "/api/v1/users/me";
     private final static String userUrl = "/api/v1/users";
@@ -64,7 +67,7 @@ public class UserControllerTest {
     private String getTokenAuthorization() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         JwtUser jwtUser = (JwtUser) auth.getPrincipal();
-        when(redis.getUrl(anyInt())).thenReturn("test");
+        when(photoCloudinary.getUrl(anyInt())).thenReturn("test");
         return jwtTokenProvider.createToken(jwtUser.getUsername());
     }
 

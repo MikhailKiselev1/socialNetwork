@@ -2,8 +2,9 @@ package org.javaproteam27.socialnetwork.controller;
 
 import org.javaproteam27.socialnetwork.security.jwt.JwtTokenProvider;
 import org.javaproteam27.socialnetwork.security.jwt.JwtUser;
+import org.javaproteam27.socialnetwork.service.KafkaProducerService;
 import org.javaproteam27.socialnetwork.service.LoginService;
-import org.javaproteam27.socialnetwork.util.Redis;
+import org.javaproteam27.socialnetwork.util.PhotoCloudinary;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +46,9 @@ public class NotificationControllerTest {
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
     @MockBean
-    private Redis redis;
+    private PhotoCloudinary photoCloudinary;
+    @MockBean
+    private KafkaProducerService kafkaProducerService;
 
     private final String notificationUrl = "/api/v1/notifications";
 
@@ -54,7 +57,7 @@ public class NotificationControllerTest {
     @WithUserDetails("test@mail.ru")
     public void getNotificationsAuthorizedPersonIsOkResponseWithJsonContent() throws Exception {
 
-        when(redis.getUrl(anyInt())).thenReturn("test");
+        when(photoCloudinary.getUrl(anyInt())).thenReturn("test");
 
         this.mockMvc.perform(get(notificationUrl).header("Authorization", getTokenAuthorization()))
                 .andDo(print())
@@ -66,7 +69,7 @@ public class NotificationControllerTest {
     @WithUserDetails("test@mail.ru")
     public void markAsReadNotificationsAuthorizedPersonWithAllTrueIsOkResponseWithJsonContent() throws Exception {
 
-        when(redis.getUrl(anyInt())).thenReturn("test");
+        when(photoCloudinary.getUrl(anyInt())).thenReturn("test");
 
         this.mockMvc.perform(put(notificationUrl).header("Authorization", getTokenAuthorization())
                         .param("all", "true"))

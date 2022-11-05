@@ -1,7 +1,6 @@
 package org.javaproteam27.socialnetwork.mapper;
 
 import org.javaproteam27.socialnetwork.model.entity.Captcha;
-import org.javaproteam27.socialnetwork.model.entity.Post;
 import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;

@@ -1,6 +1,8 @@
 package org.javaproteam27.socialnetwork.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.javaproteam27.socialnetwork.aop.InfoLogger;
 import org.javaproteam27.socialnetwork.model.dto.request.MessageRq;
 import org.javaproteam27.socialnetwork.model.dto.response.*;
 import org.javaproteam27.socialnetwork.service.DialogsService;
@@ -10,6 +12,8 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/dialogs")
 @RequiredArgsConstructor
+@InfoLogger
+@Tag(name = "dialogs", description = "Взаимодействие с диалогами и сообщениями")
 public class DialogsController {
 
     private final DialogsService dialogsService;
@@ -19,6 +23,7 @@ public class DialogsController {
     public ResponseRs<ComplexRs> createDialogs(
             @RequestHeader("Authorization") String token,
             @RequestBody DialogUserShortListDto userIds) {
+
         return dialogsService.createDialog(token, userIds.getUserIds());
     }
 
@@ -27,16 +32,19 @@ public class DialogsController {
             @RequestHeader("Authorization") String token,
             @RequestParam(value = "offset", defaultValue = "0") Integer offset,
             @RequestParam(value = "perPage", defaultValue = "10") Integer itemPerPage) {
+
         return dialogsService.getDialogs(token, offset, itemPerPage);
     }
 
     @GetMapping("/unreaded")
     public ResponseRs<ComplexRs> getUnread(@RequestHeader("Authorization") String token) {
+
         return dialogsService.getUnread(token);
     }
 
     @DeleteMapping("/{id}")
     public ResponseRs<ComplexRs> deleteDialog(@PathVariable Integer id) {
+
         return dialogsService.deleteDialog(id);
     }
 
@@ -45,6 +53,7 @@ public class DialogsController {
             @RequestHeader("Authorization") String token,
             @PathVariable Integer id,
             @RequestBody MessageRq text) {
+
         return dialogsService.sendMessage(token, id, text);
     }
 
@@ -53,6 +62,7 @@ public class DialogsController {
             @PathVariable Integer id,
             @RequestParam(value = "offset", defaultValue = "0") Integer offset,
             @RequestParam(value = "perPage", defaultValue = "10") Integer itemPerPage) {
+
         return dialogsService.getMessagesByDialog(id, offset, itemPerPage, personService.getAuthorizedPerson().getId());
     }
 
@@ -60,23 +70,27 @@ public class DialogsController {
     public ResponseRs<MessageRs> editMessage(
             @PathVariable("message_id") Integer messageId,
             @RequestBody MessageRq text) {
+
         return dialogsService.editMessage(messageId, text);
     }
 
     @PutMapping("/{dialog_id}/messages/{message_id}/read")
     public ResponseRs<ComplexRs> markAsReadMessage(@PathVariable("message_id") Integer messageId) {
+
         return dialogsService.markAsReadMessage(messageId);
     }
 
     @PutMapping("/{dialog_id}/read")
     public ResponseRs<ComplexRs> markDialogAsReadMessage(@PathVariable("dialog_id") Integer dialogId) {
-        return dialogsService.markDialogAsReadMessage(dialogId);
+
+        return dialogsService.markDialogAsReadMessage(dialogId, null);
     }
 
     @DeleteMapping("/{dialog_id}/messages/{message_id}")
     public ResponseRs<ComplexRs> deleteMessage(
             @PathVariable("dialog_id") Integer dialogId,
             @PathVariable("message_id") Integer messageId) {
+
         return dialogsService.deleteMessage(dialogId, messageId);
     }
 
@@ -84,6 +98,7 @@ public class DialogsController {
     public ResponseRs<MessageRs> recoverMessage(
             @PathVariable("dialog_id") Integer dialogId,
             @PathVariable("message_id") Integer messageId) {
+
         return dialogsService.recoverMessage(dialogId, messageId);
     }
 }
